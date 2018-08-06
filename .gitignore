@@ -1,0 +1,19 @@
+*.class
+
+.DS_Store
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.swp
+*.deb
+*.rpm
+*.releaseBackup
+release.properties
+
+hs_err_pid*
+.idea/
+*.iml
+
+**/target/
