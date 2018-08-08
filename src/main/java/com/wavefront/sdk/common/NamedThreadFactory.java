@@ -1,9 +1,10 @@
 package com.wavefront.sdk.common;
 
+
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * Simple thread factory to be used with Executors.newScheduledThreadPool that allows
@@ -16,12 +17,12 @@ public class NamedThreadFactory implements ThreadFactory {
   private final String threadNamePrefix;
   private final AtomicInteger counter = new AtomicInteger();
 
-  public NamedThreadFactory(@NotNull String threadNamePrefix) {
+  public NamedThreadFactory(@Nonnull String threadNamePrefix) {
     this.threadNamePrefix = threadNamePrefix;
   }
 
   @Override
-  public Thread newThread(@NotNull Runnable r) {
+  public Thread newThread(@Nonnull Runnable r) {
     Thread toReturn = new Thread(r);
     toReturn.setName(threadNamePrefix + "-" + counter.getAndIncrement());
     return toReturn;

@@ -7,7 +7,32 @@
 
     <groupId>com.wavefront</groupId>
     <artifactId>java-sdk</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Wavefront Java SDK</name>
+    <description>The Wavefront SDK for Java</description>
+    <url>https://github.com/wavefrontHQ/wavefront-java-sdk</url>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git@github.com:wavefronthq/wavefront-java-sdk.git</connection>
+        <developerConnection>scm:git:git@github.com:wavefronthq/wavefront-java-sdk.git</developerConnection>
+        <url>git@github.com:wavefronthq/wavefront-java-sdk.git</url>
+    </scm>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>
@@ -18,8 +43,50 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                  <execution>
+                    <phase>package</phase>
+                    <goals>
+                      <goal>shade</goal>
+                    </goals>
+                    <configuration>
+                        <minimizeJar>true</minimizeJar>
+                        <artifactSet>
+                            <excludes>
+                                <exclude>junit:junit</exclude>
+                                <exclude>com.google.code.findbugs:jsr305</exclude>
+                            </excludes>
+                        </artifactSet>
+                        <relocations>
+                            <relocation>
+                              <pattern>com.google</pattern>
+                              <shadedPattern>com.wavefront.java-sdk.com.google</shadedPattern>
+                            </relocation>
+                            <relocation>
+                              <pattern>org.jboss</pattern>
+                              <shadedPattern>com.wavefront.java-sdk.org.jboss</shadedPattern>
+                            </relocation>
+                        </relocations>
+                        <filters>
+                            <filter>
+                                <artifact>*:*</artifact>
+                                <excludes>
+                                    <exclude>META-INF/**</exclude>
+                                    <exclude>mozilla/**</exclude>
+                                </excludes>
+                            </filter>
+                        </filters>
+                    </configuration>
+                  </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+    
     <dependencies>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
@@ -32,20 +99,12 @@
             <version>23.0</version>
         </dependency>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>1.0.0.GA</version>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jaxrs</artifactId>
             <version>3.0.26.Final</version>
         </dependency>
+
+        <!-- Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
