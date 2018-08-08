@@ -143,10 +143,17 @@ public class Main {
     String distributionPort = args.length < 5 ? null : args[4];
     String tracingPort = args.length < 6 ? null : args[5];
 
-    WavefrontProxyClient wavefrontProxyClient = new WavefrontProxyClient(proxyHost,
-        metricsPort == null ? null : Integer.parseInt(metricsPort),
-        distributionPort == null ? null : Integer.parseInt(distributionPort),
-        tracingPort == null ? null : Integer.parseInt(tracingPort));
+    WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHost);
+    if (metricsPort != null) {
+      builder.metricsPort(Integer.parseInt(metricsPort));
+    }
+    if (distributionPort != null) {
+      builder.distributionPort(Integer.parseInt(distributionPort));
+    }
+    if (tracingPort != null) {
+      builder.tracingPort(Integer.parseInt(tracingPort));
+    }
+    WavefrontProxyClient wavefrontProxyClient = builder.build();
     wavefrontProxyClient.connect();
 
     WavefrontDirectIngestionClient wavefrontDirectIngestionClient =
