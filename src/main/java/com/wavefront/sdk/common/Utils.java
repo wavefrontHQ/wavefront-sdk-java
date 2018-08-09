@@ -143,7 +143,7 @@ public class Utils {
     return sb.toString();
   }
 
-  public static String tracingSpanToLineData(String name, long startMillis, long durationMicros,
+  public static String tracingSpanToLineData(String name, long startMillis, long durationMillis,
                                              String source, UUID traceId, UUID spanId,
                                              @Nullable List<UUID> parents,
                                              @Nullable List<UUID> followsFrom,
@@ -172,7 +172,6 @@ public class Utils {
 
     final StringBuilder sb = new StringBuilder();
     sb.append(sanitize(name));
-    sb.append(' ');
     sb.append(" source=");
     sb.append(sanitize(source));
     sb.append(" traceId=");
@@ -208,7 +207,7 @@ public class Utils {
     sb.append(' ');
     sb.append(startMillis);
     sb.append(' ');
-    sb.append(durationMicros);
+    sb.append(durationMillis);
     // TODO - Support SpanLogs
     sb.append('\n');
     return sb.toString();

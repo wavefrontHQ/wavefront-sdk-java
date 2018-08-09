@@ -30,8 +30,7 @@ import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 
 /**
- * Wavefront direct ingestion client that sends data directly to Wavefront cluster via the
- * direct ingestion API.
+ * Wavefront direct ingestion client that sends data directly to Wavefront cluster via the direct ingestion API.
  *
  * @author Vikram Raman (vikram@wavefront.com)
  */
