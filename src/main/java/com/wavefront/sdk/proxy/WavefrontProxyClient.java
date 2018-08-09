@@ -47,54 +47,103 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
    */
   private final String defaultSource = InetAddress.getLocalHost().getHostName();
 
-  /**
-   * Creates a new WavefrontProxyClient client that connects to given address and socket factory
-   *
-   * @param agentHostName      The hostname of the Wavefront Proxy Agent
-   * @param metricsPort        The metrics port of the Wavefront Proxy Agent
-   * @param distributionPort   The distribution port of the Wavefront Proxy Agent
-   * @param tracingPort        The tracing port of the Wavefront Proxy Agent
-   */
-  public WavefrontProxyClient(String agentHostName,
-                              @Nullable Integer metricsPort,
-                              @Nullable Integer distributionPort,
-                              @Nullable Integer tracingPort) throws UnknownHostException {
-    this(agentHostName, metricsPort, distributionPort, tracingPort, SocketFactory.getDefault());
+  public static class Builder {
+    // Required parameters
+    private final String proxyHostName;
+
+    // Optional parameters
+    private Integer metricsPort;
+    private Integer distributionPort;
+    private Integer tracingPort;
+    private SocketFactory socketFactory = SocketFactory.getDefault();
+
+    /**
+     * WavefrontProxyClient.Builder
+     *
+     * @param proxyHostName     Hostname of the Wavefront proxy
+     */
+    public Builder(String proxyHostName) {
+      this.proxyHostName = proxyHostName;
+    }
+
+    /**
+     * Invoke this method to enable sending metrics to Wavefront cluster via proxy
+     *
+     * @param metricsPort       Metrics Port on which the Wavefront proxy is listening on
+     * @return WavefrontProxyClient.Builder instance
+     */
+    public Builder metricsPort(int metricsPort) {
+      this.metricsPort = metricsPort;
+      return this;
+    }
+
+    /**
+     * Invoke this method to enable sending distribution to Wavefront cluster via proxy
+     *
+     * @param distributionPort   Distribution Port on which the Wavefront proxy is listening on
+     * @return WavefrontProxyClient.Builder instance
+     */
+    public Builder distributionPort(int distributionPort) {
+      this.distributionPort = distributionPort;
+      return this;
+    }
+
+    /**
+     * Invoke this method to enable sending tracing spans to Wavefront cluster via proxy
+     *
+     * @param tracingPort        Tracing Port on which the Wavefront proxy is listening on
+     * @return WavefrontProxyClient.Builder instance
+     */
+    public Builder tracingPort(int tracingPort) {
+      this.tracingPort = tracingPort;
+      return this;
+    }
+
+    /**
+     * Set an explicit SocketFactory
+     *
+     * @param socketFactory       SocketFactory
+     * @return WavefrontProxyClient.Builder instance
+     */
+    public Builder socketFactory(SocketFactory socketFactory) {
+      this.socketFactory = socketFactory;
+      return this;
+    }
+
+    /**
+     * Builds WavefrontProxyClient instance
+     *
+     * @return WavefrontProxyClient instance
+     * @throws UnknownHostException
+     */
+    public WavefrontProxyClient build() throws UnknownHostException {
+      return new WavefrontProxyClient(this);
+    }
   }
 
-  /**
-   * Creates a new WavefrontProxyClient client that connects to given address and socket factory
-   *
-   * @param agentHostName      The hostname of the Wavefront Proxy Agent
-   * @param metricsPort        The metrics port of the Wavefront Proxy Agent
-   * @param distributionPort   The distribution port of the Wavefront Proxy Agent
-   * @param tracingPort        The tracing port of the Wavefront Proxy Agent
-   * @param socketFactory      The socket factory
-   */
-  public WavefrontProxyClient(String agentHostName,
-                              @Nullable Integer metricsPort,
-                              @Nullable Integer distributionPort,
-                              @Nullable Integer tracingPort,
-                              SocketFactory socketFactory) throws UnknownHostException {
-    if (metricsPort == null) {
+  private WavefrontProxyClient(Builder builder) throws UnknownHostException {
+    if (builder.metricsPort == null) {
       metricsProxyConnectionHandler = null;
     } else {
       metricsProxyConnectionHandler = new ProxyConnectionHandler(
-          new InetSocketAddress(agentHostName, metricsPort), socketFactory);
+          new InetSocketAddress(builder.proxyHostName, builder.metricsPort),
+          builder.socketFactory);
     }
 
-    if (distributionPort == null) {
+    if (builder.distributionPort == null) {
       histogramProxyConnectionHandler = null;
     } else {
       histogramProxyConnectionHandler = new ProxyConnectionHandler(
-          new InetSocketAddress(agentHostName, distributionPort), socketFactory);
+          new InetSocketAddress(builder.proxyHostName, builder.distributionPort),
+          builder.socketFactory);
     }
 
-    if (tracingPort == null) {
+    if (builder.tracingPort == null) {
       tracingProxyConnectionHandler = null;
     } else {
       tracingProxyConnectionHandler = new ProxyConnectionHandler(
-          new InetSocketAddress(agentHostName, tracingPort), socketFactory);
+          new InetSocketAddress(builder.proxyHostName, builder.tracingPort),
+          builder.socketFactory);
     }
   }
 
