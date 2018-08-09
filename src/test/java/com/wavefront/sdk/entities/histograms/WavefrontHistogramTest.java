@@ -2,7 +2,8 @@ package com.wavefront.sdk.entities.histograms;
 
 import com.google.common.primitives.Doubles;
 import com.tdunning.math.stats.Centroid;
-import com.wavefront.sdk.entities.histograms.WavefrontHistogram.MinuteBin;
+import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.entities.histograms.WavefrontHistogram.Distribution;
 import com.wavefront.sdk.entities.histograms.WavefrontHistogram.Snapshot;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.BeforeClass;
@@ -47,12 +48,12 @@ public class WavefrontHistogramTest {
     return wh;
   }
 
-  private Map<Double, Integer> distributionToMap(List<MinuteBin> bins) {
+  private Map<Double, Integer> distributionToMap(List<Distribution> distributions) {
     Map<Double, Integer> map = new HashMap<>();
 
-    for (MinuteBin minuteBin : bins) {
-      for (Centroid c : minuteBin.getDistribution().centroids()) {
-        map.put(c.mean(), map.getOrDefault(c.mean(), 0) + c.count());
+    for (Distribution distribution : distributions) {
+      for (Pair<Double, Integer> centroid : distribution.centroids) {
+        map.put(centroid._1, map.getOrDefault(centroid._1, 0) + centroid._2);
       }
     }
 
@@ -87,8 +88,8 @@ public class WavefrontHistogramTest {
     WavefrontHistogram wh = createPow10Histogram(clock::get);
     clock.addAndGet(60000L + 1);
 
-    List<MinuteBin> bins = wh.bins(true);
-    Map<Double, Integer> map = distributionToMap(bins);
+    List<Distribution> distributions = wh.flushDistributions();
+    Map<Double, Integer> map = distributionToMap(distributions);
 
     assertEquals(7, map.size());
     assertThat(map, IsMapContaining.hasEntry(0.1, 1));
@@ -100,16 +101,6 @@ public class WavefrontHistogramTest {
     assertThat(map, IsMapContaining.hasEntry(100000.0, 1));
 
     // check that the histogram has been cleared
-    assertEquals(0, wh.getCount());
-  }
-
-  @Test
-  public void testClear() {
-    WavefrontHistogram wh = createPow10Histogram(clock::get);
-    clock.addAndGet(60000L + 1);
-
-    wh.clear();  // clears bins
-
     assertEquals(0, wh.getCount());
     assertEquals(NaN, wh.getMax(), DELTA);
     assertEquals(NaN, wh.getMin(), DELTA);
@@ -131,8 +122,8 @@ public class WavefrontHistogramTest {
     wh.bulkUpdate(Doubles.asList(24.2, 84.35, 1002), Arrays.asList(80, 1, 9));
     clock.addAndGet(60000L + 1);
 
-    List<MinuteBin> bins = wh.bins(true);
-    Map<Double, Integer> map = distributionToMap(bins);
+    List<Distribution> distributions = wh.flushDistributions();
+    Map<Double, Integer> map = distributionToMap(distributions);
 
     assertEquals(3, map.size());
     assertThat(map, IsMapContaining.hasEntry(24.2, 80));
