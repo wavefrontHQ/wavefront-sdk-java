@@ -61,7 +61,7 @@ public class WavefrontHistogram {
   }
 
   public void update(double value) {
-    getCurrent().getDist().add(value);
+    getCurrent().getDistribution().add(value);
   }
 
   /**
@@ -75,50 +75,57 @@ public class WavefrontHistogram {
       int n = Math.min(means.size(), counts.size());
       MinuteBin current = getCurrent();
       for (int i = 0; i < n; ++i) {
-        current.getDist().add(means.get(i), counts.get(i));
+        current.getDistribution().add(means.get(i), counts.get(i));
       }
     }
-  }
-
-  /**
-   * @return returns the minimum value in the distribution. Returns NaN if the distribution is empty.
-   */
-  public double getMin() {
-    double min = snapshot().getMin();
-    return min == Double.POSITIVE_INFINITY ? NaN : min;
-  }
-
-  /**
-   * @return returns the maximum value in the distribution. Returns NaN if the distribution is empty.
-   */
-  public double getMax() {
-    double max = snapshot().getMax();
-    return max == Double.NEGATIVE_INFINITY ? NaN : max;
   }
 
   /**
    * @return returns the number of values in the distribution.
    */
   public long getCount() {
-    return snapshot().size();
+    return perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).
+        mapToLong(bin -> bin.getDistribution().size()).sum();
+  }
+
+  /**
+   * @return returns the maximum value in the distribution. Returns NaN if the distribution is empty.
+   */
+  public double getMax() {
+    return perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).
+        mapToDouble(b -> b.getDistribution().getMax()).max().orElse(NaN);
+  }
+
+  /**
+   * @return returns the minimum value in the distribution. Returns NaN if the distribution is empty.
+   */
+  public double getMin() {
+    return perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).
+        mapToDouble(b -> b.getDistribution().getMin()).min().orElse(NaN);
   }
 
   /**
    * @return returns the mean of the values in the distribution. Returns NaN if the distribution is empty.
    */
   public double getMean() {
-    Collection<Centroid> centroids = snapshot().centroids();
+    List<Centroid> centroids = new ArrayList<>();
+    perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).
+        forEach(bin -> centroids.addAll(bin.getDistribution().centroids()));
+
     return centroids.size() == 0 ?
         NaN :
         centroids.stream().mapToDouble(c -> (c.count() * c.mean()) / centroids.size()).sum();
   }
 
   /**
-   * @param quantile  a given quantile, between 0 and 1
-   * @return returns the value in the distribution at the given quantile. Returns NaN if the distribution is empty.
+   * @return returns the sum of the values in the distribution.
    */
-  public double getValue(double quantile) {
-    return snapshot().quantile(quantile);
+  public double getSum() {
+    List<Centroid> centroids = new ArrayList<>();
+    perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).
+        forEach(bin -> centroids.addAll(bin.getDistribution().centroids()));
+
+    return centroids.stream().mapToDouble(c -> c.count() * c.mean()).sum();
   }
 
   /**
@@ -147,6 +154,14 @@ public class WavefrontHistogram {
    */
   public void clear() {
     clearPriorCurrentMinuteBin(currentMinuteMillis());
+  }
+
+  // TODO - how to ensure thread safety? do we care?
+  public Snapshot getSnapshot() {
+    final TDigest snapshot = new AVLTreeDigest(ACCURACY);
+    perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).
+        forEach(bin -> snapshot.add(bin.getDistribution()));
+    return new Snapshot(snapshot);
   }
 
   private long currentMinuteMillis() {
@@ -183,10 +198,87 @@ public class WavefrontHistogram {
     }
   }
 
-  // TODO - how to ensure thread safety? do we care?
-  private TDigest snapshot() {
-    final TDigest snapshot = new AVLTreeDigest(ACCURACY);
-    perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).forEach(bin -> snapshot.add(bin.getDist()));
-    return snapshot;
+  /**
+   * Wrapper for TDigest distribution
+   */
+  public static class Snapshot {
+    private final TDigest distribution;
+
+    Snapshot(TDigest dist) {
+      this.distribution = dist;
+    }
+
+    /**
+     * @return returns the number of values in the distribution.
+     */
+    public long getCount() {
+      return distribution.size();
+    }
+
+    /**
+     * @return returns the maximum value in the distribution. Returns NaN if the distribution is empty.
+     */
+    public double getMax() {
+      double max = distribution.getMax();
+      return max == Double.NEGATIVE_INFINITY ? NaN : max;
+    }
+
+    /**
+     * @return returns the minimum value in the distribution. Returns NaN if the distribution is empty.
+     */
+    public double getMin() {
+      double min = distribution.getMin();
+      return min == Double.POSITIVE_INFINITY ? NaN : min;
+    }
+
+    /**
+     * @return returns the mean of the values in the distribution. Returns NaN if the distribution is empty.
+     */
+    public double getMean() {
+      Collection<Centroid> centroids = distribution.centroids();
+      return centroids.size() == 0 ?
+          NaN :
+          centroids.stream().mapToDouble(c -> (c.count() * c.mean()) / centroids.size()).sum();
+    }
+
+    /**
+     * @return returns the sum of the values in the distribution.
+     */
+    public double getSum() {
+      return distribution.centroids().stream().mapToDouble(c -> c.count() * c.mean()).sum();
+    }
+
+    /**
+     * @param quantile  a given quantile, between 0 and 1
+     * @return returns the value in the distribution at the given quantile. Returns NaN if the distribution is empty.
+     */
+    public double getValue(double quantile) {
+      return distribution.quantile(quantile);
+    }
+  }
+
+  /**
+   * Representation of a bin that holds histogram data for a particular minute in time.
+   */
+  public static class MinuteBin {
+    private final TDigest distribution;
+
+    /**
+     * timestamp at the start of the minute
+     */
+    private final long minuteMillis;
+
+    MinuteBin(int accuracy, long minuteMillis) {
+      distribution = new AVLTreeDigest(accuracy);
+      this.minuteMillis = minuteMillis;
+    }
+
+    public TDigest getDistribution() {
+      return distribution;
+    }
+
+    public long getMinuteMillis() {
+      return minuteMillis;
+    }
   }
 }

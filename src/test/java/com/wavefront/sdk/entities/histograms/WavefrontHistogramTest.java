@@ -2,6 +2,8 @@ package com.wavefront.sdk.entities.histograms;
 
 import com.google.common.primitives.Doubles;
 import com.tdunning.math.stats.Centroid;
+import com.wavefront.sdk.entities.histograms.WavefrontHistogram.MinuteBin;
+import com.wavefront.sdk.entities.histograms.WavefrontHistogram.Snapshot;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -49,8 +51,7 @@ public class WavefrontHistogramTest {
     Map<Double, Integer> map = new HashMap<>();
 
     for (MinuteBin minuteBin : bins) {
-      StringBuilder sb = new StringBuilder();
-      for (Centroid c : minuteBin.getDist().centroids()) {
+      for (Centroid c : minuteBin.getDistribution().centroids()) {
         map.put(c.mean(), map.getOrDefault(c.mean(), 0) + c.count());
       }
     }
@@ -110,10 +111,18 @@ public class WavefrontHistogramTest {
     wh.clear();  // clears bins
 
     assertEquals(0, wh.getCount());
-    assertEquals(NaN, wh.getMin(), DELTA);
     assertEquals(NaN, wh.getMax(), DELTA);
+    assertEquals(NaN, wh.getMin(), DELTA);
     assertEquals(NaN, wh.getMean(), DELTA);
-    assertEquals(NaN, wh.getValue(.5), DELTA);
+    assertEquals(0, wh.getSum(), DELTA);
+
+    Snapshot snapshot = wh.getSnapshot();
+    assertEquals(0, snapshot.getCount());
+    assertEquals(NaN, snapshot.getMax(), DELTA);
+    assertEquals(NaN, snapshot.getMin(), DELTA);
+    assertEquals(NaN, snapshot.getMean(), DELTA);
+    assertEquals(NaN, snapshot.getValue(0.5), DELTA);
+    assertEquals(0, snapshot.getSum(), DELTA);
   }
 
   @Test
@@ -134,31 +143,44 @@ public class WavefrontHistogramTest {
   @Test
   public void testCount() {
     assertEquals(9, pow10.getCount());
-  }
-
-  @Test
-  public void testMin() {
-    assertEquals(1, inc100.getMin(), DELTA);
+    assertEquals(9, pow10.getSnapshot().getCount());
   }
 
   @Test
   public void testMax() {
     assertEquals(100000, pow10.getMax(), DELTA);
+    assertEquals(100000, pow10.getSnapshot().getMax(), DELTA);
+  }
+
+  @Test
+  public void testMin() {
+    assertEquals(1, inc100.getMin(), DELTA);
+    assertEquals(1, inc100.getSnapshot().getMin(), DELTA);
   }
 
   @Test
   public void testMean() {
     assertEquals(13457.9, pow10.getMean(), DELTA);
+    assertEquals(13457.9, pow10.getSnapshot().getMean(), DELTA);
+  }
+
+  @Test
+  public void testSum() {
+    assertEquals(121121.1, pow10.getSum(), DELTA);
+    assertEquals(121121.1, pow10.getSnapshot().getSum(), DELTA);
   }
 
   @Test
   public void testQuantile() {
-    assertEquals(100, pow10.getValue(.5), DELTA);
-    assertEquals(25.5, inc100.getValue(.25), DELTA);
-    assertEquals(75.5, inc100.getValue(.75), DELTA);
-    assertEquals(95.5, inc100.getValue(.95), DELTA);
-    assertEquals(98.5, inc100.getValue(.98), DELTA);
-    assertEquals(99.5, inc100.getValue(.99), DELTA);
-    assertEquals(999.5, inc1000.getValue(.999), DELTA);
+    assertEquals(100, pow10.getSnapshot().getValue(.5), DELTA);
+
+    Snapshot snapshot = inc100.getSnapshot();
+    assertEquals(25.5, snapshot.getValue(.25), DELTA);
+    assertEquals(75.5, snapshot.getValue(.75), DELTA);
+    assertEquals(95.5, snapshot.getValue(.95), DELTA);
+    assertEquals(98.5, snapshot.getValue(.98), DELTA);
+    assertEquals(99.5, snapshot.getValue(.99), DELTA);
+
+    assertEquals(999.5, inc1000.getSnapshot().getValue(.999), DELTA);
   }
 }
