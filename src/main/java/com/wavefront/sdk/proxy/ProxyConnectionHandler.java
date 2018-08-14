@@ -1,8 +1,9 @@
 package com.wavefront.sdk.proxy;
 
-import com.wavefront.sdk.common.ConnectionHandler;
+import com.wavefront.sdk.common.BufferFlusher;
 import com.wavefront.sdk.common.ReconnectingSocket;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,7 +16,7 @@ import javax.net.SocketFactory;
  * @author Clement Pang (clement@wavefront.com).
  * @author Vikram Raman (vikram@wavefront.com).
  */
-public class ProxyConnectionHandler implements ConnectionHandler {
+public class ProxyConnectionHandler implements BufferFlusher, Closeable {
 
   private final InetSocketAddress address;
   private final SocketFactory socketFactory;
@@ -29,7 +30,6 @@ public class ProxyConnectionHandler implements ConnectionHandler {
     failures = new AtomicInteger();
   }
 
-  @Override
   public synchronized void connect() throws IllegalStateException, IOException {
     if (reconnectingSocket != null) {
       throw new IllegalStateException("Already connected");
@@ -42,7 +42,6 @@ public class ProxyConnectionHandler implements ConnectionHandler {
     }
   }
 
-  @Override
   public boolean isConnected() {
     return reconnectingSocket != null;
   }

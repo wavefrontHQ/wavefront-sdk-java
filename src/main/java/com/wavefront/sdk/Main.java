@@ -28,7 +28,7 @@ public class Main {
      * Example: "new-york.power.usage 42422 1533529977 source=localhost datacenter=dc1"
      */
 
-    wavefrontProxyClient.sendMetric("new-york.power.usage", 42422.0, 1533529977L,
+    wavefrontProxyClient.sendMetric("new-york.power.usage", 42422.0, null,
         "localhost", ImmutableMap.<String, String>builder().build());
     System.out.println("Sent metric: 'new-york.power.usage' to proxy");
   }
@@ -42,7 +42,7 @@ public class Main {
      * Example: "new-york.power.usage 42422 1533529977 source=localhost datacenter=dc1"
      */
 
-    wavefrontDirectIngestionClient.sendMetric("new-york.power.usage", 42422.0, 1533529977L,
+    wavefrontDirectIngestionClient.sendMetric("new-york.power.usage", 42422.0, null,
         "localhost", ImmutableMap.<String, String>builder().build());
     System.out.println("Sent metric: 'new-york.power.usage' to direct ingestion API");
   }
@@ -61,7 +61,7 @@ public class Main {
             add(new Pair<>(30.0, 20)).add(new Pair<>(5.1, 10)).build(),
         ImmutableSet.<HistogramGranularity>builder().add(HistogramGranularity.MINUTE).
             add(HistogramGranularity.HOUR).add(HistogramGranularity.DAY).build(),
-        1533529977L, "appServer1",
+        null, "appServer1",
         ImmutableMap.<String, String>builder().put("region", "us-west").build());
     System.out.println("Sent histogram: 'request.latency' to proxy");
   }
@@ -80,7 +80,7 @@ public class Main {
             add(new Pair<>(30.0, 20)).add(new Pair<>(5.1, 10)).build(),
         ImmutableSet.<HistogramGranularity>builder().add(HistogramGranularity.MINUTE).
             add(HistogramGranularity.HOUR).add(HistogramGranularity.DAY).build(),
-        1533529977L, "appServer1",
+        null, "appServer1",
         ImmutableMap.<String, String>builder().put("region", "us-west").build());
     System.out.println("Sent histogram: 'request.latency' to direction ingestion API");
   }
@@ -89,7 +89,7 @@ public class Main {
       throws IOException {
     /*
      * Wavefront Tracing Span Data format
-     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_micro_seconds>
+     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milli_seconds>
      *
      * Example: "getAllUsers source=localhost
      *           traceId=7b3bf470-9456-11e8-9eb6-529269fb1459
@@ -114,7 +114,7 @@ public class Main {
       WavefrontDirectIngestionClient wavefrontDirectIngestionClient) throws IOException {
     /*
      * Wavefront Tracing Span Data format
-     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_micro_seconds>
+     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milli_seconds>
      *
      * Example: "getAllUsers source=localhost
      *           traceId=7b3bf470-9456-11e8-9eb6-529269fb1459
@@ -154,11 +154,9 @@ public class Main {
       builder.tracingPort(Integer.parseInt(tracingPort));
     }
     WavefrontProxyClient wavefrontProxyClient = builder.build();
-    wavefrontProxyClient.connect();
 
     WavefrontDirectIngestionClient wavefrontDirectIngestionClient =
-        new WavefrontDirectIngestionClient(wavefrontServer, token);
-    wavefrontDirectIngestionClient.connect();
+        new WavefrontDirectIngestionClient.Builder(wavefrontServer, token).build();
 
     while (true) {
       // Send entities via Proxy

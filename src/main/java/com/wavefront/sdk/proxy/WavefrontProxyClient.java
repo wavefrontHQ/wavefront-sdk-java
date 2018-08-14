@@ -1,6 +1,7 @@
 package com.wavefront.sdk.proxy;
 
-import com.wavefront.sdk.common.ConnectionHandler;
+import com.wavefront.sdk.common.BufferFlusher;
+import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.histograms.WavefrontHistogramSender;
@@ -8,6 +9,7 @@ import com.wavefront.sdk.entities.metrics.WavefrontMetricSender;
 import com.wavefront.sdk.entities.tracing.SpanLog;
 import com.wavefront.sdk.entities.tracing.WavefrontTracingSpanSender;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -16,6 +18,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 import javax.net.SocketFactory;
@@ -31,7 +38,10 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
  * @author Sushant Dewan (sushant@wavefront.com).
  */
 public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHistogramSender,
-    WavefrontTracingSpanSender, ConnectionHandler {
+    WavefrontTracingSpanSender, BufferFlusher, Runnable, Closeable {
+
+  private static final Logger LOGGER = Logger.getLogger(
+      WavefrontProxyClient.class.getCanonicalName());
 
   @Nullable
   private final ProxyConnectionHandler metricsProxyConnectionHandler;
@@ -47,6 +57,8 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
    */
   private final String defaultSource = InetAddress.getLocalHost().getHostName();
 
+  private final ScheduledExecutorService scheduler;
+
   public static class Builder {
     // Required parameters
     private final String proxyHostName;
@@ -56,6 +68,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
     private Integer distributionPort;
     private Integer tracingPort;
     private SocketFactory socketFactory = SocketFactory.getDefault();
+    private int flushIntervalSeconds = 5;
 
     /**
      * WavefrontProxyClient.Builder
@@ -70,7 +83,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
      * Invoke this method to enable sending metrics to Wavefront cluster via proxy
      *
      * @param metricsPort       Metrics Port on which the Wavefront proxy is listening on
-     * @return WavefrontProxyClient.Builder instance
+     * @return {@code this}
      */
     public Builder metricsPort(int metricsPort) {
       this.metricsPort = metricsPort;
@@ -81,7 +94,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
      * Invoke this method to enable sending distribution to Wavefront cluster via proxy
      *
      * @param distributionPort   Distribution Port on which the Wavefront proxy is listening on
-     * @return WavefrontProxyClient.Builder instance
+     * @return {@code this}
      */
     public Builder distributionPort(int distributionPort) {
       this.distributionPort = distributionPort;
@@ -92,7 +105,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
      * Invoke this method to enable sending tracing spans to Wavefront cluster via proxy
      *
      * @param tracingPort        Tracing Port on which the Wavefront proxy is listening on
-     * @return WavefrontProxyClient.Builder instance
+     * @return {@code this}
      */
     public Builder tracingPort(int tracingPort) {
       this.tracingPort = tracingPort;
@@ -103,7 +116,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
      * Set an explicit SocketFactory
      *
      * @param socketFactory       SocketFactory
-     * @return WavefrontProxyClient.Builder instance
+     * @return {@code this}
      */
     public Builder socketFactory(SocketFactory socketFactory) {
       this.socketFactory = socketFactory;
@@ -111,9 +124,20 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
     }
 
     /**
+     * Set interval at which you want to flush points to Wavefront proxy
+     *
+     * @param flushIntervalSeconds  Interval at which you want to flush points to Wavefront proxy
+     * @return {@code this}
+     */
+    public Builder flushIntervalSeconds(int flushIntervalSeconds) {
+      this.flushIntervalSeconds = flushIntervalSeconds;
+      return this;
+    }
+
+    /**
      * Builds WavefrontProxyClient instance
      *
-     * @return WavefrontProxyClient instance
+     * @return {@link WavefrontProxyClient}
      * @throws UnknownHostException
      */
     public WavefrontProxyClient build() throws UnknownHostException {
@@ -145,6 +169,11 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
           new InetSocketAddress(builder.proxyHostName, builder.tracingPort),
           builder.socketFactory);
     }
+
+    scheduler = Executors.newScheduledThreadPool(1,
+        new NamedThreadFactory("wavefrontProxySender"));
+    // flush every 5 seconds
+    scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
   }
 
   @Override
@@ -201,7 +230,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
   }
 
   @Override
-  public void sendSpan(String name, long startMillis, long durationMicros,
+  public void sendSpan(String name, long startMillis, long durationMillis,
                        @Nullable String source, UUID traceId, UUID spanId,
                        @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                        @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
@@ -215,7 +244,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
     }
 
     try {
-      String lineData = tracingSpanToLineData(name, startMillis, durationMicros, source, traceId,
+      String lineData = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
           spanId, parents, followsFrom, tags, spanLogs, defaultSource);
       try {
         tracingProxyConnectionHandler.sendData(lineData);
@@ -229,17 +258,11 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
   }
 
   @Override
-  public void connect() throws IllegalStateException, IOException {
-    if (metricsProxyConnectionHandler != null) {
-      metricsProxyConnectionHandler.connect();
-    }
-
-    if (histogramProxyConnectionHandler != null) {
-      histogramProxyConnectionHandler.connect();
-    }
-
-    if (tracingProxyConnectionHandler != null) {
-      tracingProxyConnectionHandler.connect();
+  public void run() {
+    try {
+      this.flush();
+    } catch (Throwable ex) {
+      LOGGER.log(Level.FINE, "Unable to report to Wavefront cluster", ex);
     }
   }
 
@@ -256,30 +279,6 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
     if (tracingProxyConnectionHandler != null) {
       tracingProxyConnectionHandler.flush();
     }
-  }
-
-  @Override
-  public boolean isConnected() {
-    if (metricsProxyConnectionHandler == null && histogramProxyConnectionHandler == null &&
-        tracingProxyConnectionHandler == null) {
-      // At least one proxy port to accept Wavefront entities needs to be open
-      return false;
-    }
-
-    if (metricsProxyConnectionHandler != null && !metricsProxyConnectionHandler.isConnected()) {
-      return false;
-    }
-
-    if (histogramProxyConnectionHandler != null && !histogramProxyConnectionHandler.isConnected()) {
-      return false;
-    }
-
-    if (tracingProxyConnectionHandler != null && !tracingProxyConnectionHandler.isConnected()) {
-      return false;
-    }
-
-    // default
-    return true;
   }
 
   @Override
@@ -300,17 +299,42 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
+    // Flush before closing
+    try {
+      flush();
+    } catch (IOException e) {
+      LOGGER.log(Level.WARNING, "error flushing buffer", e);
+    }
+
+    try {
+      scheduler.shutdownNow();
+    } catch (SecurityException ex) {
+      LOGGER.log(Level.FINE, "shutdown error", ex);
+    }
+
     if (metricsProxyConnectionHandler != null) {
-      metricsProxyConnectionHandler.close();
+      try {
+        metricsProxyConnectionHandler.close();
+      } catch (IOException e) {
+        LOGGER.log(Level.WARNING, "error closing metricsProxyConnectionHandler", e);
+      }
     }
 
     if (histogramProxyConnectionHandler != null) {
-      histogramProxyConnectionHandler.close();
+      try {
+        histogramProxyConnectionHandler.close();
+      } catch (IOException e) {
+        LOGGER.log(Level.WARNING, "error closing histogramProxyConnectionHandler", e);
+      }
     }
 
     if (tracingProxyConnectionHandler != null) {
-      tracingProxyConnectionHandler.close();
+      try {
+        tracingProxyConnectionHandler.close();
+      } catch (IOException e) {
+        LOGGER.log(Level.WARNING, "error closing tracingProxyConnectionHandler", e);
+      }
     }
   }
 }
