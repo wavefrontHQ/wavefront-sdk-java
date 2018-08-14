@@ -79,7 +79,7 @@ public class WavefrontDirectIngestionClient implements WavefrontMetricSender,
      * Set max queue size of in-memory buffer. Needs to be flushed if full.
      *
      * @param maxQueueSize Max queue size of in-memory buffer
-     * @return WavefrontDirectIngestionClient.Builder instance
+     * @return {@code this}
      */
     public Builder maxQueueSize(int maxQueueSize) {
       this.maxQueueSize = maxQueueSize;
@@ -90,7 +90,7 @@ public class WavefrontDirectIngestionClient implements WavefrontMetricSender,
      * Set batch size to be reported during every flush.
      *
      * @param batchSize Batch size to be reported during every flush.
-     * @return WavefrontDirectIngestionClient.Builder instance
+     * @return {@code this}
      */
     public Builder batchSize(int batchSize) {
       this.batchSize = batchSize;
@@ -101,7 +101,7 @@ public class WavefrontDirectIngestionClient implements WavefrontMetricSender,
      * Set interval at which you want to flush points to Wavefront cluster.
      *
      * @param flushIntervalSeconds Interval at which you want to flush points to Wavefront cluster
-     * @return WavefrontDirectIngestionClient.Builder instance
+     * @return {@code this}
      */
     public Builder flushIntervalSeconds(int flushIntervalSeconds) {
       this.flushIntervalSeconds = flushIntervalSeconds;
@@ -111,7 +111,7 @@ public class WavefrontDirectIngestionClient implements WavefrontMetricSender,
     /**
      * Creates a new client that connects directly to a given Wavefront service.
      *
-     * @return wavefront direct-ingestion client
+     * return {@link WavefrontDirectIngestionClient}
      */
     public WavefrontDirectIngestionClient build() {
       return new WavefrontDirectIngestionClient(this);
@@ -233,9 +233,13 @@ public class WavefrontDirectIngestionClient implements WavefrontMetricSender,
   }
 
   @Override
-  public synchronized void close() throws IOException {
+  public synchronized void close() {
     // Flush before closing
-    flush();
+    try {
+      flush();
+    } catch (IOException e) {
+      LOGGER.log(Level.WARNING, "error flushing buffer", e);
+    }
     try {
       scheduler.shutdownNow();
     } catch (SecurityException ex) {

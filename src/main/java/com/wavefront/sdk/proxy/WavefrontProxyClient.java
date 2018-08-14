@@ -83,7 +83,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
      * Invoke this method to enable sending metrics to Wavefront cluster via proxy
      *
      * @param metricsPort       Metrics Port on which the Wavefront proxy is listening on
-     * @return WavefrontProxyClient.Builder instance
+     * @return {@code this}
      */
     public Builder metricsPort(int metricsPort) {
       this.metricsPort = metricsPort;
@@ -94,7 +94,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
      * Invoke this method to enable sending distribution to Wavefront cluster via proxy
      *
      * @param distributionPort   Distribution Port on which the Wavefront proxy is listening on
-     * @return WavefrontProxyClient.Builder instance
+     * @return {@code this}
      */
     public Builder distributionPort(int distributionPort) {
       this.distributionPort = distributionPort;
@@ -105,7 +105,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
      * Invoke this method to enable sending tracing spans to Wavefront cluster via proxy
      *
      * @param tracingPort        Tracing Port on which the Wavefront proxy is listening on
-     * @return WavefrontProxyClient.Builder instance
+     * @return {@code this}
      */
     public Builder tracingPort(int tracingPort) {
       this.tracingPort = tracingPort;
@@ -116,7 +116,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
      * Set an explicit SocketFactory
      *
      * @param socketFactory       SocketFactory
-     * @return WavefrontProxyClient.Builder instance
+     * @return {@code this}
      */
     public Builder socketFactory(SocketFactory socketFactory) {
       this.socketFactory = socketFactory;
@@ -127,7 +127,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
      * Set interval at which you want to flush points to Wavefront proxy
      *
      * @param flushIntervalSeconds  Interval at which you want to flush points to Wavefront proxy
-     * @return WavefrontProxyClient.Builder instance
+     * @return {@code this}
      */
     public Builder flushIntervalSeconds(int flushIntervalSeconds) {
       this.flushIntervalSeconds = flushIntervalSeconds;
@@ -137,7 +137,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
     /**
      * Builds WavefrontProxyClient instance
      *
-     * @return WavefrontProxyClient instance
+     * @return {@link WavefrontProxyClient}
      * @throws UnknownHostException
      */
     public WavefrontProxyClient build() throws UnknownHostException {
