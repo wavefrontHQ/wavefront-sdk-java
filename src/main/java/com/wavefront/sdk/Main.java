@@ -89,7 +89,7 @@ public class Main {
       throws IOException {
     /*
      * Wavefront Tracing Span Data format
-     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_micro_seconds>
+     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milli_seconds>
      *
      * Example: "getAllUsers source=localhost
      *           traceId=7b3bf470-9456-11e8-9eb6-529269fb1459
@@ -114,7 +114,7 @@ public class Main {
       WavefrontDirectIngestionClient wavefrontDirectIngestionClient) throws IOException {
     /*
      * Wavefront Tracing Span Data format
-     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_micro_seconds>
+     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milli_seconds>
      *
      * Example: "getAllUsers source=localhost
      *           traceId=7b3bf470-9456-11e8-9eb6-529269fb1459

@@ -230,7 +230,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
   }
 
   @Override
-  public void sendSpan(String name, long startMillis, long durationMicros,
+  public void sendSpan(String name, long startMillis, long durationMillis,
                        @Nullable String source, UUID traceId, UUID spanId,
                        @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                        @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
@@ -244,7 +244,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
     }
 
     try {
-      String lineData = tracingSpanToLineData(name, startMillis, durationMicros, source, traceId,
+      String lineData = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
           spanId, parents, followsFrom, tags, spanLogs, defaultSource);
       try {
         tracingProxyConnectionHandler.sendData(lineData);

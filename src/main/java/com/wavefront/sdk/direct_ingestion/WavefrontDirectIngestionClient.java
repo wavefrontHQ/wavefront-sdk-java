@@ -152,12 +152,12 @@ public class WavefrontDirectIngestionClient implements WavefrontMetricSender,
   }
 
   @Override
-  public void sendSpan(String name, long startMillis, long durationMicros,
+  public void sendSpan(String name, long startMillis, long durationMillis,
                        @Nullable String source, UUID traceId, UUID spanId,
                        @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                        @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
       throws IOException {
-    String span = tracingSpanToLineData(name, startMillis, durationMicros, source, traceId,
+    String span = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
         spanId, parents, followsFrom, tags, spanLogs, DEFAULT_SOURCE);
     if (!tracingSpansBuffer.offer(span)) {
       LOGGER.log(Level.FINE, "Buffer full, dropping span: " + span);
