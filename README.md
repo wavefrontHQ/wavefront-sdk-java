@@ -12,14 +12,14 @@ This library provides support for sending metrics, histograms and opentracing sp
    */
   WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHost);
  
-  /* set this if you want to send metrics to Wavefront */
-  builder.metricsPort(Integer.parseInt(metricsPort));
+  /* set this (Example - 2878) if you want to send metrics to Wavefront */
+  builder.metricsPort(metricsPort);
  
-  /* set this if you want to send histograms to Wavefront */
-  builder.distributionPort(Integer.parseInt(distributionPort));
+  /* set this (Example - 40,000) if you want to send histograms to Wavefront */
+  builder.distributionPort(distributionPort);
  
-  /* set this if you want to send opentracing spans to Wavefront */
-  builder.tracingPort(Integer.parseInt(tracingPort));
+  /* set this (Example - 30,000) if you want to send opentracing spans to Wavefront */
+  builder.tracingPort(tracingPort);
  
   /* set this if you want to override the default SocketFactory */
   builder.socketFactory(<SocketFactory>);
