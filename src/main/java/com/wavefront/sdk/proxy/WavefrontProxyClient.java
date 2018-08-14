@@ -68,6 +68,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
     private Integer distributionPort;
     private Integer tracingPort;
     private SocketFactory socketFactory = SocketFactory.getDefault();
+    private int flushIntervalSeconds = 1;
 
     /**
      * WavefrontProxyClient.Builder
@@ -119,6 +120,17 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
      */
     public Builder socketFactory(SocketFactory socketFactory) {
       this.socketFactory = socketFactory;
+      return this;
+    }
+
+    /**
+     * Set interval at which you want to flush points to Wavefront proxy
+     *
+     * @param flushIntervalSeconds  Interval at which you want to flush points to Wavefront proxy
+     * @return WavefrontProxyClient.Builder instance
+     */
+    public Builder flushIntervalSeconds(int flushIntervalSeconds) {
+      this.flushIntervalSeconds = flushIntervalSeconds;
       return this;
     }
 
@@ -288,6 +300,9 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
 
   @Override
   public void close() throws IOException {
+    // Flush before closing
+    flush();
+
     if (metricsProxyConnectionHandler != null) {
       metricsProxyConnectionHandler.close();
     }

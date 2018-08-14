@@ -24,7 +24,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,6 +62,7 @@ public class WavefrontDirectIngestionClient implements WavefrontMetricSender,
     // Optional parameters
     private int maxQueueSize = 50000;
     private int batchSize = 10000;
+    private int flushIntervalSeconds = 1;
 
     /**
      * Create a new WavefrontDirectIngestionClient.Builder
@@ -75,13 +75,36 @@ public class WavefrontDirectIngestionClient implements WavefrontMetricSender,
       this.token = token;
     }
 
+    /**
+     * Set max queue size of in-memory buffer. Needs to be flushed if full.
+     *
+     * @param maxQueueSize Max queue size of in-memory buffer
+     * @return WavefrontDirectIngestionClient.Builder instance
+     */
     public Builder maxQueueSize(int maxQueueSize) {
       this.maxQueueSize = maxQueueSize;
       return this;
     }
 
+    /**
+     * Set batch size to be reported during every flush.
+     *
+     * @param batchSize Batch size to be reported during every flush.
+     * @return WavefrontDirectIngestionClient.Builder instance
+     */
     public Builder batchSize(int batchSize) {
       this.batchSize = batchSize;
+      return this;
+    }
+
+    /**
+     * Set interval at which you want to flush points to Wavefront cluster.
+     *
+     * @param flushIntervalSeconds Interval at which you want to flush points to Wavefront cluster
+     * @return WavefrontDirectIngestionClient.Builder instance
+     */
+    public Builder flushIntervalSeconds(int flushIntervalSeconds) {
+      this.flushIntervalSeconds = flushIntervalSeconds;
       return this;
     }
 
@@ -102,7 +125,7 @@ public class WavefrontDirectIngestionClient implements WavefrontMetricSender,
     tracingSpansBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     directService = new DataIngesterService(builder.server, builder.token);
     scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory(DEFAULT_SOURCE));
-    scheduler.scheduleAtFixedRate(this, 1, 1, TimeUnit.SECONDS);
+    scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
   }
 
   @Override
@@ -211,6 +234,8 @@ public class WavefrontDirectIngestionClient implements WavefrontMetricSender,
 
   @Override
   public synchronized void close() throws IOException {
+    // Flush before closing
+    flush();
     try {
       scheduler.shutdownNow();
     } catch (SecurityException ex) {
