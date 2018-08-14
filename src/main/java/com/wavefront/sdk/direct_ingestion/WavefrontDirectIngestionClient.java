@@ -1,7 +1,8 @@
 package com.wavefront.sdk.direct_ingestion;
 
-
+import com.wavefront.sdk.common.BufferFlusher;
 import com.wavefront.sdk.common.Constants;
+import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.histograms.WavefrontHistogramSender;
@@ -10,6 +11,7 @@ import com.wavefront.sdk.entities.tracing.SpanLog;
 import com.wavefront.sdk.entities.tracing.WavefrontTracingSpanSender;
 
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -17,8 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,32 +40,69 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
  *
  * @author Vikram Raman (vikram@wavefront.com)
  */
-public class WavefrontDirectIngestionClient extends AbstractDirectConnectionHandler
-    implements WavefrontMetricSender, WavefrontHistogramSender, WavefrontTracingSpanSender {
+public class WavefrontDirectIngestionClient implements WavefrontMetricSender,
+    WavefrontHistogramSender, WavefrontTracingSpanSender, BufferFlusher, Runnable, Closeable {
 
   private static final String DEFAULT_SOURCE = "wavefrontDirectSender";
   private static final Logger LOGGER = Logger.getLogger(
       WavefrontDirectIngestionClient.class.getCanonicalName());
-  private static final int MAX_QUEUE_SIZE = 50000;
-  private static final int BATCH_SIZE = 10000;
-
-  private final LinkedBlockingQueue<String> metricsBuffer =
-      new LinkedBlockingQueue<>(MAX_QUEUE_SIZE);
-  private final LinkedBlockingQueue<String> histogramsBuffer =
-      new LinkedBlockingQueue<>(MAX_QUEUE_SIZE);
-  private final LinkedBlockingQueue<String> tracingSpansBuffer =
-      new LinkedBlockingQueue<>(MAX_QUEUE_SIZE);
 
   private final AtomicInteger failures = new AtomicInteger();
+  private final int batchSize;
+  private final LinkedBlockingQueue<String> metricsBuffer;
+  private final LinkedBlockingQueue<String> histogramsBuffer;
+  private final LinkedBlockingQueue<String> tracingSpansBuffer;
+  private final DataIngesterAPI directService;
+  private final ScheduledExecutorService scheduler;
 
-  /**
-   * Creates a new client that connects directly to a given Wavefront service.
-   *
-   * @param server A Wavefront server URL of the form "https://clusterName.wavefront.com"
-   * @param token A valid API token with direct ingestion permissions
-   */
-  public WavefrontDirectIngestionClient(String server, String token) {
-    super(server, token);
+  public static class Builder {
+    // Required parameters
+    private final String server;
+    private final String token;
+
+    // Optional parameters
+    private int maxQueueSize = 50000;
+    private int batchSize = 10000;
+
+    /**
+     * Create a new WavefrontDirectIngestionClient.Builder
+     *
+     * @param server A Wavefront server URL of the form "https://clusterName.wavefront.com"
+     * @param token A valid API token with direct ingestion permissions
+     */
+    public Builder(String server, String token) {
+      this.server = server;
+      this.token = token;
+    }
+
+    public Builder maxQueueSize(int maxQueueSize) {
+      this.maxQueueSize = maxQueueSize;
+      return this;
+    }
+
+    public Builder batchSize(int batchSize) {
+      this.batchSize = batchSize;
+      return this;
+    }
+
+    /**
+     * Creates a new client that connects directly to a given Wavefront service.
+     *
+     * @return wavefront direct-ingestion client
+     */
+    public WavefrontDirectIngestionClient build() {
+      return new WavefrontDirectIngestionClient(this);
+    }
+  }
+
+  private WavefrontDirectIngestionClient(Builder builder) {
+    batchSize = builder.batchSize;
+    metricsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
+    histogramsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
+    tracingSpansBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
+    directService = new DataIngesterService(builder.server, builder.token);
+    scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory(DEFAULT_SOURCE));
+    scheduler.scheduleAtFixedRate(this, 1, 1, TimeUnit.SECONDS);
   }
 
   @Override
@@ -99,10 +142,16 @@ public class WavefrontDirectIngestionClient extends AbstractDirectConnectionHand
   }
 
   @Override
-  protected void internalFlush() throws IOException {
-    if (!isConnected()) {
-      return;
+  public void run() {
+    try {
+      this.flush();
+    } catch (Throwable ex) {
+      LOGGER.log(Level.FINE, "Unable to report to Wavefront cluster", ex);
     }
+  }
+
+  @Override
+  public void flush() throws IOException {
     internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT);
     internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT);
     internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT);
@@ -118,7 +167,7 @@ public class WavefrontDirectIngestionClient extends AbstractDirectConnectionHand
 
     Response response = null;
     try (InputStream is = batchToStream(batch)) {
-      response = report(format, is);
+      response = directService.report(format, is);
       if (response.getStatusInfo().getFamily() == Response.Status.Family.SERVER_ERROR ||
           response.getStatusInfo().getFamily() == Response.Status.Family.CLIENT_ERROR) {
         LOGGER.log(Level.FINE, "Error reporting points, respStatus=" + response.getStatus());
@@ -140,7 +189,7 @@ public class WavefrontDirectIngestionClient extends AbstractDirectConnectionHand
   }
 
   private List<String> getBatch(LinkedBlockingQueue<String> buffer) {
-    int blockSize = Math.min(buffer.size(), BATCH_SIZE);
+    int blockSize = Math.min(buffer.size(), batchSize);
     List<String> points = new ArrayList<>(blockSize);
     buffer.drainTo(points, blockSize);
     return points;
@@ -161,11 +210,11 @@ public class WavefrontDirectIngestionClient extends AbstractDirectConnectionHand
   }
 
   @Override
-  public void run() {
+  public synchronized void close() throws IOException {
     try {
-      this.internalFlush();
-    } catch (Throwable ex) {
-      LOGGER.log(Level.FINE, "Unable to report to Wavefront cluster", ex);
+      scheduler.shutdownNow();
+    } catch (SecurityException ex) {
+      LOGGER.log(Level.FINE, "shutdown error", ex);
     }
   }
 }

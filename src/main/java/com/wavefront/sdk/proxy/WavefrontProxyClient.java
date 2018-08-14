@@ -1,6 +1,7 @@
 package com.wavefront.sdk.proxy;
 
-import com.wavefront.sdk.common.ConnectionHandler;
+import com.wavefront.sdk.common.BufferFlusher;
+import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.histograms.WavefrontHistogramSender;
@@ -8,6 +9,7 @@ import com.wavefront.sdk.entities.metrics.WavefrontMetricSender;
 import com.wavefront.sdk.entities.tracing.SpanLog;
 import com.wavefront.sdk.entities.tracing.WavefrontTracingSpanSender;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -16,6 +18,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 import javax.net.SocketFactory;
@@ -31,7 +38,10 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
  * @author Sushant Dewan (sushant@wavefront.com).
  */
 public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHistogramSender,
-    WavefrontTracingSpanSender, ConnectionHandler {
+    WavefrontTracingSpanSender, BufferFlusher, Runnable, Closeable {
+
+  private static final Logger LOGGER = Logger.getLogger(
+      WavefrontProxyClient.class.getCanonicalName());
 
   @Nullable
   private final ProxyConnectionHandler metricsProxyConnectionHandler;
@@ -46,6 +56,8 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
    * Source to use if entity source is null
    */
   private final String defaultSource = InetAddress.getLocalHost().getHostName();
+
+  private final ScheduledExecutorService scheduler;
 
   public static class Builder {
     // Required parameters
@@ -145,6 +157,11 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
           new InetSocketAddress(builder.proxyHostName, builder.tracingPort),
           builder.socketFactory);
     }
+
+    scheduler = Executors.newScheduledThreadPool(1,
+        new NamedThreadFactory("wavefrontProxySender"));
+    // flush every minute
+    scheduler.scheduleAtFixedRate(this, 1, 1, TimeUnit.MINUTES);
   }
 
   @Override
@@ -229,17 +246,11 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
   }
 
   @Override
-  public void connect() throws IllegalStateException, IOException {
-    if (metricsProxyConnectionHandler != null) {
-      metricsProxyConnectionHandler.connect();
-    }
-
-    if (histogramProxyConnectionHandler != null) {
-      histogramProxyConnectionHandler.connect();
-    }
-
-    if (tracingProxyConnectionHandler != null) {
-      tracingProxyConnectionHandler.connect();
+  public void run() {
+    try {
+      this.flush();
+    } catch (Throwable ex) {
+      LOGGER.log(Level.FINE, "Unable to report to Wavefront cluster", ex);
     }
   }
 
@@ -256,30 +267,6 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
     if (tracingProxyConnectionHandler != null) {
       tracingProxyConnectionHandler.flush();
     }
-  }
-
-  @Override
-  public boolean isConnected() {
-    if (metricsProxyConnectionHandler == null && histogramProxyConnectionHandler == null &&
-        tracingProxyConnectionHandler == null) {
-      // At least one proxy port to accept Wavefront entities needs to be open
-      return false;
-    }
-
-    if (metricsProxyConnectionHandler != null && !metricsProxyConnectionHandler.isConnected()) {
-      return false;
-    }
-
-    if (histogramProxyConnectionHandler != null && !histogramProxyConnectionHandler.isConnected()) {
-      return false;
-    }
-
-    if (tracingProxyConnectionHandler != null && !tracingProxyConnectionHandler.isConnected()) {
-      return false;
-    }
-
-    // default
-    return true;
   }
 
   @Override
