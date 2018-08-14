@@ -68,7 +68,7 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
     private Integer distributionPort;
     private Integer tracingPort;
     private SocketFactory socketFactory = SocketFactory.getDefault();
-    private int flushIntervalSeconds = 1;
+    private int flushIntervalSeconds = 5;
 
     /**
      * WavefrontProxyClient.Builder
@@ -172,8 +172,8 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
 
     scheduler = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("wavefrontProxySender"));
-    // flush every minute
-    scheduler.scheduleAtFixedRate(this, 1, 1, TimeUnit.MINUTES);
+    // flush every 5 seconds
+    scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
   }
 
   @Override
