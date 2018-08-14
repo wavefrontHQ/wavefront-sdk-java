@@ -299,20 +299,42 @@ public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHis
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     // Flush before closing
-    flush();
+    try {
+      flush();
+    } catch (IOException e) {
+      LOGGER.log(Level.WARNING, "error flushing buffer", e);
+    }
+
+    try {
+      scheduler.shutdownNow();
+    } catch (SecurityException ex) {
+      LOGGER.log(Level.FINE, "shutdown error", ex);
+    }
 
     if (metricsProxyConnectionHandler != null) {
-      metricsProxyConnectionHandler.close();
+      try {
+        metricsProxyConnectionHandler.close();
+      } catch (IOException e) {
+        LOGGER.log(Level.WARNING, "error closing metricsProxyConnectionHandler", e);
+      }
     }
 
     if (histogramProxyConnectionHandler != null) {
-      histogramProxyConnectionHandler.close();
+      try {
+        histogramProxyConnectionHandler.close();
+      } catch (IOException e) {
+        LOGGER.log(Level.WARNING, "error closing histogramProxyConnectionHandler", e);
+      }
     }
 
     if (tracingProxyConnectionHandler != null) {
-      tracingProxyConnectionHandler.close();
+      try {
+        tracingProxyConnectionHandler.close();
+      } catch (IOException e) {
+        LOGGER.log(Level.WARNING, "error closing tracingProxyConnectionHandler", e);
+      }
     }
   }
 }
