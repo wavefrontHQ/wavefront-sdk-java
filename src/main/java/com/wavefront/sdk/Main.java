@@ -29,7 +29,7 @@ public class Main {
      */
 
     wavefrontProxyClient.sendMetric("new-york.power.usage", 42422.0, null,
-        "localhost", ImmutableMap.<String, String>builder().build());
+        "localhost", ImmutableMap.<String, String>builder().put("datacenter", "dc1").build());
     System.out.println("Sent metric: 'new-york.power.usage' to proxy");
   }
 
@@ -43,8 +43,38 @@ public class Main {
      */
 
     wavefrontDirectIngestionClient.sendMetric("new-york.power.usage", 42422.0, null,
-        "localhost", ImmutableMap.<String, String>builder().build());
+        "localhost", ImmutableMap.<String, String>builder().put("datacenter", "dc1").build());
     System.out.println("Sent metric: 'new-york.power.usage' to direct ingestion API");
+  }
+
+  private static void sendDeltaCounterViaProxy(WavefrontProxyClient wavefrontProxyClient)
+      throws IOException {
+    /*
+     * Wavefront Delta Counter format
+     * <metricName> <metricValue> source=<source> [pointTags]
+     *
+     * Example: "lambda.thumbnail.generate 10 source=lambda_thumbnail_service image-format=jpeg"
+     */
+
+    wavefrontProxyClient.sendDeltaCounter("lambda.thumbnail.generate", 10,
+        "lambda_thumbnail_service",
+        ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
+    System.out.println("Sent metric: 'lambda.thumbnail.generate' to proxy");
+  }
+
+  private static void sendDeltaCounterViaDirectIngestion(
+      WavefrontDirectIngestionClient wavefrontDirectIngestionClient) throws IOException {
+    /*
+     * Wavefront Delta Counter format
+     * <metricName> <metricValue> source=<source> [pointTags]
+     *
+     * Example: "lambda.thumbnail.generate 10 source=lambda_thumbnail_service image-format=jpeg"
+     */
+
+    wavefrontDirectIngestionClient.sendDeltaCounter("lambda.thumbnail.generate", 10,
+        "lambda_thumbnail_service",
+        ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
+    System.out.println("Sent metric: 'lambda.thumbnail.generate' to direct ingestion API");
   }
 
   private static void sendHistogramViaProxy(WavefrontProxyClient wavefrontProxyClient)
@@ -161,12 +191,14 @@ public class Main {
     while (true) {
       // Send entities via Proxy
       sendMetricViaProxy(wavefrontProxyClient);
+      sendDeltaCounterViaProxy(wavefrontProxyClient);
       sendHistogramViaProxy(wavefrontProxyClient);
       sendTracingSpanViaProxy(wavefrontProxyClient);
       wavefrontProxyClient.flush();
 
       // Send entities via Direct Ingestion
       sendMetricViaDirectIngestion(wavefrontDirectIngestionClient);
+      sendDeltaCounterViaDirectIngestion(wavefrontDirectIngestionClient);
       sendHistogramViaDirectIngestion(wavefrontDirectIngestionClient);
       sendTracingSpanViaDirectIngestion(wavefrontDirectIngestionClient);
 
