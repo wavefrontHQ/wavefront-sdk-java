@@ -45,9 +45,20 @@ If you are using Maven, add following maven dependency to your pom.xml
    * Example: "new-york.power.usage 42422 1533529977 source=localhost datacenter=dc1"
    */
   wavefrontProxyClient.sendMetric("new-york.power.usage", 42422.0, 1533529977L,
-        "localhost", ImmutableMap.<String, String>builder().build());
-        
-  // 2) Send Direct Distribution (Histogram) to Wavefront
+        "localhost", ImmutableMap.<String, String>builder().put("datacenter", "dc1").build());
+
+  // 2) Send Delta Counter to Wavefront     
+  /*
+   * Wavefront Delta Counter format
+   * <metricName> <metricValue> source=<source> [pointTags]
+   *
+   * Example: "lambda.thumbnail.generate 10 source=lambda_thumbnail_service image-format=jpeg"
+   */
+   wavefrontProxyClient.sendDeltaCounter("lambda.thumbnail.generate", 10,
+        "lambda_thumbnail_service",
+        ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
+
+  // 3) Send Direct Distribution (Histogram) to Wavefront
   /*
    * Wavefront Histogram Data format
    * {!M | !H | !D} [<timestamp>] #<count> <mean> [centroids] <histogramName> source=<source> 
@@ -70,7 +81,7 @@ If you are using Maven, add following maven dependency to your pom.xml
         1533529977L, "appServer1",
         ImmutableMap.<String, String>builder().put("region", "us-west").build());
 
-  // 3) Send OpenTracing Span to Wavefront
+  // 4) Send OpenTracing Span to Wavefront
   /*
    * Wavefront Tracing Span Data format
    * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milliseconds>
@@ -135,9 +146,20 @@ If you are using Maven, add following maven dependency to your pom.xml
    * Example: "new-york.power.usage 42422 1533529977 source=localhost datacenter=dc1"
    */
   wavefrontDirectIngestionClient.sendMetric("new-york.power.usage", 42422.0, 1533529977L,
-        "localhost", ImmutableMap.<String, String>builder().build());
+        "localhost", ImmutableMap.<String, String>builder().put("datacenter", "dc1").build());
+
+  // 2) Send Delta Counter to Wavefront     
+  /*
+   * Wavefront Delta Counter format
+   * <metricName> <metricValue> source=<source> [pointTags]
+   *
+   * Example: "lambda.thumbnail.generate 10 source=lambda_thumbnail_service image-format=jpeg"
+   */
+   wavefrontDirectIngestionClient.sendDeltaCounter("lambda.thumbnail.generate", 10,
+        "lambda_thumbnail_service",
+        ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
         
-  // 2) Send Direct Distribution (Histogram) to Wavefront
+  // 3) Send Direct Distribution (Histogram) to Wavefront
   /*
    * Wavefront Histogram Data format
    * {!M | !H | !D} [<timestamp>] #<count> <mean> [centroids] <histogramName> source=<source> 
@@ -160,7 +182,7 @@ If you are using Maven, add following maven dependency to your pom.xml
         1533529977L, "appServer1",
         ImmutableMap.<String, String>builder().put("region", "us-west").build());
 
-  // 3) Send OpenTracing Span to Wavefront
+  // 4) Send OpenTracing Span to Wavefront
   /*
    * Wavefront Tracing Span Data format
    * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milliseconds>
