@@ -38,9 +38,9 @@ public interface WavefrontMetricSender {
    * old) as they will be aggregated on server with the current timestamp which yields in a wrong
    * final aggregated value.
    *
-   * @param name      The name of the delta counter. Name will be prefixed by ∆ if it starts with
-   *                  that symbol already. Also, spaces are replaced with '-' (dashes) and quotes
-   *                  will be automatically escaped.
+   * @param name      The name of the delta counter. Name will be prefixed by ∆ if it does
+   *                  not start with that symbol already. Also, spaces are replaced with '-'
+   *                  (dashes) and quotes will be automatically escaped.
    * @param value     The delta value to be sent. This will be aggregated on the Wavefront server
    *                  side.
    * @param source    The source (or host) that's sending the metric. If null then assigned by
