@@ -1,5 +1,7 @@
 package com.wavefront.sdk.common;
 
+import com.google.common.base.Strings;
+
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
 
@@ -10,8 +12,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
-
-import static org.apache.commons.lang.StringUtils.isBlank;
 
 /**
  * Common Util methods
@@ -42,11 +42,11 @@ public class Utils {
      * Example: "new-york.power.usage 42422 1533531013 source=localhost datacenter=dc1"
      */
 
-    if (isBlank(name)) {
+    if (Strings.isNullOrEmpty(name)) {
       throw new IllegalArgumentException("metrics name cannot be blank");
     }
 
-    if (isBlank(source)) {
+    if (Strings.isNullOrEmpty(source)) {
       source = defaultSource;
     }
 
@@ -62,10 +62,10 @@ public class Utils {
     sb.append(sanitize(source));
     if (tags != null) {
       for (final Map.Entry<String, String> tag : tags.entrySet()) {
-        if (isBlank(tag.getKey())) {
+        if (Strings.isNullOrEmpty(tag.getKey())) {
           throw new IllegalArgumentException("metric point tag key cannot be blank");
         }
-        if (isBlank(tag.getValue())) {
+        if (Strings.isNullOrEmpty(tag.getValue())) {
           throw new IllegalArgumentException("metric point tag value cannot be blank");
         }
         sb.append(' ');
@@ -91,7 +91,7 @@ public class Utils {
      * Example: "!M 1533531013 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
      */
 
-    if (isBlank(name)) {
+    if (Strings.isNullOrEmpty(name)) {
       throw new IllegalArgumentException("histogram name cannot be blank");
     }
 
@@ -103,7 +103,7 @@ public class Utils {
       throw new IllegalArgumentException("A distribution should have at least one centroid");
     }
 
-    if (isBlank(source)) {
+    if (Strings.isNullOrEmpty(source)) {
       source = defaultSource;
     }
 
@@ -126,10 +126,10 @@ public class Utils {
       sb.append(sanitize(source));
       if (tags != null) {
         for (final Map.Entry<String, String> tag : tags.entrySet()) {
-          if (isBlank(tag.getKey())) {
+          if (Strings.isNullOrEmpty(tag.getKey())) {
             throw new IllegalArgumentException("histogram tag key cannot be blank");
           }
-          if (isBlank(tag.getValue())) {
+          if (Strings.isNullOrEmpty(tag.getValue())) {
             throw new IllegalArgumentException("histogram tag value cannot be blank");
           }
           sb.append(' ');
@@ -143,7 +143,7 @@ public class Utils {
     return sb.toString();
   }
 
-  public static String tracingSpanToLineData(String name, long startMillis, long durationMicros,
+  public static String tracingSpanToLineData(String name, long startMillis, long durationMillis,
                                              String source, UUID traceId, UUID spanId,
                                              @Nullable List<UUID> parents,
                                              @Nullable List<UUID> followsFrom,
@@ -152,7 +152,7 @@ public class Utils {
                                              String defaultSource) {
     /*
      * Wavefront Tracing Span Data format
-     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_micro_seconds>
+     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milli_seconds>
      *
      * Example: "getAllUsers source=localhost
      *           traceId=7b3bf470-9456-11e8-9eb6-529269fb1459
@@ -162,17 +162,16 @@ public class Utils {
      *           1533531013 343500"
      */
 
-    if (isBlank(name)) {
+    if (Strings.isNullOrEmpty(name)) {
       throw new IllegalArgumentException("span name cannot be blank");
     }
 
-    if (isBlank(source)) {
+    if (Strings.isNullOrEmpty(source)) {
       source = defaultSource;
     }
 
     final StringBuilder sb = new StringBuilder();
     sb.append(sanitize(name));
-    sb.append(' ');
     sb.append(" source=");
     sb.append(sanitize(source));
     sb.append(" traceId=");
@@ -193,10 +192,10 @@ public class Utils {
     }
     if (tags != null) {
       for (final Pair<String, String> tag : tags) {
-        if (isBlank(tag._1)) {
+        if (Strings.isNullOrEmpty(tag._1)) {
           throw new IllegalArgumentException("span tag key cannot be blank");
         }
-        if (isBlank(tag._2)) {
+        if (Strings.isNullOrEmpty(tag._2)) {
           throw new IllegalArgumentException("span tag value cannot be blank");
         }
         sb.append(' ');
@@ -208,7 +207,7 @@ public class Utils {
     sb.append(' ');
     sb.append(startMillis);
     sb.append(' ');
-    sb.append(durationMicros);
+    sb.append(durationMillis);
     // TODO - Support SpanLogs
     sb.append('\n');
     return sb.toString();

@@ -20,7 +20,7 @@ public interface WavefrontTracingSpanSender {
    *
    * @param name                The operation name of the span.
    * @param startMillis         The start time in milliseconds for this span.
-   * @param durationMicros      The duration of the span in microseconds.
+   * @param durationMillis      The duration of the span in milliseconds.
    * @param source              The source (or host) that's sending the span. If null, then
    *                            assigned by Wavefront.
    * @param traceId             The unique trace ID for the span.
@@ -31,7 +31,7 @@ public interface WavefrontTracingSpanSender {
    * @param spanLogs            The span logs associated with this span.
    * @throws IOException        If there was an error sending the span.
    */
-  void sendSpan(String name, long startMillis, long durationMicros, @Nullable String source,
+  void sendSpan(String name, long startMillis, long durationMillis, @Nullable String source,
                 UUID traceId, UUID spanId, @Nullable List<UUID> parents,
                 @Nullable List<UUID> followsFrom, @Nullable List<Pair<String, String>> tags,
                 @Nullable List<SpanLog> spanLogs)

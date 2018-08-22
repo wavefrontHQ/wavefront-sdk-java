@@ -21,4 +21,14 @@ public class Constants {
    * Use this format to send tracing data to Wavefront
    */
   public final static String WAVEFRONT_TRACING_SPAN_FORMAT = "trace";
+
+  /**
+   * ∆: INCREMENT
+   */
+  public static final String DELTA_PREFIX = "\u2206";
+
+  /**
+   * Δ: GREEK CAPITAL LETTER DELTA
+   */
+  public static final String DELTA_PREFIX_2 = "\u0394";
 }

@@ -28,8 +28,8 @@ public class Main {
      * Example: "new-york.power.usage 42422 1533529977 source=localhost datacenter=dc1"
      */
 
-    wavefrontProxyClient.sendMetric("new-york.power.usage", 42422.0, 1533529977L,
-        "localhost", ImmutableMap.<String, String>builder().build());
+    wavefrontProxyClient.sendMetric("new-york.power.usage", 42422.0, null,
+        "localhost", ImmutableMap.<String, String>builder().put("datacenter", "dc1").build());
     System.out.println("Sent metric: 'new-york.power.usage' to proxy");
   }
 
@@ -42,9 +42,39 @@ public class Main {
      * Example: "new-york.power.usage 42422 1533529977 source=localhost datacenter=dc1"
      */
 
-    wavefrontDirectIngestionClient.sendMetric("new-york.power.usage", 42422.0, 1533529977L,
-        "localhost", ImmutableMap.<String, String>builder().build());
+    wavefrontDirectIngestionClient.sendMetric("new-york.power.usage", 42422.0, null,
+        "localhost", ImmutableMap.<String, String>builder().put("datacenter", "dc1").build());
     System.out.println("Sent metric: 'new-york.power.usage' to direct ingestion API");
+  }
+
+  private static void sendDeltaCounterViaProxy(WavefrontProxyClient wavefrontProxyClient)
+      throws IOException {
+    /*
+     * Wavefront Delta Counter format
+     * <metricName> <metricValue> source=<source> [pointTags]
+     *
+     * Example: "lambda.thumbnail.generate 10 source=lambda_thumbnail_service image-format=jpeg"
+     */
+
+    wavefrontProxyClient.sendDeltaCounter("lambda.thumbnail.generate", 10,
+        "lambda_thumbnail_service",
+        ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
+    System.out.println("Sent metric: 'lambda.thumbnail.generate' to proxy");
+  }
+
+  private static void sendDeltaCounterViaDirectIngestion(
+      WavefrontDirectIngestionClient wavefrontDirectIngestionClient) throws IOException {
+    /*
+     * Wavefront Delta Counter format
+     * <metricName> <metricValue> source=<source> [pointTags]
+     *
+     * Example: "lambda.thumbnail.generate 10 source=lambda_thumbnail_service image-format=jpeg"
+     */
+
+    wavefrontDirectIngestionClient.sendDeltaCounter("lambda.thumbnail.generate", 10,
+        "lambda_thumbnail_service",
+        ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
+    System.out.println("Sent metric: 'lambda.thumbnail.generate' to direct ingestion API");
   }
 
   private static void sendHistogramViaProxy(WavefrontProxyClient wavefrontProxyClient)
@@ -61,7 +91,7 @@ public class Main {
             add(new Pair<>(30.0, 20)).add(new Pair<>(5.1, 10)).build(),
         ImmutableSet.<HistogramGranularity>builder().add(HistogramGranularity.MINUTE).
             add(HistogramGranularity.HOUR).add(HistogramGranularity.DAY).build(),
-        1533529977L, "appServer1",
+        null, "appServer1",
         ImmutableMap.<String, String>builder().put("region", "us-west").build());
     System.out.println("Sent histogram: 'request.latency' to proxy");
   }
@@ -80,7 +110,7 @@ public class Main {
             add(new Pair<>(30.0, 20)).add(new Pair<>(5.1, 10)).build(),
         ImmutableSet.<HistogramGranularity>builder().add(HistogramGranularity.MINUTE).
             add(HistogramGranularity.HOUR).add(HistogramGranularity.DAY).build(),
-        1533529977L, "appServer1",
+        null, "appServer1",
         ImmutableMap.<String, String>builder().put("region", "us-west").build());
     System.out.println("Sent histogram: 'request.latency' to direction ingestion API");
   }
@@ -89,7 +119,7 @@ public class Main {
       throws IOException {
     /*
      * Wavefront Tracing Span Data format
-     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_micro_seconds>
+     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milli_seconds>
      *
      * Example: "getAllUsers source=localhost
      *           traceId=7b3bf470-9456-11e8-9eb6-529269fb1459
@@ -114,7 +144,7 @@ public class Main {
       WavefrontDirectIngestionClient wavefrontDirectIngestionClient) throws IOException {
     /*
      * Wavefront Tracing Span Data format
-     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_micro_seconds>
+     * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milli_seconds>
      *
      * Example: "getAllUsers source=localhost
      *           traceId=7b3bf470-9456-11e8-9eb6-529269fb1459
@@ -143,25 +173,32 @@ public class Main {
     String distributionPort = args.length < 5 ? null : args[4];
     String tracingPort = args.length < 6 ? null : args[5];
 
-    WavefrontProxyClient wavefrontProxyClient = new WavefrontProxyClient(proxyHost,
-        metricsPort == null ? null : Integer.parseInt(metricsPort),
-        distributionPort == null ? null : Integer.parseInt(distributionPort),
-        tracingPort == null ? null : Integer.parseInt(tracingPort));
-    wavefrontProxyClient.connect();
+    WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHost);
+    if (metricsPort != null) {
+      builder.metricsPort(Integer.parseInt(metricsPort));
+    }
+    if (distributionPort != null) {
+      builder.distributionPort(Integer.parseInt(distributionPort));
+    }
+    if (tracingPort != null) {
+      builder.tracingPort(Integer.parseInt(tracingPort));
+    }
+    WavefrontProxyClient wavefrontProxyClient = builder.build();
 
     WavefrontDirectIngestionClient wavefrontDirectIngestionClient =
-        new WavefrontDirectIngestionClient(wavefrontServer, token);
-    wavefrontDirectIngestionClient.connect();
+        new WavefrontDirectIngestionClient.Builder(wavefrontServer, token).build();
 
     while (true) {
       // Send entities via Proxy
       sendMetricViaProxy(wavefrontProxyClient);
+      sendDeltaCounterViaProxy(wavefrontProxyClient);
       sendHistogramViaProxy(wavefrontProxyClient);
       sendTracingSpanViaProxy(wavefrontProxyClient);
       wavefrontProxyClient.flush();
 
       // Send entities via Direct Ingestion
       sendMetricViaDirectIngestion(wavefrontDirectIngestionClient);
+      sendDeltaCounterViaDirectIngestion(wavefrontDirectIngestionClient);
       sendHistogramViaDirectIngestion(wavefrontDirectIngestionClient);
       sendTracingSpanViaDirectIngestion(wavefrontDirectIngestionClient);
 
