@@ -1,17 +1,13 @@
 package com.wavefront.sdk.direct_ingestion;
 
-import com.wavefront.sdk.common.BufferFlusher;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
-import com.wavefront.sdk.entities.histograms.WavefrontHistogramSender;
-import com.wavefront.sdk.entities.metrics.WavefrontMetricSender;
 import com.wavefront.sdk.entities.tracing.SpanLog;
-import com.wavefront.sdk.entities.tracing.WavefrontTracingSpanSender;
 
 import java.io.ByteArrayInputStream;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -39,8 +35,7 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
  *
  * @author Vikram Raman (vikram@wavefront.com)
  */
-public class WavefrontDirectIngestionClient implements WavefrontMetricSender,
-    WavefrontHistogramSender, WavefrontTracingSpanSender, BufferFlusher, Runnable, Closeable {
+public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable {
 
   private static final String DEFAULT_SOURCE = "wavefrontDirectSender";
   private static final Logger LOGGER = Logger.getLogger(
