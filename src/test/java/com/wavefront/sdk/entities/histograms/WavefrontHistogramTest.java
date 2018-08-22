@@ -162,6 +162,20 @@ public class WavefrontHistogramTest {
   }
 
   @Test
+  public void testSize() {
+    assertEquals(9, pow10.getSnapshot().getSize());
+    assertEquals(100, inc100.getSnapshot().getSize());
+    assertEquals(1000, inc1000.getSnapshot().getSize());
+  }
+
+  @Test
+  public void testStdDev() {
+    assertEquals(NaN, pow10.stdDev(), DELTA);
+    assertEquals(NaN, inc100.stdDev(), DELTA);
+    assertEquals(NaN, inc1000.stdDev(), DELTA);
+  }
+
+  @Test
   public void testQuantile() {
     assertEquals(100, pow10.getSnapshot().getValue(.5), DELTA);
 

@@ -131,6 +131,15 @@ public class WavefrontHistogram {
   }
 
   /**
+   * Not supported, hence return Double.NaN
+   *
+   * @return stdDev
+   */
+  public double stdDev() {
+    return Double.NaN;
+  }
+
+  /**
    * Aggregates all the minute bins prior to the current minute (because threads might be updating the current minute
    * bin while the method is invoked) and returns a list of the distributions held within each bin. Note that invoking
    * this method will also clear all data from the aggregated bins, thereby changing the state of the system and
@@ -259,6 +268,15 @@ public class WavefrontHistogram {
      */
     public double getValue(double quantile) {
       return distribution.quantile(quantile);
+    }
+
+    /**
+     * Returns the size of the snapshot
+     *
+     * @return size of the snapshot
+     */
+    public int getSize() {
+      return (int)distribution.size();
     }
   }
 
