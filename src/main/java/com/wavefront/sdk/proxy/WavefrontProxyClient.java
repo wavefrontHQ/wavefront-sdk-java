@@ -1,15 +1,11 @@
 package com.wavefront.sdk.proxy;
 
-import com.wavefront.sdk.common.BufferFlusher;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
-import com.wavefront.sdk.entities.histograms.WavefrontHistogramSender;
-import com.wavefront.sdk.entities.metrics.WavefrontMetricSender;
 import com.wavefront.sdk.entities.tracing.SpanLog;
-import com.wavefront.sdk.entities.tracing.WavefrontTracingSpanSender;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -37,8 +33,7 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
  *
  * @author Sushant Dewan (sushant@wavefront.com).
  */
-public class WavefrontProxyClient implements WavefrontMetricSender, WavefrontHistogramSender,
-    WavefrontTracingSpanSender, BufferFlusher, Runnable, Closeable {
+public class WavefrontProxyClient implements WavefrontSender, Runnable {
 
   private static final Logger LOGGER = Logger.getLogger(
       WavefrontProxyClient.class.getCanonicalName());
