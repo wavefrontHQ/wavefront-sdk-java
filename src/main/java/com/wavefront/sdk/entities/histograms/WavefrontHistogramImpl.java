@@ -22,7 +22,7 @@ import static java.lang.Double.NaN;
  *
  * @author Han Zhang (zhanghan@vmware.com)
  */
-public class WavefrontHistogram {
+public class WavefrontHistogramImpl {
   private final static int ACCURACY = 100;
 
   /**
@@ -46,11 +46,11 @@ public class WavefrontHistogram {
       expireAfterAccess(1, TimeUnit.HOURS).
       build(key -> new LinkedList<>());
 
-  public WavefrontHistogram() {
+  public WavefrontHistogramImpl() {
     this(System::currentTimeMillis);
   }
 
-  public WavefrontHistogram(Supplier<Long> clockMillis) {
+  public WavefrontHistogramImpl(Supplier<Long> clockMillis) {
     this.clockMillis = clockMillis;
   }
 

@@ -1,10 +1,10 @@
 package com.wavefront.sdk.entities.histograms;
 
 import com.google.common.primitives.Doubles;
-import com.tdunning.math.stats.Centroid;
+
 import com.wavefront.sdk.common.Pair;
-import com.wavefront.sdk.entities.histograms.WavefrontHistogram.Distribution;
-import com.wavefront.sdk.entities.histograms.WavefrontHistogram.Snapshot;
+import com.wavefront.sdk.entities.histograms.WavefrontHistogramImpl.Distribution;
+import com.wavefront.sdk.entities.histograms.WavefrontHistogramImpl.Snapshot;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -21,20 +21,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Basic unit tests around {@link WavefrontHistogram}
+ * Basic unit tests around {@link WavefrontHistogramImpl}
  *
  * @author Han Zhang (zhanghan@vmware.com)
  */
-public class WavefrontHistogramTest {
+public class WavefrontHistogramImplTest {
 
   private static final double DELTA = 1e-1;
 
   private static AtomicLong clock;
 
-  private static WavefrontHistogram pow10, inc100, inc1000;
+  private static WavefrontHistogramImpl pow10, inc100, inc1000;
 
-  private static WavefrontHistogram createPow10Histogram(Supplier<Long> clockMillis) {
-    WavefrontHistogram wh = new WavefrontHistogram(clockMillis);
+  private static WavefrontHistogramImpl createPow10Histogram(Supplier<Long> clockMillis) {
+    WavefrontHistogramImpl wh = new WavefrontHistogramImpl(clockMillis);
     wh.update(0.1);
     wh.update(1);
     wh.update(10);
@@ -64,17 +64,17 @@ public class WavefrontHistogramTest {
   public static void setUp() {
     clock = new AtomicLong(System.currentTimeMillis());
 
-    // WavefrontHistogram with values that are powers of 10
+    // WavefrontHistogramImpl with values that are powers of 10
     pow10 = createPow10Histogram(clock::get);
 
-    // WavefrontHistogram with a value for each integer from 1 to 100
-    inc100 = new WavefrontHistogram(clock::get);
+    // WavefrontHistogramImpl with a value for each integer from 1 to 100
+    inc100 = new WavefrontHistogramImpl(clock::get);
     for (int i = 1; i <= 100; i++) {
       inc100.update(i);
     }
 
-    // WavefrontHistogram with a value for each integer from 1 to 1000
-    inc1000 = new WavefrontHistogram(clock::get);
+    // WavefrontHistogramImpl with a value for each integer from 1 to 1000
+    inc1000 = new WavefrontHistogramImpl(clock::get);
     for (int i = 1; i <= 1000; i++) {
       inc1000.update(i);
     }
@@ -85,7 +85,7 @@ public class WavefrontHistogramTest {
 
   @Test
   public void testDistribution() {
-    WavefrontHistogram wh = createPow10Histogram(clock::get);
+    WavefrontHistogramImpl wh = createPow10Histogram(clock::get);
     clock.addAndGet(60000L + 1);
 
     List<Distribution> distributions = wh.flushDistributions();
@@ -118,7 +118,7 @@ public class WavefrontHistogramTest {
 
   @Test
   public void testBulkUpdate() {
-    WavefrontHistogram wh = new WavefrontHistogram(clock::get);
+    WavefrontHistogramImpl wh = new WavefrontHistogramImpl(clock::get);
     wh.bulkUpdate(Doubles.asList(24.2, 84.35, 1002), Arrays.asList(80, 1, 9));
     clock.addAndGet(60000L + 1);
 
