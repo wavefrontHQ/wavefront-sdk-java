@@ -1,17 +1,17 @@
 package com.wavefront.sdk.entities.histograms;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.tdunning.math.stats.AVLTreeDigest;
 import com.tdunning.math.stats.Centroid;
 import com.tdunning.math.stats.TDigest;
 import com.wavefront.sdk.common.Pair;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -20,7 +20,7 @@ import static java.lang.Double.NaN;
 /**
  * Wavefront implementation of a histogram
  *
- * @author Han Zhang (zhanghan@vmware.com)
+ * @author Sushant Dewan (sushant@wavefront.com).
  */
 public class WavefrontHistogramImpl {
   private final static int ACCURACY = 100;
@@ -28,23 +28,29 @@ public class WavefrontHistogramImpl {
   /**
    * If a thread's bin queue has exceeded MAX_BINS number of bins (e.g., the thread has data
    * that has yet to be reported for more than MAX_BINS number of minutes), delete the oldest bin.
-   * Defaulted to 10 because we can expect the histogram to be reported at least once every 10 minutes.
+   * Defaulted to 10 because we can expect the histogram to be reported at least once every
+   * 10 minutes.
    */
   private final static int MAX_BINS = 10;
 
   private final Supplier<Long> clockMillis;
 
   /**
-   * Cache of thread ids to bin queues. By giving each thread its own bin queue, we can ensure
-   * thread safety by locking only the relevant bin queue for a particular thread. This is more performant
-   * than locking the entire histogram.
-   * <p>
-   * Entries are automatically removed if they aren't accessed for 1 hour, which serves to remove empty bin queues
-   * for threads that are no longer reporting distributions.
+   * Global list of thread local histogramBinsList wrapped in WeakReference
    */
-  private final LoadingCache<Long, LinkedList<MinuteBin>> perThreadHistogramBins = Caffeine.newBuilder().
-      expireAfterAccess(1, TimeUnit.HOURS).
-      build(key -> new LinkedList<>());
+  private final List<WeakReference<LinkedList<MinuteBin>>> globalHistogramBinsList =
+      new ArrayList<>();
+
+  /**
+   * ThreadLocal histogramBinsList where the initial value set is also added to a
+   * global list of thread local histogramBinsList wrapped in WeakReference
+   */
+  private final ThreadLocal<LinkedList<MinuteBin>> histogramBinsList =
+      ThreadLocal.withInitial(() -> {
+        LinkedList<MinuteBin> list = new LinkedList<>();
+        globalHistogramBinsList.add(new WeakReference<>(list));
+        return list;
+  });
 
   public WavefrontHistogramImpl() {
     this(System::currentTimeMillis);
@@ -86,32 +92,39 @@ public class WavefrontHistogramImpl {
    * @return returns the number of values in the distribution.
    */
   public long getCount() {
-    return perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).
+    return globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
+        map(Reference::get).flatMap(List::stream).
         mapToLong(bin -> bin.distribution.size()).sum();
   }
 
   /**
-   * @return returns the maximum value in the distribution. Returns NaN if the distribution is empty.
+   * @return returns the maximum value in the distribution.
+   * Returns NaN if the distribution is empty.
    */
   public double getMax() {
-    return perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).
+    return globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
+        map(Reference::get).flatMap(List::stream).
         mapToDouble(bin -> bin.distribution.getMax()).max().orElse(NaN);
   }
 
   /**
-   * @return returns the minimum value in the distribution. Returns NaN if the distribution is empty.
+   * @return returns the minimum value in the distribution.
+   * Returns NaN if the distribution is empty.
    */
   public double getMin() {
-    return perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).
+    return globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
+        map(Reference::get).flatMap(List::stream).
         mapToDouble(bin -> bin.distribution.getMin()).min().orElse(NaN);
   }
 
   /**
-   * @return returns the mean of the values in the distribution. Returns NaN if the distribution is empty.
+   * @return returns the mean of the values in the distribution.
+   * Returns NaN if the distribution is empty.
    */
   public double getMean() {
     List<Centroid> centroids = new ArrayList<>();
-    perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).
+    globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
+        map(Reference::get).flatMap(List::stream).
         forEach(bin -> centroids.addAll(bin.distribution.centroids()));
 
     return centroids.size() == 0 ?
@@ -124,7 +137,8 @@ public class WavefrontHistogramImpl {
    */
   public double getSum() {
     List<Centroid> centroids = new ArrayList<>();
-    perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).
+    globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
+        map(Reference::get).flatMap(List::stream).
         forEach(bin -> centroids.addAll(bin.distribution.centroids()));
 
     return centroids.stream().mapToDouble(c -> c.count() * c.mean()).sum();
@@ -140,19 +154,22 @@ public class WavefrontHistogramImpl {
   }
 
   /**
-   * Aggregates all the minute bins prior to the current minute (because threads might be updating the current minute
-   * bin while the method is invoked) and returns a list of the distributions held within each bin. Note that invoking
-   * this method will also clear all data from the aggregated bins, thereby changing the state of the system and
-   * preventing data from being flushed more than once.
+   * Aggregates all the minute bins prior to the current minute (because threads might be
+   * updating the current minute bin while the method is invoked) and returns a list of the
+   * distributions held within each bin. Note that invoking this method will also clear all data
+   * from the aggregated bins, thereby changing the state of the system and preventing data from
+   * being flushed more than once.
    *
-   * @return returns a list of distributions, each a {@link Distribution} holding a timestamp as well as a list of
-   * centroids. Each centroid is a tuple containing the centroid value and count.
+   * @return returns a list of distributions, each a {@link Distribution} holding a timestamp
+   * as well as a list of centroids. Each centroid is a tuple containing the centroid value and
+   * count.
    */
   public List<Distribution> flushDistributions() {
     final long cutoffMillis = currentMinuteMillis();
     final List<MinuteBin> minuteBins = new ArrayList<>();
 
-    perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).
+    globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
+        map(Reference::get).flatMap(List::stream).
         filter(bin -> bin.minuteMillis < cutoffMillis).forEach(minuteBins::add);
 
     final List<Distribution> distributions = new ArrayList<>();
@@ -172,7 +189,8 @@ public class WavefrontHistogramImpl {
    */
   public Snapshot getSnapshot() {
     final TDigest snapshot = new AVLTreeDigest(ACCURACY);
-    perThreadHistogramBins.asMap().values().stream().flatMap(List::stream).
+    globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
+        map(Reference::get).flatMap(List::stream).
         forEach(bin -> snapshot.add(bin.distribution));
     return new Snapshot(snapshot);
   }
@@ -183,31 +201,38 @@ public class WavefrontHistogramImpl {
   }
 
   /**
-   * Helper to retrieve the current bin. Will be invoked per thread.
+   * Helper to retrieve the current bin. Will be invoked on the thread local histogramBinsList.
    */
   private MinuteBin getCurrentBin() {
-    long key = Thread.currentThread().getId();
-    LinkedList<MinuteBin> bins = perThreadHistogramBins.get(key);
+    LinkedList<MinuteBin> sharedBinsInstance = histogramBinsList.get();
     long currMinuteMillis = currentMinuteMillis();
 
-    // bins with clear == true flag will drain (CONSUMER) the list,
-    // so synchronize the access to the respective 'bins' list
-    synchronized (bins) {
-      if (bins.isEmpty() || bins.getLast().minuteMillis != currMinuteMillis) {
-        bins.add(new MinuteBin(ACCURACY, currMinuteMillis));
-        if (bins.size() > MAX_BINS) {
-          bins.removeFirst();
+    // flushDistributions will drain (CONSUMER) the list,
+    // so synchronize the access to the respective 'sharedBinsInstance' list
+    synchronized (sharedBinsInstance) {
+      if (sharedBinsInstance.isEmpty() ||
+          sharedBinsInstance.getLast().minuteMillis != currMinuteMillis) {
+        sharedBinsInstance.add(new MinuteBin(ACCURACY, currMinuteMillis));
+        if (sharedBinsInstance.size() > MAX_BINS) {
+          sharedBinsInstance.removeFirst();
         }
       }
-      return bins.getLast();
+      return sharedBinsInstance.getLast();
     }
   }
 
   private void clearPriorCurrentMinuteBin(long cutoffMillis) {
-    for (LinkedList<MinuteBin> bins : perThreadHistogramBins.asMap().values()) {
-      // getCurrentBin() method will add (PRODUCER) item to the bins list, so synchronize the access
-      synchronized (bins) {
-        bins.removeIf(minuteBin -> minuteBin.minuteMillis < cutoffMillis);
+    Iterator<WeakReference<LinkedList<MinuteBin>>> iter = globalHistogramBinsList.iterator();
+    while (iter.hasNext()) {
+      WeakReference<LinkedList<MinuteBin>> weakRef = iter.next();
+      LinkedList<MinuteBin> sharedBinsInstance = weakRef.get();
+      if (sharedBinsInstance == null) {
+        iter.remove();
+        continue;
+      }
+
+      synchronized (sharedBinsInstance) {
+        sharedBinsInstance.removeIf(minuteBin -> minuteBin.minuteMillis < cutoffMillis);
       }
     }
   }
@@ -230,7 +255,8 @@ public class WavefrontHistogramImpl {
     }
 
     /**
-     * @return returns the maximum value in the distribution. Returns NaN if the distribution is empty.
+     * @return returns the maximum value in the distribution.
+     * Returns NaN if the distribution is empty.
      */
     public double getMax() {
       double max = distribution.getMax();
@@ -238,7 +264,8 @@ public class WavefrontHistogramImpl {
     }
 
     /**
-     * @return returns the minimum value in the distribution. Returns NaN if the distribution is empty.
+     * @return returns the minimum value in the distribution.
+     * Returns NaN if the distribution is empty.
      */
     public double getMin() {
       double min = distribution.getMin();
@@ -246,7 +273,8 @@ public class WavefrontHistogramImpl {
     }
 
     /**
-     * @return returns the mean of the values in the distribution. Returns NaN if the distribution is empty.
+     * @return returns the mean of the values in the distribution.
+     * Returns NaN if the distribution is empty.
      */
     public double getMean() {
       Collection<Centroid> centroids = distribution.centroids();
@@ -264,7 +292,8 @@ public class WavefrontHistogramImpl {
 
     /**
      * @param quantile  a given quantile, between 0 and 1
-     * @return returns the value in the distribution at the given quantile. Returns NaN if the distribution is empty.
+     * @return returns the value in the distribution at the given quantile.
+     * Returns NaN if the distribution is empty.
      */
     public double getValue(double quantile) {
       return distribution.quantile(quantile);
@@ -290,8 +319,9 @@ public class WavefrontHistogramImpl {
     public final long timestamp;
 
     /**
-     * The list of histogram points, each a 2-dimensional {@link Pair} where the first dimension is the mean value
-     * (Double) of the centroid and second dimension is the count of points in that centroid.
+     * The list of histogram points, each a 2-dimensional {@link Pair} where the first dimension
+     * is the mean value (Double) of the centroid and second dimension is the count of points in
+     * that centroid.
      */
     public final List<Pair<Double, Integer>> centroids;
 

@@ -1,10 +1,9 @@
 package com.wavefront.sdk.entities.histograms;
 
-import com.google.common.primitives.Doubles;
-
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.entities.histograms.WavefrontHistogramImpl.Distribution;
 import com.wavefront.sdk.entities.histograms.WavefrontHistogramImpl.Snapshot;
+
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -119,7 +118,7 @@ public class WavefrontHistogramImplTest {
   @Test
   public void testBulkUpdate() {
     WavefrontHistogramImpl wh = new WavefrontHistogramImpl(clock::get);
-    wh.bulkUpdate(Doubles.asList(24.2, 84.35, 1002), Arrays.asList(80, 1, 9));
+    wh.bulkUpdate(Arrays.asList(24.2, 84.35, 1002.0), Arrays.asList(80, 1, 9));
     clock.addAndGet(60000L + 1);
 
     List<Distribution> distributions = wh.flushDistributions();
