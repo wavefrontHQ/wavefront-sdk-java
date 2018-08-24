@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -47,9 +48,9 @@ public class WavefrontHistogramImpl {
    */
   private final ThreadLocal<LinkedList<MinuteBin>> histogramBinsList =
       ThreadLocal.withInitial(() -> {
-        LinkedList<MinuteBin> list = new LinkedList<>();
-        globalHistogramBinsList.add(new WeakReference<>(list));
-        return list;
+        LinkedList<MinuteBin> sharedBinsInstance = new LinkedList<>();
+        globalHistogramBinsList.add(new WeakReference<>(sharedBinsInstance));
+        return sharedBinsInstance;
   });
 
   public WavefrontHistogramImpl() {
@@ -92,9 +93,8 @@ public class WavefrontHistogramImpl {
    * @return returns the number of values in the distribution.
    */
   public long getCount() {
-    return globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
-        map(Reference::get).flatMap(List::stream).
-        mapToLong(bin -> bin.distribution.size()).sum();
+    return globalHistogramBinsList.stream().map(Reference::get).filter(Objects::nonNull).
+        flatMap(List::stream).mapToLong(bin -> bin.distribution.size()).sum();
   }
 
   /**
@@ -102,9 +102,8 @@ public class WavefrontHistogramImpl {
    * Returns NaN if the distribution is empty.
    */
   public double getMax() {
-    return globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
-        map(Reference::get).flatMap(List::stream).
-        mapToDouble(bin -> bin.distribution.getMax()).max().orElse(NaN);
+    return globalHistogramBinsList.stream().map(Reference::get).filter(Objects::nonNull).
+        flatMap(List::stream).mapToDouble(bin -> bin.distribution.getMax()).max().orElse(NaN);
   }
 
   /**
@@ -112,9 +111,8 @@ public class WavefrontHistogramImpl {
    * Returns NaN if the distribution is empty.
    */
   public double getMin() {
-    return globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
-        map(Reference::get).flatMap(List::stream).
-        mapToDouble(bin -> bin.distribution.getMin()).min().orElse(NaN);
+    return globalHistogramBinsList.stream().map(Reference::get).filter(Objects::nonNull).
+        flatMap(List::stream).mapToDouble(bin -> bin.distribution.getMin()).min().orElse(NaN);
   }
 
   /**
@@ -123,9 +121,8 @@ public class WavefrontHistogramImpl {
    */
   public double getMean() {
     List<Centroid> centroids = new ArrayList<>();
-    globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
-        map(Reference::get).flatMap(List::stream).
-        forEach(bin -> centroids.addAll(bin.distribution.centroids()));
+    globalHistogramBinsList.stream().map(Reference::get).filter(Objects::nonNull).
+        flatMap(List::stream).forEach(bin -> centroids.addAll(bin.distribution.centroids()));
 
     return centroids.size() == 0 ?
         NaN :
@@ -137,9 +134,8 @@ public class WavefrontHistogramImpl {
    */
   public double getSum() {
     List<Centroid> centroids = new ArrayList<>();
-    globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
-        map(Reference::get).flatMap(List::stream).
-        forEach(bin -> centroids.addAll(bin.distribution.centroids()));
+    globalHistogramBinsList.stream().map(Reference::get).filter(Objects::nonNull).
+        flatMap(List::stream).forEach(bin -> centroids.addAll(bin.distribution.centroids()));
 
     return centroids.stream().mapToDouble(c -> c.count() * c.mean()).sum();
   }
@@ -168,8 +164,8 @@ public class WavefrontHistogramImpl {
     final long cutoffMillis = currentMinuteMillis();
     final List<MinuteBin> minuteBins = new ArrayList<>();
 
-    globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
-        map(Reference::get).flatMap(List::stream).
+    globalHistogramBinsList.stream().map(Reference::get).filter(Objects::nonNull).
+        flatMap(List::stream).
         filter(bin -> bin.minuteMillis < cutoffMillis).forEach(minuteBins::add);
 
     final List<Distribution> distributions = new ArrayList<>();
@@ -189,9 +185,8 @@ public class WavefrontHistogramImpl {
    */
   public Snapshot getSnapshot() {
     final TDigest snapshot = new AVLTreeDigest(ACCURACY);
-    globalHistogramBinsList.stream().filter(weakRef -> weakRef.get() != null).
-        map(Reference::get).flatMap(List::stream).
-        forEach(bin -> snapshot.add(bin.distribution));
+    globalHistogramBinsList.stream().map(Reference::get).filter(Objects::nonNull).
+        flatMap(List::stream).forEach(bin -> snapshot.add(bin.distribution));
     return new Snapshot(snapshot);
   }
   // TODO - how to ensure thread safety? do we care?
@@ -231,6 +226,10 @@ public class WavefrontHistogramImpl {
         continue;
       }
 
+      /*
+       * getCurrentBin() method will add (PRODUCER) item to the sharedBinsInstance list,
+       * so synchronize the access to sharedBinsInstance
+       */
       synchronized (sharedBinsInstance) {
         sharedBinsInstance.removeIf(minuteBin -> minuteBin.minuteMillis < cutoffMillis);
       }
