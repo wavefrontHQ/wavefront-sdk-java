@@ -63,10 +63,6 @@
                         </artifactSet>
                         <relocations>
                             <relocation>
-                              <pattern>com.google</pattern>
-                              <shadedPattern>com.wavefront.java-sdk.com.google</shadedPattern>
-                            </relocation>
-                            <relocation>
                               <pattern>org.jboss</pattern>
                               <shadedPattern>com.wavefront.java-sdk.org.jboss</shadedPattern>
                             </relocation>
@@ -92,11 +88,6 @@
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
             <version>3.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>23.0</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>

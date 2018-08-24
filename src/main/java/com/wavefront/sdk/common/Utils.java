@@ -1,7 +1,5 @@
 package com.wavefront.sdk.common;
 
-import com.google.common.base.Strings;
-
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
 
@@ -42,11 +40,11 @@ public class Utils {
      * Example: "new-york.power.usage 42422 1533531013 source=localhost datacenter=dc1"
      */
 
-    if (Strings.isNullOrEmpty(name)) {
+    if (name == null || name.isEmpty()) {
       throw new IllegalArgumentException("metrics name cannot be blank");
     }
 
-    if (Strings.isNullOrEmpty(source)) {
+    if (source == null || source.isEmpty()) {
       source = defaultSource;
     }
 
@@ -62,16 +60,18 @@ public class Utils {
     sb.append(sanitize(source));
     if (tags != null) {
       for (final Map.Entry<String, String> tag : tags.entrySet()) {
-        if (Strings.isNullOrEmpty(tag.getKey())) {
+        String key = tag.getKey();
+        String val = tag.getValue();
+        if (key == null || key.isEmpty()) {
           throw new IllegalArgumentException("metric point tag key cannot be blank");
         }
-        if (Strings.isNullOrEmpty(tag.getValue())) {
+        if (val == null || val.isEmpty()) {
           throw new IllegalArgumentException("metric point tag value cannot be blank");
         }
         sb.append(' ');
-        sb.append(sanitize(tag.getKey()));
+        sb.append(sanitize(key));
         sb.append('=');
-        sb.append(sanitize(tag.getValue()));
+        sb.append(sanitize(val));
       }
     }
     sb.append('\n');
@@ -91,7 +91,7 @@ public class Utils {
      * Example: "!M 1533531013 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
      */
 
-    if (Strings.isNullOrEmpty(name)) {
+    if (name == null || name.isEmpty()) {
       throw new IllegalArgumentException("histogram name cannot be blank");
     }
 
@@ -103,7 +103,7 @@ public class Utils {
       throw new IllegalArgumentException("A distribution should have at least one centroid");
     }
 
-    if (Strings.isNullOrEmpty(source)) {
+    if (source == null || source.isEmpty()) {
       source = defaultSource;
     }
 
@@ -126,10 +126,12 @@ public class Utils {
       sb.append(sanitize(source));
       if (tags != null) {
         for (final Map.Entry<String, String> tag : tags.entrySet()) {
-          if (Strings.isNullOrEmpty(tag.getKey())) {
+          String key = tag.getKey();
+          String val = tag.getValue();
+          if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException("histogram tag key cannot be blank");
           }
-          if (Strings.isNullOrEmpty(tag.getValue())) {
+          if (val == null || val.isEmpty()) {
             throw new IllegalArgumentException("histogram tag value cannot be blank");
           }
           sb.append(' ');
@@ -162,11 +164,11 @@ public class Utils {
      *           1533531013 343500"
      */
 
-    if (Strings.isNullOrEmpty(name)) {
+    if (name == null || name.isEmpty()) {
       throw new IllegalArgumentException("span name cannot be blank");
     }
 
-    if (Strings.isNullOrEmpty(source)) {
+    if (source == null || source.isEmpty()) {
       source = defaultSource;
     }
 
@@ -192,10 +194,10 @@ public class Utils {
     }
     if (tags != null) {
       for (final Pair<String, String> tag : tags) {
-        if (Strings.isNullOrEmpty(tag._1)) {
+        if (tag._1 == null || tag._1.isEmpty()) {
           throw new IllegalArgumentException("span tag key cannot be blank");
         }
-        if (Strings.isNullOrEmpty(tag._2)) {
+        if (tag._2 == null || tag._2.isEmpty()) {
           throw new IllegalArgumentException("span tag value cannot be blank");
         }
         sb.append(' ');

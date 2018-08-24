@@ -1,8 +1,5 @@
 package com.wavefront.sdk.common;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Throwables;
-
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -68,7 +65,6 @@ public class ReconnectingSocket {
 
   }
 
-  @VisibleForTesting
   void maybeReconnect() {
     try {
       byte[] message = new byte[1000];
@@ -136,7 +132,7 @@ public class ReconnectingSocket {
         resetSocket();
         socketOutputStream.get().write(message.getBytes());
       } catch (Exception e2) {
-        throw Throwables.propagate(e2);
+        throw e2;
       }
     }
   }

@@ -1,15 +1,16 @@
 package com.wavefront.sdk;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.direct_ingestion.WavefrontDirectIngestionClient;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.proxy.WavefrontProxyClient;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -28,8 +29,11 @@ public class Main {
      * Example: "new-york.power.usage 42422 1533529977 source=localhost datacenter=dc1"
      */
 
+    Map<String, String> tags = new HashMap<String, String>() {{
+      put("datacenter", "dc1");
+    }};
     wavefrontProxyClient.sendMetric("new-york.power.usage", 42422.0, null,
-        "localhost", ImmutableMap.<String, String>builder().put("datacenter", "dc1").build());
+        "localhost", tags);
     System.out.println("Sent metric: 'new-york.power.usage' to proxy");
   }
 
@@ -42,8 +46,11 @@ public class Main {
      * Example: "new-york.power.usage 42422 1533529977 source=localhost datacenter=dc1"
      */
 
+    Map<String, String> tags = new HashMap<String, String>() {{
+      put("datacenter", "dc1");
+    }};
     wavefrontDirectIngestionClient.sendMetric("new-york.power.usage", 42422.0, null,
-        "localhost", ImmutableMap.<String, String>builder().put("datacenter", "dc1").build());
+        "localhost", tags);
     System.out.println("Sent metric: 'new-york.power.usage' to direct ingestion API");
   }
 
@@ -56,9 +63,11 @@ public class Main {
      * Example: "lambda.thumbnail.generate 10 source=lambda_thumbnail_service image-format=jpeg"
      */
 
+    Map<String, String> tags = new HashMap<String, String>() {{
+      put("image-format", "jpeg");
+    }};
     wavefrontProxyClient.sendDeltaCounter("lambda.thumbnail.generate", 10,
-        "lambda_thumbnail_service",
-        ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
+        "lambda_thumbnail_service", tags);
     System.out.println("Sent metric: 'lambda.thumbnail.generate' to proxy");
   }
 
@@ -71,9 +80,11 @@ public class Main {
      * Example: "lambda.thumbnail.generate 10 source=lambda_thumbnail_service image-format=jpeg"
      */
 
+    Map<String, String> tags = new HashMap<String, String>() {{
+      put("image-format", "jpeg");
+    }};
     wavefrontDirectIngestionClient.sendDeltaCounter("lambda.thumbnail.generate", 10,
-        "lambda_thumbnail_service",
-        ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
+        "lambda_thumbnail_service", tags);
     System.out.println("Sent metric: 'lambda.thumbnail.generate' to direct ingestion API");
   }
 
@@ -86,13 +97,16 @@ public class Main {
      *
      * Example: "!M 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
      */
+    Map<String, String> tags = new HashMap<String, String>() {{
+      put("region", "us-west");
+    }};
+    Set<HistogramGranularity> histogramGranularities = new HashSet<>();
+    histogramGranularities.add(HistogramGranularity.MINUTE);
+    histogramGranularities.add(HistogramGranularity.HOUR);
+    histogramGranularities.add(HistogramGranularity.DAY);
     wavefrontProxyClient.sendDistribution("request.latency",
-        ImmutableList.<Pair<Double, Integer>>builder().
-            add(new Pair<>(30.0, 20)).add(new Pair<>(5.1, 10)).build(),
-        ImmutableSet.<HistogramGranularity>builder().add(HistogramGranularity.MINUTE).
-            add(HistogramGranularity.HOUR).add(HistogramGranularity.DAY).build(),
-        null, "appServer1",
-        ImmutableMap.<String, String>builder().put("region", "us-west").build());
+        Arrays.asList(new Pair<>(30.0, 20), new Pair<>(5.1, 10)), histogramGranularities,
+        null, "appServer1", tags);
     System.out.println("Sent histogram: 'request.latency' to proxy");
   }
 
@@ -105,13 +119,16 @@ public class Main {
      *
      * Example: "!M 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
      */
+    Map<String, String> tags = new HashMap<String, String>() {{
+      put("region", "us-west");
+    }};
+    Set<HistogramGranularity> histogramGranularities = new HashSet<>();
+    histogramGranularities.add(HistogramGranularity.MINUTE);
+    histogramGranularities.add(HistogramGranularity.HOUR);
+    histogramGranularities.add(HistogramGranularity.DAY);
     wavefrontDirectIngestionClient.sendDistribution("request.latency",
-        ImmutableList.<Pair<Double, Integer>>builder().
-            add(new Pair<>(30.0, 20)).add(new Pair<>(5.1, 10)).build(),
-        ImmutableSet.<HistogramGranularity>builder().add(HistogramGranularity.MINUTE).
-            add(HistogramGranularity.HOUR).add(HistogramGranularity.DAY).build(),
-        null, "appServer1",
-        ImmutableMap.<String, String>builder().put("region", "us-west").build());
+        Arrays.asList(new Pair<>(30.0, 20), new Pair<>(5.1, 10)),
+        histogramGranularities, null, "appServer1", tags);
     System.out.println("Sent histogram: 'request.latency' to direction ingestion API");
   }
 
@@ -132,11 +149,10 @@ public class Main {
     wavefrontProxyClient.sendSpan("getAllUsers",1533529977L, 343500L, "localhost",
         UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
         UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
-        ImmutableList.<UUID>builder().add(UUID.fromString(
-            "2f64e538-9457-11e8-9eb6-529269fb1459")).build(), null,
-        ImmutableList.<Pair<String, String>>builder().
-            add(new Pair<>("application", "Wavefront")).
-            add(new Pair<>("http.method", "GET")).build(), null);
+        Arrays.asList(UUID.fromString(
+            "2f64e538-9457-11e8-9eb6-529269fb1459")), null,
+        Arrays.asList(new Pair<>("application", "Wavefront"),
+            new Pair<>("http.method", "GET")), null);
     System.out.println("Sent tracing span: 'getAllUsers' to proxy");
   }
 
@@ -154,14 +170,13 @@ public class Main {
      *           1493773500 343500"
      */
 
+
     wavefrontDirectIngestionClient.sendSpan("getAllUsers",1493773500L, 343500L, "localhost",
         UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
         UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
-        ImmutableList.<UUID>builder().add(UUID.fromString(
-            "2f64e538-9457-11e8-9eb6-529269fb1459")).build(), null,
-        ImmutableList.<Pair<String, String>>builder().
-            add(new Pair<>("application", "Wavefront")).
-            add(new Pair<>("http.method", "GET")).build(), null);
+        Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")),
+        null, Arrays.asList(new Pair<>("application", "Wavefront"),
+            new Pair<>("http.method", "GET")), null);
     System.out.println("Sent tracing span: 'getAllUsers' to direct ingestion API");
   }
 
