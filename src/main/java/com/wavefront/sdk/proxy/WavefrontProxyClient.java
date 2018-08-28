@@ -35,7 +35,7 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
  */
 public class WavefrontProxyClient implements WavefrontSender, Runnable {
 
-  private static final Logger LOGGER = Logger.getLogger(
+  private static final Logger logger = Logger.getLogger(
       WavefrontProxyClient.class.getCanonicalName());
 
   @Nullable
@@ -257,7 +257,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     try {
       this.flush();
     } catch (Throwable ex) {
-      LOGGER.log(Level.FINE, "Unable to report to Wavefront cluster", ex);
+      logger.log(Level.WARNING, "Unable to report to Wavefront cluster", ex);
     }
   }
 
@@ -299,20 +299,20 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     try {
       flush();
     } catch (IOException e) {
-      LOGGER.log(Level.WARNING, "error flushing buffer", e);
+      logger.log(Level.WARNING, "error flushing buffer", e);
     }
 
     try {
       scheduler.shutdownNow();
     } catch (SecurityException ex) {
-      LOGGER.log(Level.FINE, "shutdown error", ex);
+      logger.log(Level.FINE, "shutdown error", ex);
     }
 
     if (metricsProxyConnectionHandler != null) {
       try {
         metricsProxyConnectionHandler.close();
       } catch (IOException e) {
-        LOGGER.log(Level.WARNING, "error closing metricsProxyConnectionHandler", e);
+        logger.log(Level.WARNING, "error closing metricsProxyConnectionHandler", e);
       }
     }
 
@@ -320,7 +320,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
       try {
         histogramProxyConnectionHandler.close();
       } catch (IOException e) {
-        LOGGER.log(Level.WARNING, "error closing histogramProxyConnectionHandler", e);
+        logger.log(Level.WARNING, "error closing histogramProxyConnectionHandler", e);
       }
     }
 
@@ -328,7 +328,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
       try {
         tracingProxyConnectionHandler.close();
       } catch (IOException e) {
-        LOGGER.log(Level.WARNING, "error closing tracingProxyConnectionHandler", e);
+        logger.log(Level.WARNING, "error closing tracingProxyConnectionHandler", e);
       }
     }
   }

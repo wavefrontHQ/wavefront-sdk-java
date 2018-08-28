@@ -38,7 +38,7 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable {
 
   private static final String DEFAULT_SOURCE = "wavefrontDirectSender";
-  private static final Logger LOGGER = Logger.getLogger(
+  private static final Logger logger = Logger.getLogger(
       WavefrontDirectIngestionClient.class.getCanonicalName());
 
   private final AtomicInteger failures = new AtomicInteger();
@@ -129,7 +129,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       throws IOException {
     String point = metricToLineData(name, value, timestamp, source, tags, DEFAULT_SOURCE);
     if (!metricsBuffer.offer(point)) {
-      LOGGER.log(Level.FINE, "Buffer full, dropping metric point: " + point);
+      logger.log(Level.WARNING, "Buffer full, dropping metric point: " + point);
     }
   }
 
@@ -142,7 +142,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     String histograms = histogramToLineData(name, centroids, histogramGranularities, timestamp,
         source, tags, DEFAULT_SOURCE);
     if (!histogramsBuffer.offer(histograms)) {
-      LOGGER.log(Level.FINE, "Buffer full, dropping histograms: " + histograms);
+      logger.log(Level.WARNING, "Buffer full, dropping histograms: " + histograms);
     }
   }
 
@@ -155,7 +155,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     String span = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
         spanId, parents, followsFrom, tags, spanLogs, DEFAULT_SOURCE);
     if (!tracingSpansBuffer.offer(span)) {
-      LOGGER.log(Level.FINE, "Buffer full, dropping span: " + span);
+      logger.log(Level.WARNING, "Buffer full, dropping span: " + span);
     }
   }
 
@@ -164,7 +164,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     try {
       this.flush();
     } catch (Throwable ex) {
-      LOGGER.log(Level.FINE, "Unable to report to Wavefront cluster", ex);
+      logger.log(Level.WARNING, "Unable to report to Wavefront cluster", ex);
     }
   }
 
@@ -188,12 +188,12 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       response = directService.report(format, is);
       if (response.getStatusInfo().getFamily() == Response.Status.Family.SERVER_ERROR ||
           response.getStatusInfo().getFamily() == Response.Status.Family.CLIENT_ERROR) {
-        LOGGER.log(Level.FINE, "Error reporting points, respStatus=" + response.getStatus());
+        logger.log(Level.WARNING, "Error reporting points, respStatus=" + response.getStatus());
         try {
           buffer.addAll(batch);
         } catch (Exception ex) {
           // unlike offer(), addAll adds partially and throws an exception if buffer full
-          LOGGER.log(Level.FINE, "Buffer full, dropping attempted points");
+          logger.log(Level.WARNING, "Buffer full, dropping attempted points");
         }
       }
     } catch (IOException ex) {
@@ -233,12 +233,12 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     try {
       flush();
     } catch (IOException e) {
-      LOGGER.log(Level.WARNING, "error flushing buffer", e);
+      logger.log(Level.WARNING, "error flushing buffer", e);
     }
     try {
       scheduler.shutdownNow();
     } catch (SecurityException ex) {
-      LOGGER.log(Level.FINE, "shutdown error", ex);
+      logger.log(Level.WARNING, "shutdown error", ex);
     }
   }
 }
