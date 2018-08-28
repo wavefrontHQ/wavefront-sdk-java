@@ -13,7 +13,7 @@ If you are using Maven, add following maven dependency to your pom.xml
 ```
 
 ### Send data to Wavefront via Proxy
-```
+```java
   /*
    * Assume you have a running Wavefront proxy listening on at least one of 
    * metrics/direct-distribution/tracing ports and you know the proxy hostname
@@ -119,7 +119,7 @@ If you are using Maven, add following maven dependency to your pom.xml
 ```
 
 ### Send data to Wavefront via Direct Ingestion
-```
+```java
   /*
    * Assume you have a running Wavefront cluster and you know the 
    * server URL (example - https://mydomain.wavefront.com) and the API token
