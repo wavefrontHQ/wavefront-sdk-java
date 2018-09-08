@@ -46,6 +46,8 @@ public class WavefrontHistogramImpl {
    * This list holds all the thread local List of Minute Bins.
    * This is ConcurrentLinkedDeque so that we can support 'flatMap(List::stream)' without
    * worrying about ConcurrentModificationException.
+   * The MinuteBin itself is not thread safe and can change but it is still thread safe since we
+   * don’t ever update a bin that’s old or flush a bin that’s within the current minute.
    */
   private final List<WeakReference<ConcurrentLinkedDeque<MinuteBin>>> globalHistogramBinsList =
       new ArrayList<>();
