@@ -132,8 +132,8 @@ public class WavefrontHistogramImpl {
     try {
       readLock.lock();
       return globalHistogramBinsList.stream().map(Reference::get).filter(Objects::nonNull).
-          flatMap(Collection::stream).mapToDouble(bin -> bin.distribution.getMax()).max().orElse
-          (NaN);
+          flatMap(Collection::stream).
+          mapToDouble(bin -> bin.distribution.getMax()).max().orElse(NaN);
     } finally {
       readLock.unlock();
     }
