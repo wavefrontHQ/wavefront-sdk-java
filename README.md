@@ -1,6 +1,6 @@
 # wavefront-java-sdk [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-java-sdk.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-java-sdk)
 
-This library provides support for sending metrics, histograms and opentracing spans to Wavefront via proxy or direct ingestion.
+Wavefront by VMware SDK for Java is a library that provides support for sending metrics, histograms and opentracing spans from your Java application to Wavefront via proxy or direct ingestion.
 
 ## Usage
 If you are using Maven, add following maven dependency to your pom.xml
@@ -218,3 +218,4 @@ If you are using Maven, add following maven dependency to your pom.xml
    */
   wavefrontDirectIngestionClient.close();
 ```
+
