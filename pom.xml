@@ -19,6 +19,14 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
+    <developers>
+        <developer>
+            <name>Sushant Dewan</name>
+            <email>sushant@wavefront.com</email>
+            <organization>Wavefront</organization>
+            <organizationUrl>http://www.wavefront.com</organizationUrl>
+        </developer>
+    </developers>
 
     <scm>
         <connection>scm:git:git@github.com:wavefronthq/wavefront-java-sdk.git</connection>
