@@ -183,15 +183,16 @@ public class WavefrontHistogramImpl {
    */
   private ThreadMinuteBin getCurrentBin() {
     long currMinuteMillis = currentMinuteMillis();
-    if (this.currentMinuteBin.minuteMillis == currMinuteMillis) return this.currentMinuteBin;
     return flushCurrentBin(currMinuteMillis);
   }
 
   private ThreadMinuteBin flushCurrentBin(long currMinuteMillis) {
+    if (this.currentMinuteBin.minuteMillis == currMinuteMillis) return this.currentMinuteBin;
     synchronized(this) {
       if (this.currentMinuteBin.minuteMillis != currMinuteMillis) {
-        if (globalHistogramBinsList.size() > MAX_BINS)
+        if (globalHistogramBinsList.size() > MAX_BINS) {
           this.globalHistogramBinsList.pollFirst();
+        }
         this.globalHistogramBinsList.offerLast(new ThreadMinuteBin(this.currentMinuteBin));
         this.currentMinuteBin = new ThreadMinuteBin(currMinuteMillis);
       }
@@ -336,21 +337,19 @@ public class WavefrontHistogramImpl {
      */
     TDigest getDistByThreadId(long threadId) {
       // Create new Digest for new thread.
-      return perThreadDist.getOrDefault(threadId, new AVLTreeDigest(ACCURACY));
+      return perThreadDist.computeIfAbsent(threadId, digest -> new AVLTreeDigest(ACCURACY));
     }
 
     void updateByThreadId(long threadId, double value) {
-      TDigest dist = this.getDistByThreadId(threadId);
-      dist.add(value);
-      this.perThreadDist.put(threadId, dist);
+      getDistByThreadId(threadId).add(value);
     }
 
     void bulkUpdateByThreadId(long threadId, List<Double> means, List<Integer> counts) {
       if (means != null && counts != null) {
-        TDigest dist = this.getDistByThreadId(threadId);
-        for (int i = 0; i < Math.min(means.size(), counts.size()); ++i)
+        TDigest dist = getDistByThreadId(threadId);
+        for (int i = 0; i < Math.min(means.size(), counts.size()); ++i) {
           dist.add(means.get(i), counts.get(i));
-        this.perThreadDist.put(threadId, dist);
+        }
       }
     }
 
@@ -358,8 +357,8 @@ public class WavefrontHistogramImpl {
      * Get list of centroids for distributions of all threads in this minute.
      */
     List<Centroid> getCentroids() {
-        return perThreadDist.values().stream().flatMap(dist -> dist.centroids().stream())
-                .collect(Collectors.toList());
+        return perThreadDist.values().stream().flatMap(dist -> dist.centroids().stream()).
+                collect(Collectors.toList());
     }
 
     /**
