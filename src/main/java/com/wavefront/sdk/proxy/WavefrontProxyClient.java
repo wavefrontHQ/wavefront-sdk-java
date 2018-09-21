@@ -146,7 +146,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
       tempSource = InetAddress.getLocalHost().getHostName();
     }
     catch (UnknownHostException ex) {
-      logger.log(Level.INFO,
+      logger.log(Level.WARNING,
               "Unable to resolve local host name. Source will default to 'unknown'", ex);
     }
     defaultSource = tempSource;
