@@ -63,7 +63,7 @@
                         <minimizeJar>true</minimizeJar>
                         <artifactSet>
                             <excludes>
-                                <exclude>junit:junit</exclude>
+                                <exclude>org.junit.jupiter:junit-jupiter-api</exclude>
                                 <exclude>com.google.code.findbugs:jsr305</exclude>
                             </excludes>
                         </artifactSet>
@@ -119,14 +119,9 @@
 
         <!-- Test Dependencies -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>java-hamcrest</artifactId>
-            <version>RELEASE</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.3.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
