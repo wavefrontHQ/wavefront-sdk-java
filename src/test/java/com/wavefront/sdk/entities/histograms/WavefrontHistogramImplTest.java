@@ -3,10 +3,8 @@ package com.wavefront.sdk.entities.histograms;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.entities.histograms.WavefrontHistogramImpl.Distribution;
 import com.wavefront.sdk.entities.histograms.WavefrontHistogramImpl.Snapshot;
-
-import org.hamcrest.collection.IsMapContaining;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,8 +14,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 import static java.lang.Double.NaN;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Basic unit tests around {@link WavefrontHistogramImpl}
@@ -59,7 +57,7 @@ public class WavefrontHistogramImplTest {
     return map;
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() {
     clock = new AtomicLong(System.currentTimeMillis());
 
@@ -91,13 +89,13 @@ public class WavefrontHistogramImplTest {
     Map<Double, Integer> map = distributionToMap(distributions);
 
     assertEquals(7, map.size());
-    assertThat(map, IsMapContaining.hasEntry(0.1, 1));
-    assertThat(map, IsMapContaining.hasEntry(1.0, 1));
-    assertThat(map, IsMapContaining.hasEntry(10.0, 2));
-    assertThat(map, IsMapContaining.hasEntry(100.0, 1));
-    assertThat(map, IsMapContaining.hasEntry(1000.0, 1));
-    assertThat(map, IsMapContaining.hasEntry(10000.0, 2));
-    assertThat(map, IsMapContaining.hasEntry(100000.0, 1));
+    assertTrue(map.containsKey(0.1) && map.get(0.1) == 1);
+    assertTrue(map.containsKey(1.0) && map.get(1.0) == 1);
+    assertTrue(map.containsKey(10.0) && map.get(10.0) == 2);
+    assertTrue(map.containsKey(100.0) && map.get(100.0) == 1);
+    assertTrue(map.containsKey(1000.0) && map.get(1000.0) == 1);
+    assertTrue(map.containsKey(10000.0) && map.get(10000.0) == 2);
+    assertTrue(map.containsKey(100000.0) && map.get(100000.0) == 1);
 
     // check that the histogram has been cleared
     assertEquals(0, wh.getCount());
@@ -125,9 +123,9 @@ public class WavefrontHistogramImplTest {
     Map<Double, Integer> map = distributionToMap(distributions);
 
     assertEquals(3, map.size());
-    assertThat(map, IsMapContaining.hasEntry(24.2, 80));
-    assertThat(map, IsMapContaining.hasEntry(84.35, 1));
-    assertThat(map, IsMapContaining.hasEntry(1002.0, 9));
+    assertTrue(map.containsKey(24.2) && map.get(24.2) == 80);
+    assertTrue(map.containsKey(84.35) && map.get(84.35) == 1);
+    assertTrue(map.containsKey(1002.0) && map.get(1002.0) == 9);
   }
 
   @Test

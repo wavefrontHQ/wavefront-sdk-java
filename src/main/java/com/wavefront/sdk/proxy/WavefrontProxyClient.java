@@ -50,7 +50,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   /**
    * Source to use if entity source is null
    */
-  private final String defaultSource = InetAddress.getLocalHost().getHostName();
+  private final String defaultSource;
 
   private final ScheduledExecutorService scheduler;
 
@@ -135,12 +135,22 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
      * @return {@link WavefrontProxyClient}
      * @throws UnknownHostException
      */
-    public WavefrontProxyClient build() throws UnknownHostException {
+    public WavefrontProxyClient build() {
       return new WavefrontProxyClient(this);
     }
   }
 
-  private WavefrontProxyClient(Builder builder) throws UnknownHostException {
+  private WavefrontProxyClient(Builder builder) {
+    String tempSource = "unknown";
+    try {
+      tempSource = InetAddress.getLocalHost().getHostName();
+    }
+    catch (UnknownHostException ex) {
+      logger.log(Level.WARNING,
+              "Unable to resolve local host name. Source will default to 'unknown'", ex);
+    }
+    defaultSource = tempSource;
+
     if (builder.metricsPort == null) {
       metricsProxyConnectionHandler = null;
     } else {

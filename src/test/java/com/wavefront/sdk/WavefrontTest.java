@@ -3,8 +3,7 @@ package com.wavefront.sdk;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.proxy.WavefrontProxyClient;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,8 +17,8 @@ import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.sanitize;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for {@link WavefrontProxyClient}
