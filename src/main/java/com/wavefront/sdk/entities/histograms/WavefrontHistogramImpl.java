@@ -44,13 +44,14 @@ public class WavefrontHistogramImpl {
    * This is ConcurrentLinkedDeque so that we can support 'flatMap(List::stream)' without
    * worrying about ConcurrentModificationException.
    */
-  private final ConcurrentLinkedDeque<ThreadMinuteBin> globalHistogramBinsList = new ConcurrentLinkedDeque<>();
+  private final ConcurrentLinkedDeque<ThreadMinuteBin> priorMinuteBinsList = new ConcurrentLinkedDeque<>();
 
   /**
    * Current Minute Histogram Bin.
    * Update functions will only update data inside currentMinuteBin, which contains
    * Timestamp and the ConcurrentMap of ThreadId and TDigest distribution.
    */
+  // The reference of currentMinuteBin will be updated inside getOrFlushUpdateCurrentBin().
   private ThreadMinuteBin currentMinuteBin;
 
   public WavefrontHistogramImpl() {
@@ -155,10 +156,14 @@ public class WavefrontHistogramImpl {
   public List<Distribution> flushDistributions() {
     final List<Distribution> distributions = new ArrayList<>();
     Iterator<ThreadMinuteBin> binsIter = getGlobalHistogramBinsList().iterator();
-    while (binsIter.hasNext()) {
-      ThreadMinuteBin bin = binsIter.next();
-      distributions.add(bin.toDistribution());
-      binsIter.remove();
+    // globalHistogramBinsList tail is indeterministic, so it is better to synchronize
+    // before we flush the distributions to Wavefront
+    synchronized (this.priorMinuteBinsList) {
+      while (binsIter.hasNext()) {
+        ThreadMinuteBin bin = binsIter.next();
+        distributions.add(bin.toDistribution());
+        binsIter.remove();
+      }
     }
     return distributions;
   }
@@ -183,17 +188,22 @@ public class WavefrontHistogramImpl {
    */
   private ThreadMinuteBin getCurrentBin() {
     long currMinuteMillis = currentMinuteMillis();
-    return flushCurrentBin(currMinuteMillis);
+    return getOrUpdateCurrentBin(currMinuteMillis);
   }
 
-  private ThreadMinuteBin flushCurrentBin(long currMinuteMillis) {
+  private ThreadMinuteBin getOrUpdateCurrentBin(long currMinuteMillis) {
     if (this.currentMinuteBin.minuteMillis == currMinuteMillis) return this.currentMinuteBin;
-    synchronized(this) {
+    // only one update thread can flush the current bin to globalHistogramBinsList
+    // and update the current bin.
+    synchronized (this.priorMinuteBinsList) {
+      // Double check the minute millis of current bin to avoid if there are multiple threads
+      // entering this block and the first thread already did the flushing.
       if (this.currentMinuteBin.minuteMillis != currMinuteMillis) {
-        if (globalHistogramBinsList.size() > MAX_BINS) {
-          this.globalHistogramBinsList.pollFirst();
+        if (priorMinuteBinsList.size() > MAX_BINS) {
+          this.priorMinuteBinsList.pollFirst();
         }
-        this.globalHistogramBinsList.offerLast(new ThreadMinuteBin(this.currentMinuteBin));
+        this.priorMinuteBinsList.offerLast(this.currentMinuteBin);
+        // Give a new reference of a new ThreadMinuteBin to the currentMinuteBin.
         this.currentMinuteBin = new ThreadMinuteBin(currMinuteMillis);
       }
       return this.currentMinuteBin;
@@ -208,8 +218,8 @@ public class WavefrontHistogramImpl {
    * globalHistogramBinsList. Thus, flush it and return.
    */
   private ConcurrentLinkedDeque<ThreadMinuteBin> getGlobalHistogramBinsList() {
-    flushCurrentBin(currentMinuteMillis());
-    return globalHistogramBinsList;
+    getOrUpdateCurrentBin(currentMinuteMillis());
+    return priorMinuteBinsList;
   }
 
   /**
@@ -254,7 +264,7 @@ public class WavefrontHistogramImpl {
     public double getMean() {
       Collection<Centroid> centroids = distribution.centroids();
       return centroids.size() == 0 ? NaN : centroids.stream()
-          .mapToDouble(c -> (c.count() * c.mean()) / centroids.size()).sum();
+              .mapToDouble(c -> (c.count() * c.mean()) / centroids.size()).sum();
     }
 
     /**
@@ -265,7 +275,7 @@ public class WavefrontHistogramImpl {
     }
 
     /**
-     * @param quantile  a given quantile, between 0 and 1
+     * @param quantile a given quantile, between 0 and 1
      * @return returns the value in the distribution at the given quantile.
      * Returns NaN if the distribution is empty.
      */
@@ -279,7 +289,7 @@ public class WavefrontHistogramImpl {
      * @return size of the snapshot
      */
     public int getSize() {
-      return (int)distribution.size();
+      return (int) distribution.size();
     }
   }
 
@@ -312,12 +322,12 @@ public class WavefrontHistogramImpl {
     /**
      * Stores the {@link TDigest} Distribution for each threads in one given minute.
      */
-    public ConcurrentMap<Long, TDigest> perThreadDist;
+    final ConcurrentMap<Long, TDigest> perThreadDist;
 
     /**
      * The timestamp at the start of the minute.
      */
-    public final long minuteMillis;
+    final long minuteMillis;
 
     ThreadMinuteBin(long minuteMillis) {
       perThreadDist = new ConcurrentHashMap<>();
@@ -325,19 +335,11 @@ public class WavefrontHistogramImpl {
     }
 
     /**
-     * Copy Constructor for appending ThreadMinuteBin to globalHistogramBinsList
-     */
-    ThreadMinuteBin(ThreadMinuteBin threadMinuteBin) {
-      this.perThreadDist = new ConcurrentHashMap<>(threadMinuteBin.perThreadDist);
-      this.minuteMillis = threadMinuteBin.minuteMillis;
-    }
-
-    /**
      * Helper to retrieve the thread-local distribution in one given minute.
      */
-    TDigest getDistByThreadId(long threadId) {
+    private TDigest getDistByThreadId(long threadId) {
       // Create new Digest for new thread.
-      return perThreadDist.computeIfAbsent(threadId, digest -> new AVLTreeDigest(ACCURACY));
+      return perThreadDist.computeIfAbsent(threadId, key -> new AVLTreeDigest(ACCURACY));
     }
 
     void updateByThreadId(long threadId, double value) {
@@ -357,8 +359,8 @@ public class WavefrontHistogramImpl {
      * Get list of centroids for distributions of all threads in this minute.
      */
     List<Centroid> getCentroids() {
-        return perThreadDist.values().stream().flatMap(dist -> dist.centroids().stream()).
-                collect(Collectors.toList());
+      return perThreadDist.values().stream().flatMap(dist -> dist.centroids().stream()).
+              collect(Collectors.toList());
     }
 
     /**
