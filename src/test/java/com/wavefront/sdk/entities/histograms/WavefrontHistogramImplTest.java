@@ -5,7 +5,10 @@ import com.wavefront.sdk.entities.histograms.WavefrontHistogramImpl.Distribution
 import com.wavefront.sdk.entities.histograms.WavefrontHistogramImpl.Snapshot;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -184,5 +187,97 @@ public class WavefrontHistogramImplTest {
     assertEquals(99.5, snapshot.getValue(.99), DELTA);
 
     assertEquals(999.5, inc1000.getSnapshot().getValue(.999), DELTA);
+  }
+
+  @Disabled("Single Thread Update Benchmark")
+  @Test
+  public void singleThreadUpdateBenchmark() {
+    int duration = 1; // Benchmark for 1 Minute
+    WavefrontHistogramImpl wh = new WavefrontHistogramImpl(System::currentTimeMillis);
+    long updateCount = this.singleThreadUpdateBenchmark(duration, wh);
+    System.out.println("single thread: update() " + updateCount + " times in " +
+            duration + " minutes");
+  }
+
+  private long singleThreadUpdateBenchmark(int duration, WavefrontHistogramImpl wh) {
+    long updateCount = 0;
+    for (int min = 0; min < duration; min++) {
+      long start = System.currentTimeMillis();
+      while (System.currentTimeMillis() - start < 60001) {
+        wh.update(Math.random() * 1000);
+        updateCount++;
+      }
+      wh.flushDistributions();
+    }
+    return updateCount;
+  }
+
+  @Disabled("Single Thread Update & Flush Benchmark")
+  @Test
+  public void singleThreadFlushBenchmark() {
+    int duration = 1; // Benchmark for 1 Minute
+    WavefrontHistogramImpl wh = new WavefrontHistogramImpl(clock::get);
+    long flushCount = this.singleThreadFlushBenchmark(duration, wh);
+    System.out.println("single thread: update() " + flushCount * 60 + " times and " +
+            "flush() " + flushCount + " times in " + duration + " minutes");
+  }
+
+  private long singleThreadFlushBenchmark(int duration, WavefrontHistogramImpl wh) {
+    long flushCount = 0;
+    for (int min = 0; min < duration; min++) {
+      long start = System.currentTimeMillis();
+      while (System.currentTimeMillis() - start < 60000) {
+        for (int sec = 0; sec < 60; sec++) {
+          wh.update(Math.random() * 1000);
+          clock.addAndGet(1000L);
+        }
+        clock.addAndGet(1L);
+        wh.flushDistributions();
+        flushCount++;
+      }
+    }
+    return flushCount;
+  }
+
+  @Disabled("Multi-Thread Update Benchmark")
+  @Test
+  public void multiThreadUpdateBenchmark() {
+    int threadNum = 4;
+    int duration = 1; // Benchmark for 1 Minute
+    WavefrontHistogramImpl wh = new WavefrontHistogramImpl(System::currentTimeMillis);
+    Supplier<Long> benchmark = () -> this.singleThreadUpdateBenchmark(duration, wh);
+    long updateCount = multiThreadBenchmark(threadNum, benchmark);
+    System.out.println(threadNum + " threads: update() " + updateCount + " times in " +
+            duration + " minutes");
+  }
+
+  @Disabled("Multi-Thread Update & Flush Benchmark")
+  @Test
+  public void multiThreadFlushBenchmark() {
+    int threadNum = 4;
+    int duration = 1; // Benchmark for 1 Minute
+    WavefrontHistogramImpl wh = new WavefrontHistogramImpl(clock::get);
+    Supplier<Long> benchmark = () -> this.singleThreadFlushBenchmark(duration, wh);
+    long count = multiThreadBenchmark(threadNum, benchmark);
+    System.out.println(threadNum + " threads: update() " + count * 60 + " times and " +
+            "flush() " + count + " times in " + duration + " minutes");
+  }
+
+  private long multiThreadBenchmark(int threadNum, Supplier<Long> benchmark) {
+    ExecutorService pool = Executors.newFixedThreadPool(threadNum);
+    List<Future<Long>> results = new ArrayList<>(threadNum);
+    Callable<Long> callable = benchmark::get;
+    for (int i = 0; i < threadNum; i++) {
+      results.add(pool.submit(callable));
+    }
+    Long count = 0L;
+    for (Future<Long> result : results) {
+      try {
+        count += result.get();
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
+    }
+    return count;
   }
 }
