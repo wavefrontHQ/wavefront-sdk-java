@@ -89,7 +89,7 @@ public class WavefrontHistogramImpl {
    * @return returns the number of values in the distribution.
    */
   public long getCount() {
-    return getGlobalHistogramBinsList().stream().filter(Objects::nonNull).
+    return getOrUpdatePriorMinuteBinsList().stream().filter(Objects::nonNull).
             flatMap(bin -> bin.perThreadDist.values().stream()).mapToLong(TDigest::size).sum();
   }
 
@@ -98,7 +98,7 @@ public class WavefrontHistogramImpl {
    * Returns NaN if the distribution is empty.
    */
   public double getMax() {
-    return getGlobalHistogramBinsList().stream().filter(Objects::nonNull).
+    return getOrUpdatePriorMinuteBinsList().stream().filter(Objects::nonNull).
             flatMap(bin -> bin.perThreadDist.values().stream()).mapToDouble(TDigest::getMax).max().orElse(NaN);
   }
 
@@ -107,7 +107,7 @@ public class WavefrontHistogramImpl {
    * Returns NaN if the distribution is empty.
    */
   public double getMin() {
-    return getGlobalHistogramBinsList().stream().filter(Objects::nonNull).
+    return getOrUpdatePriorMinuteBinsList().stream().filter(Objects::nonNull).
             flatMap(bin -> bin.perThreadDist.values().stream()).mapToDouble(TDigest::getMin).min().orElse(NaN);
   }
 
@@ -117,7 +117,7 @@ public class WavefrontHistogramImpl {
    */
   public double getMean() {
     List<Centroid> centroids = new ArrayList<>();
-    getGlobalHistogramBinsList().stream().filter(Objects::nonNull).
+    getOrUpdatePriorMinuteBinsList().stream().filter(Objects::nonNull).
             forEach(bin -> centroids.addAll(bin.getCentroids()));
     return centroids.size() == 0 ? NaN : centroids.stream().
             mapToDouble(c -> (c.count() * c.mean()) / centroids.size()).sum();
@@ -128,7 +128,7 @@ public class WavefrontHistogramImpl {
    */
   public double getSum() {
     List<Centroid> centroids = new ArrayList<>();
-    getGlobalHistogramBinsList().stream().filter(Objects::nonNull).
+    getOrUpdatePriorMinuteBinsList().stream().filter(Objects::nonNull).
             forEach(bin -> centroids.addAll(bin.getCentroids()));
     return centroids.stream().mapToDouble(c -> c.count() * c.mean()).sum();
   }
@@ -155,8 +155,8 @@ public class WavefrontHistogramImpl {
    */
   public List<Distribution> flushDistributions() {
     final List<Distribution> distributions = new ArrayList<>();
-    Iterator<ThreadMinuteBin> binsIter = getGlobalHistogramBinsList().iterator();
-    // globalHistogramBinsList tail is indeterministic, so it is better to synchronize
+    Iterator<ThreadMinuteBin> binsIter = getOrUpdatePriorMinuteBinsList().iterator();
+    // priorMinuteBinsList tail is indeterministic, so it is better to synchronize
     // before we flush the distributions to Wavefront
     synchronized (this.priorMinuteBinsList) {
       while (binsIter.hasNext()) {
@@ -173,7 +173,7 @@ public class WavefrontHistogramImpl {
    */
   public Snapshot getSnapshot() {
     final TDigest snapshot = new AVLTreeDigest(ACCURACY);
-    getGlobalHistogramBinsList().stream().filter(Objects::nonNull).
+    getOrUpdatePriorMinuteBinsList().stream().filter(Objects::nonNull).
             flatMap(bin -> bin.perThreadDist.values().stream()).forEach(snapshot::add);
     return new Snapshot(snapshot);
   }
@@ -184,7 +184,7 @@ public class WavefrontHistogramImpl {
 
   /**
    * Helper to get the current bin.
-   * Will flush currentMinuteBin into globalHistogramBinsList if it's a new minute.
+   * Will flush currentMinuteBin into priorMinuteBinsList if it's a new minute.
    */
   private ThreadMinuteBin getCurrentBin() {
     long currMinuteMillis = currentMinuteMillis();
@@ -193,7 +193,7 @@ public class WavefrontHistogramImpl {
 
   private ThreadMinuteBin getOrUpdateCurrentBin(long currMinuteMillis) {
     if (this.currentMinuteBin.minuteMillis == currMinuteMillis) return this.currentMinuteBin;
-    // only one update thread can flush the current bin to globalHistogramBinsList
+    // only one update thread can flush the current bin to priorMinuteBinsList
     // and update the current bin.
     synchronized (this.priorMinuteBinsList) {
       // Double check the minute millis of current bin to avoid if there are multiple threads
@@ -211,13 +211,13 @@ public class WavefrontHistogramImpl {
   }
 
   /**
-   * Flush the current bin and return the globalHistogramBinsList.
+   * Flush the current bin and return the priorMinuteBinsList.
    * The reason for flushing before return is because the currentMinuteBin might
    * not been updated for more than one minute. And since there's no update operation
    * after that. Thus currentMinuteBin of previous minute might not be added into
-   * globalHistogramBinsList. Thus, flush it and return.
+   * priorMinuteBinsList. Thus, flush it and return.
    */
-  private ConcurrentLinkedDeque<ThreadMinuteBin> getGlobalHistogramBinsList() {
+  private ConcurrentLinkedDeque<ThreadMinuteBin> getOrUpdatePriorMinuteBinsList() {
     getOrUpdateCurrentBin(currentMinuteMillis());
     return priorMinuteBinsList;
   }
