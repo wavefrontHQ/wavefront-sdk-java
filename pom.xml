@@ -3,12 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.wavefront</groupId>
-    <artifactId>java-sdk</artifactId>
+    <artifactId>wavefront-sdk-java</artifactId>
     <version>0.9.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Wavefront Java SDK</name>
-    <description>The Wavefront SDK for Java</description>
+    <name>Wavefront by VMware SDK for Java</name>
+    <description>Core library for sending telemetry data to Wavefront from Java applications.</description>
     <url>https://github.com/wavefrontHQ/wavefront-java-sdk</url>
     <licenses>
         <license>

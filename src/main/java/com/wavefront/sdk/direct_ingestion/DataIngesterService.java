@@ -20,17 +20,17 @@ public class DataIngesterService implements DataIngesterAPI {
   private final String token;
   private final URI uri;
   private static final String BAD_REQUEST = "Bad client request";
-  private static final int CONNECT_TIMEOUT = 30000;
-  private static final int READ_TIMEOUT = 10000;
+  private static final int CONNECT_TIMEOUT_MILLIS = 30000;
+  private static final int READ_TIMEOUT_MILLIS = 10000;
 
-  public DataIngesterService(String server, String token) {
+  DataIngesterService(String server, String token) {
       this.token = token;
       this.uri = URI.create(server);
   }
 
   @Override
   public Response report(String format, InputStream stream) throws IOException {
-    /**
+    /*
      * Refer https://docs.oracle.com/javase/8/docs/technotes/guides/net/http-keepalive.html
      * for details around why this code is written as it is.
      */
@@ -38,16 +38,15 @@ public class DataIngesterService implements DataIngesterAPI {
     String respMsg = BAD_REQUEST;
     HttpURLConnection urlConn = null;
     try {
-      URL url = new URL(uri.getScheme(), uri.getHost(), uri.getPort(),
-          String.format("/report?f=" + format));
+      URL url = new URL(uri.getScheme(), uri.getHost(), uri.getPort(), "/report?f=" + format);
       urlConn = (HttpURLConnection) url.openConnection();
       urlConn.setDoOutput(true);
       urlConn.addRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM);
       urlConn.addRequestProperty(HttpHeaders.CONTENT_ENCODING, "gzip");
       urlConn.addRequestProperty(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
-      urlConn.setConnectTimeout(CONNECT_TIMEOUT);
-      urlConn.setReadTimeout(READ_TIMEOUT);
+      urlConn.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
+      urlConn.setReadTimeout(READ_TIMEOUT_MILLIS);
 
       try (GZIPOutputStream gzipOS = new GZIPOutputStream(urlConn.getOutputStream())) {
         byte[] buffer = new byte[4096];
