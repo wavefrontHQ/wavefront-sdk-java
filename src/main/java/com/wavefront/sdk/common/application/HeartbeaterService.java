@@ -4,12 +4,14 @@ import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.entities.metrics.WavefrontMetricSender;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.wavefront.sdk.common.Constants.WAVEFRONT_PROVIDED_SOURCE;
@@ -19,10 +21,11 @@ import static com.wavefront.sdk.common.Constants.WAVEFRONT_PROVIDED_SOURCE;
  *
  * @author Sushant Dewan (sushant@wavefront.com).
  */
-public class HeartbeaterService implements Runnable {
+public class HeartbeaterService implements Runnable, Closeable {
   private static final Logger logger = Logger.getLogger(HeartbeaterService.class.getCanonicalName());
   private final WavefrontMetricSender wavefrontMetricSender;
   private final Map<String, String> heartbeatMetricTags;
+  private final ScheduledExecutorService scheduler;
 
   public HeartbeaterService(WavefrontMetricSender wavefrontMetricSender,
                             ApplicationTags applicationTags,
@@ -36,7 +39,7 @@ public class HeartbeaterService implements Runnable {
       put("shard", applicationTags.getShard() == null ? Constants.NULL_TAG_VAL : applicationTags.getShard());
       put("component", component);
     }};
-    ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,
+    scheduler = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory(component + "-heart-beater"));
     scheduler.scheduleAtFixedRate(this, 1, 5, TimeUnit.MINUTES);
   }
@@ -48,6 +51,15 @@ public class HeartbeaterService implements Runnable {
           System.currentTimeMillis(), WAVEFRONT_PROVIDED_SOURCE, heartbeatMetricTags);
     } catch (IOException e) {
       logger.warning("Cannot report " + Constants.HEART_BEAT_METRIC + " to Wavefront");
+    }
+  }
+
+  @Override
+  public void close() {
+    try {
+      scheduler.shutdownNow();
+    } catch (SecurityException ex) {
+      logger.log(Level.FINE, "shutdown error", ex);
     }
   }
 }
