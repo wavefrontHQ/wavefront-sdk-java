@@ -1,4 +1,4 @@
-# wavefront-java-sdk [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-java-sdk.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-java-sdk)
+# wavefront-sdk-java [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-sdk-java.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-sdk-java)
 
 Wavefront by VMware SDK for Java is a library that provides support for sending metrics, histograms and opentracing spans from your Java application to Wavefront via WavefrontSender interface.
 
