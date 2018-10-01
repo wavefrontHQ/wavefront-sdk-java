@@ -51,9 +51,9 @@ public final class Constants {
   public static final String NULL_TAG_VAL = "none";
 
   /**
-   * Tag key for defining a source.
+   * Key for defining a source.
    */
-  public static final String SOURCE_TAG_KEY = "source";
+  public static final String SOURCE_KEY = "source";
 
   /**
    * Tag key for defining an application.
