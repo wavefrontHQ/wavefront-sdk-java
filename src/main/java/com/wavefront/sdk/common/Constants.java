@@ -5,22 +5,25 @@ package com.wavefront.sdk.common;
  *
  * @author Sushant Dewan (sushant@wavefront.com).
  */
-public class Constants {
+public final class Constants {
+
+  private Constants() {
+  }
 
   /**
    * Use this format to send metric data to Wavefront
    */
-  public final static String WAVEFRONT_METRIC_FORMAT = "wavefront";
+  public static final String WAVEFRONT_METRIC_FORMAT = "wavefront";
 
   /**
    * Use this format to send histogram data to Wavefront
    */
-  public final static String WAVEFRONT_HISTOGRAM_FORMAT = "histogram";
+  public static final String WAVEFRONT_HISTOGRAM_FORMAT = "histogram";
 
   /**
    * Use this format to send tracing data to Wavefront
    */
-  public final static String WAVEFRONT_TRACING_SPAN_FORMAT = "trace";
+  public static final String WAVEFRONT_TRACING_SPAN_FORMAT = "trace";
 
   /**
    * ∆: INCREMENT
@@ -35,7 +38,7 @@ public class Constants {
   /**
    * Heartbeat metric
    */
-  public final static String HEART_BEAT_METRIC = "component.heartbeat";
+  public static final String HEART_BEAT_METRIC = "component.heartbeat";
 
   /**
    * Internal source used for internal and aggregated metrics
@@ -45,5 +48,35 @@ public class Constants {
   /**
    * Null value emitted for optional undefined tags.
    */
-  public final static String NULL_TAG_VAL = "none";
+  public static final String NULL_TAG_VAL = "none";
+
+  /**
+   * Key for defining a source.
+   */
+  public static final String SOURCE_KEY = "source";
+
+  /**
+   * Tag key for defining an application.
+   */
+  public static final String APPLICATION_TAG_KEY = "application";
+
+  /**
+   * Tag key for defining a cluster.
+   */
+  public static final String CLUSTER_TAG_KEY = "cluster";
+
+  /**
+   * Tag key for defining a shard.
+   */
+  public static final String SHARD_TAG_KEY = "shard";
+
+  /**
+   * Tag key  for defining a service.
+   */
+  public static final String SERVICE_TAG_KEY = "service";
+
+  /**
+   * Tag key for defining a component.
+   */
+  public static final String COMPONENT_TAG_KEY = "component";
 }

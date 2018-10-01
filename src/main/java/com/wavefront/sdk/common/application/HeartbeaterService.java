@@ -5,7 +5,6 @@ import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.entities.metrics.WavefrontMetricSender;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -14,6 +13,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.wavefront.sdk.common.Constants.APPLICATION_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.CLUSTER_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.COMPONENT_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.SERVICE_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.SHARD_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.WAVEFRONT_PROVIDED_SOURCE;
 
 /**
@@ -32,12 +36,12 @@ public class HeartbeaterService implements Runnable, Closeable {
                             String component) {
     this.wavefrontMetricSender = wavefrontMetricSender;
     this.heartbeatMetricTags = new HashMap<String, String>() {{
-      put("application", applicationTags.getApplication());
-      put("cluster", applicationTags.getCluster() == null ? Constants.NULL_TAG_VAL :
+      put(APPLICATION_TAG_KEY, applicationTags.getApplication());
+      put(CLUSTER_TAG_KEY, applicationTags.getCluster() == null ? Constants.NULL_TAG_VAL :
               applicationTags.getCluster());
-      put("service", applicationTags.getService());
-      put("shard", applicationTags.getShard() == null ? Constants.NULL_TAG_VAL : applicationTags.getShard());
-      put("component", component);
+      put(SERVICE_TAG_KEY, applicationTags.getService());
+      put(SHARD_TAG_KEY, applicationTags.getShard() == null ? Constants.NULL_TAG_VAL : applicationTags.getShard());
+      put(COMPONENT_TAG_KEY, component);
     }};
     scheduler = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory(component + "-heart-beater"));
@@ -49,7 +53,7 @@ public class HeartbeaterService implements Runnable, Closeable {
     try {
       wavefrontMetricSender.sendMetric(Constants.HEART_BEAT_METRIC, 1.0,
           System.currentTimeMillis(), WAVEFRONT_PROVIDED_SOURCE, heartbeatMetricTags);
-    } catch (IOException e) {
+    } catch (Throwable t) {
       logger.warning("Cannot report " + Constants.HEART_BEAT_METRIC + " to Wavefront");
     }
   }
