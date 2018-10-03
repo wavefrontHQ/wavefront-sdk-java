@@ -68,6 +68,16 @@
                                 <exclude>com.google.code.findbugs:jsr305</exclude>
                             </excludes>
                         </artifactSet>
+                        <relocations>
+                            <relocation>
+                                <pattern>org.apache.commons</pattern>
+                                <shadedPattern>com.wavefront.java-sdk.org.apache.commons</shadedPattern>
+                            </relocation>
+                            <relocation>
+                                <pattern>com.tdunning.math</pattern>
+                                <shadedPattern>com.wavefront.java-sdk.com.tdunning.math</shadedPattern>
+                            </relocation>
+                        </relocations>
                         <filters>
                             <filter>
                                 <artifact>*:*</artifact>
