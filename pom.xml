@@ -73,6 +73,22 @@
                               <pattern>org.jboss</pattern>
                               <shadedPattern>com.wavefront.java-sdk.org.jboss</shadedPattern>
                             </relocation>
+                            <relocation>
+                              <pattern>org.apache.commons</pattern>
+                              <shadedPattern>com.wavefront.java-sdk.org.apache.commons</shadedPattern>
+                            </relocation>
+                            <relocation>
+                              <pattern>com.tdunning.math</pattern>
+                              <shadedPattern>com.wavefront.java-sdk.com.tdunning.math</shadedPattern>
+                            </relocation>
+                            <relocation>
+                              <pattern>javax.ws.rs</pattern>
+                              <shadedPattern>com.wavefront.java-sdk.javax.ws.rs</shadedPattern>
+                            </relocation>
+                            <relocation>
+                              <pattern>org.apache.http</pattern>
+                              <shadedPattern>com.wavefront.java-sdk.org.apache.http</shadedPattern>
+                            </relocation>
                         </relocations>
                         <filters>
                             <filter>
