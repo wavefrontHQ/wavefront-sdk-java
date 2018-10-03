@@ -24,7 +24,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
-import javax.ws.rs.core.Response;
 
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
@@ -183,12 +182,12 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       return;
     }
 
-    Response response = null;
     try (InputStream is = batchToStream(batch)) {
-      response = directService.report(format, is);
-      if (response.getStatusInfo().getFamily() == Response.Status.Family.SERVER_ERROR ||
-          response.getStatusInfo().getFamily() == Response.Status.Family.CLIENT_ERROR) {
-        logger.log(Level.WARNING, "Error reporting points, respStatus=" + response.getStatus());
+      Pair<Integer, String> response = directService.report(format, is);
+      int statusCode = response._1;
+      String respMsg = response._2;
+      if (400 <= statusCode && statusCode <= 599) {
+        logger.log(Level.WARNING, "Error reporting points, respMsg=" + respMsg);
         try {
           buffer.addAll(batch);
         } catch (Exception ex) {
@@ -199,10 +198,6 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     } catch (IOException ex) {
       failures.incrementAndGet();
       throw ex;
-    } finally {
-      if (response != null) {
-        response.close();
-      }
     }
   }
 

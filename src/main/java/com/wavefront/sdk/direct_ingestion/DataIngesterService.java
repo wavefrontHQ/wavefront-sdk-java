@@ -1,15 +1,13 @@
 package com.wavefront.sdk.direct_ingestion;
 
+import com.wavefront.sdk.common.Pair;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.zip.GZIPOutputStream;
-
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * DataIngester service that reports entities to Wavefront
@@ -29,7 +27,7 @@ public class DataIngesterService implements DataIngesterAPI {
   }
 
   @Override
-  public Response report(String format, InputStream stream) throws IOException {
+  public Pair<Integer, String> report(String format, InputStream stream) throws IOException {
     /*
      * Refer https://docs.oracle.com/javase/8/docs/technotes/guides/net/http-keepalive.html
      * for details around why this code is written as it is.
@@ -41,9 +39,9 @@ public class DataIngesterService implements DataIngesterAPI {
       URL url = new URL(uri.getScheme(), uri.getHost(), uri.getPort(), "/report?f=" + format);
       urlConn = (HttpURLConnection) url.openConnection();
       urlConn.setDoOutput(true);
-      urlConn.addRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM);
-      urlConn.addRequestProperty(HttpHeaders.CONTENT_ENCODING, "gzip");
-      urlConn.addRequestProperty(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+      urlConn.addRequestProperty("Content-Type", "application/octet-stream");
+      urlConn.addRequestProperty("Content-Encoding", "gzip");
+      urlConn.addRequestProperty("Authorization", "Bearer " + token);
 
       urlConn.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
       urlConn.setReadTimeout(READ_TIMEOUT_MILLIS);
@@ -65,7 +63,7 @@ public class DataIngesterService implements DataIngesterAPI {
         readAndClose(urlConn.getErrorStream());
       }
     }
-    return Response.status(statusCode).entity(respMsg).build();
+    return new Pair<>(statusCode, respMsg);
   }
 
   private void readAndClose(InputStream stream) throws IOException {
