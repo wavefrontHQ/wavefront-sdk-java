@@ -1,7 +1,5 @@
 package com.wavefront.sdk.direct_ingestion;
 
-import com.wavefront.sdk.common.Pair;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -12,7 +10,7 @@ import java.io.InputStream;
  */
 public interface DataIngesterAPI {
   /**
-   * Returns a {@link Pair} consisting of the HTTP response's status code and response message.
+   * Returns the HTTP response's status code.
    */
-  Pair<Integer, String> report(String format, InputStream stream) throws IOException;
+  int report(String format, InputStream stream) throws IOException;
 }

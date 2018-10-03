@@ -1,7 +1,5 @@
 package com.wavefront.sdk.direct_ingestion;
 
-import com.wavefront.sdk.common.Pair;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -27,13 +25,12 @@ public class DataIngesterService implements DataIngesterAPI {
   }
 
   @Override
-  public Pair<Integer, String> report(String format, InputStream stream) throws IOException {
+  public int report(String format, InputStream stream) throws IOException {
     /*
      * Refer https://docs.oracle.com/javase/8/docs/technotes/guides/net/http-keepalive.html
      * for details around why this code is written as it is.
      */
     int statusCode = 400;
-    String respMsg = BAD_REQUEST;
     HttpURLConnection urlConn = null;
     try {
       URL url = new URL(uri.getScheme(), uri.getHost(), uri.getPort(), "/report?f=" + format);
@@ -54,16 +51,14 @@ public class DataIngesterService implements DataIngesterAPI {
         gzipOS.flush();
       }
       statusCode = urlConn.getResponseCode();
-      respMsg = urlConn.getResponseMessage();
       readAndClose(urlConn.getInputStream());
     } catch (IOException ex) {
       if (urlConn != null) {
         statusCode = urlConn.getResponseCode();
-        respMsg = urlConn.getResponseMessage();
         readAndClose(urlConn.getErrorStream());
       }
     }
-    return new Pair<>(statusCode, respMsg);
+    return statusCode;
   }
 
   private void readAndClose(InputStream stream) throws IOException {

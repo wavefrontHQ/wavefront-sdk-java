@@ -183,11 +183,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     }
 
     try (InputStream is = batchToStream(batch)) {
-      Pair<Integer, String> response = directService.report(format, is);
-      int statusCode = response._1;
-      String respMsg = response._2;
+      int statusCode = directService.report(format, is);
       if (400 <= statusCode && statusCode <= 599) {
-        logger.log(Level.WARNING, "Error reporting points, respMsg=" + respMsg);
+        logger.log(Level.WARNING, "Error reporting points, respStatus=" + statusCode);
         try {
           buffer.addAll(batch);
         } catch (Exception ex) {
