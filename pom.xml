@@ -4,7 +4,7 @@
 
     <groupId>com.wavefront</groupId>
     <artifactId>wavefront-sdk-java</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0</version>
     <packaging>jar</packaging>
 
     <name>Wavefront by VMware SDK for Java</name>
@@ -29,7 +29,7 @@
         <connection>scm:git:git@github.com:wavefronthq/wavefront-java-sdk.git</connection>
         <developerConnection>scm:git:git@github.com:wavefronthq/wavefront-java-sdk.git</developerConnection>
         <url>git@github.com:wavefronthq/wavefront-java-sdk.git</url>
-      <tag>HEAD</tag>
+      <tag>wavefront-sdk-java-0.9.0</tag>
   </scm>
 
     <distributionManagement>
