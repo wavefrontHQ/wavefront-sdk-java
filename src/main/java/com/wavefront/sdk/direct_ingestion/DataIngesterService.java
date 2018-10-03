@@ -7,10 +7,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.zip.GZIPOutputStream;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 /**
  * DataIngester service that reports entities to Wavefront
  *
@@ -29,21 +25,20 @@ public class DataIngesterService implements DataIngesterAPI {
   }
 
   @Override
-  public Response report(String format, InputStream stream) throws IOException {
+  public int report(String format, InputStream stream) throws IOException {
     /*
      * Refer https://docs.oracle.com/javase/8/docs/technotes/guides/net/http-keepalive.html
      * for details around why this code is written as it is.
      */
     int statusCode = 400;
-    String respMsg = BAD_REQUEST;
     HttpURLConnection urlConn = null;
     try {
       URL url = new URL(uri.getScheme(), uri.getHost(), uri.getPort(), "/report?f=" + format);
       urlConn = (HttpURLConnection) url.openConnection();
       urlConn.setDoOutput(true);
-      urlConn.addRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM);
-      urlConn.addRequestProperty(HttpHeaders.CONTENT_ENCODING, "gzip");
-      urlConn.addRequestProperty(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+      urlConn.addRequestProperty("Content-Type", "application/octet-stream");
+      urlConn.addRequestProperty("Content-Encoding", "gzip");
+      urlConn.addRequestProperty("Authorization", "Bearer " + token);
 
       urlConn.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
       urlConn.setReadTimeout(READ_TIMEOUT_MILLIS);
@@ -56,16 +51,14 @@ public class DataIngesterService implements DataIngesterAPI {
         gzipOS.flush();
       }
       statusCode = urlConn.getResponseCode();
-      respMsg = urlConn.getResponseMessage();
       readAndClose(urlConn.getInputStream());
     } catch (IOException ex) {
       if (urlConn != null) {
         statusCode = urlConn.getResponseCode();
-        respMsg = urlConn.getResponseMessage();
         readAndClose(urlConn.getErrorStream());
       }
     }
-    return Response.status(statusCode).entity(respMsg).build();
+    return statusCode;
   }
 
   private void readAndClose(InputStream stream) throws IOException {

@@ -70,24 +70,8 @@
                         </artifactSet>
                         <relocations>
                             <relocation>
-                              <pattern>org.jboss</pattern>
-                              <shadedPattern>com.wavefront.java-sdk.org.jboss</shadedPattern>
-                            </relocation>
-                            <relocation>
-                              <pattern>org.apache.commons</pattern>
-                              <shadedPattern>com.wavefront.java-sdk.org.apache.commons</shadedPattern>
-                            </relocation>
-                            <relocation>
-                              <pattern>com.tdunning.math</pattern>
-                              <shadedPattern>com.wavefront.java-sdk.com.tdunning.math</shadedPattern>
-                            </relocation>
-                            <relocation>
-                              <pattern>javax.ws.rs</pattern>
-                              <shadedPattern>com.wavefront.java-sdk.javax.ws.rs</shadedPattern>
-                            </relocation>
-                            <relocation>
-                              <pattern>org.apache.http</pattern>
-                              <shadedPattern>com.wavefront.java-sdk.org.apache.http</shadedPattern>
+                                <pattern>com.tdunning.math</pattern>
+                                <shadedPattern>com.wavefront.java-sdk.com.tdunning.math</shadedPattern>
                             </relocation>
                         </relocations>
                         <filters>
@@ -122,11 +106,6 @@
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
             <version>3.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jaxrs</artifactId>
-            <version>3.0.26.Final</version>
         </dependency>
         <dependency>
             <groupId>com.tdunning</groupId>
