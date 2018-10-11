@@ -7,7 +7,7 @@ If you are using Maven, add following maven dependency to your pom.xml
 ```
 <dependency>
     <groupId>com.wavefront</groupId>
-    <artifactId>java-sdk</artifactId>
+    <artifactId>wavefront-sdk-java</artifactId>
     <version>0.9.0</version>
 </dependency>
 ```
