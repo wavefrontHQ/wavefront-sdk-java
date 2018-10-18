@@ -18,7 +18,6 @@ import static com.wavefront.sdk.common.Constants.CLUSTER_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.COMPONENT_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.SERVICE_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.SHARD_TAG_KEY;
-import static com.wavefront.sdk.common.Constants.WAVEFRONT_PROVIDED_SOURCE;
 
 /**
  * Service that periodically reports component heartbeats to Wavefront.
@@ -30,11 +29,14 @@ public class HeartbeaterService implements Runnable, Closeable {
   private final WavefrontMetricSender wavefrontMetricSender;
   private final Map<String, String> heartbeatMetricTags;
   private final ScheduledExecutorService scheduler;
+  private final String source;
 
   public HeartbeaterService(WavefrontMetricSender wavefrontMetricSender,
                             ApplicationTags applicationTags,
-                            String component) {
+                            String component,
+                            String source) {
     this.wavefrontMetricSender = wavefrontMetricSender;
+    this.source = source;
     this.heartbeatMetricTags = new HashMap<String, String>() {{
       put(APPLICATION_TAG_KEY, applicationTags.getApplication());
       put(CLUSTER_TAG_KEY, applicationTags.getCluster() == null ? Constants.NULL_TAG_VAL :
@@ -52,7 +54,7 @@ public class HeartbeaterService implements Runnable, Closeable {
   public void run() {
     try {
       wavefrontMetricSender.sendMetric(Constants.HEART_BEAT_METRIC, 1.0,
-          System.currentTimeMillis(), WAVEFRONT_PROVIDED_SOURCE, heartbeatMetricTags);
+          System.currentTimeMillis(), source, heartbeatMetricTags);
     } catch (Throwable t) {
       logger.warning("Cannot report " + Constants.HEART_BEAT_METRIC + " to Wavefront");
     }
