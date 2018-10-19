@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 /**
  * WavefrontHistogramSender interface that sends a distribution to Wavefront
  *
@@ -17,6 +15,7 @@ import javax.annotation.Nullable;
 public interface WavefrontHistogramSender {
 
   /**
+   * Sends a histogram distribution to Wavefront.
    *
    * @param name                       The name of the histogram distribution. Spaces are replaced
    *                                   with '-' (dashes) and quotes will be automatically escaped.
@@ -31,11 +30,11 @@ public interface WavefrontHistogramSender {
    *                                   data is received.
    * @param source                     The source (or host) that's sending the histogram. If
    *                                   null, then assigned by Wavefront.
-   * @param tags                       The tags associated with this histogram.
+   * @param tags                       The tags associated with this histogram. Can be null.
    * @throws IOException               If there was an error sending the histogram.
    */
   void sendDistribution(String name, List<Pair<Double, Integer>> centroids,
-                        Set<HistogramGranularity> histogramGranularities, @Nullable Long timestamp,
-                        @Nullable String source, @Nullable Map<String, String> tags)
+                        Set<HistogramGranularity> histogramGranularities, Long timestamp,
+                        String source, Map<String, String> tags)
       throws IOException;
 }

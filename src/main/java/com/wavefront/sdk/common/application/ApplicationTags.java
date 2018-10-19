@@ -3,8 +3,6 @@ package com.wavefront.sdk.common.application;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 /**
  * Metadata about your application represented as tags in Wavefront.
  *
@@ -12,11 +10,9 @@ import javax.annotation.Nullable;
  */
 public class ApplicationTags {
   private final String application;
-  @Nullable
-  private final String cluster;
+  private final String cluster; // Nullable
   private final String service;
-  @Nullable
-  private final String shard;
+  private final String shard; // Nullable
   private final Map<String, String> customTags;
 
   public static class Builder {
@@ -25,10 +21,8 @@ public class ApplicationTags {
     private final String service;
 
     // Optional parameters
-    @Nullable
-    private String cluster;
-    @Nullable
-    private String shard;
+    private String cluster; // Nullable
+    private String shard; // Nullable
     private Map<String, String> customTags = new HashMap<>();
 
     /**
@@ -109,9 +103,8 @@ public class ApplicationTags {
   /**
    * Fetch the cluster name.
    *
-   * @return name of the cluster.
+   * @return name of the cluster, which can be null.
    */
-  @Nullable
   public String getCluster() {
     return cluster;
   }
@@ -128,9 +121,8 @@ public class ApplicationTags {
   /**
    * Fetch the shard name.
    *
-   * @return name of the shard.
+   * @return name of the shard, which can be null.
    */
-  @Nullable
   public String getShard() {
     return shard;
   }
@@ -138,9 +130,8 @@ public class ApplicationTags {
   /**
    * Fetch the custom tags.
    *
-   * @return custom tags.
+   * @return custom tags, which can be null.
    */
-  @Nullable
   public Map<String, String> getCustomTags() {
     return customTags;
   }

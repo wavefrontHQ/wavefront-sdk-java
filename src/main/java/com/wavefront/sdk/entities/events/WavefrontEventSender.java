@@ -3,8 +3,6 @@ package com.wavefront.sdk.entities.events;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 /**
  * WavefrontEventSender interface that sends an event to Wavefront
  *
@@ -21,9 +19,9 @@ public interface WavefrontEventSender {
    * @param endMillis      The timestamp in milliseconds when the event was ended.
    * @param source         The source (or host) that's sending the event. If null, then assigned
    *                       by Wavefront.
-   * @param tags           The tags associated with this event.
+   * @param tags           The tags associated with this event. Can be null.
    * @throws IOException   if there was an error sending the event.
    */
-  void sendEvent(String name, long startMillis, long endMillis, @Nullable String source,
-                 @Nullable Map<String, String> tags) throws IOException;
+  void sendEvent(String name, long startMillis, long endMillis, String source,
+                 Map<String, String> tags) throws IOException;
 }

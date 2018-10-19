@@ -9,8 +9,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
 /**
  * Common Util methods
  *
@@ -30,8 +28,20 @@ public class Utils {
     }
   }
 
-  public static String metricToLineData(String name, double value, @Nullable Long timestamp,
-                                        String source, @Nullable Map<String, String> tags,
+  /**
+   * Generates the line-data representation of a metric point.
+   *
+   * @param name          The name of the metric.
+   * @param value         The value of the metric.
+   * @param timestamp     The timestamp in milliseconds since the epoch. Can be null.
+   * @param source        The source (or host) of the metric.
+   *                      If null, {@code defaultSource} is used.
+   * @param tags          The tags associated with this metric. Can be null.
+   * @param defaultSource The source to default to if {@code source} is null or empty.
+   * @return returns the metric point in line-data format.
+   */
+  public static String metricToLineData(String name, double value, Long timestamp,
+                                        String source, Map<String, String> tags,
                                         String defaultSource) {
     /*
      * Wavefront Metrics Data format
@@ -78,10 +88,26 @@ public class Utils {
     return sb.toString();
   }
 
+  /**
+   * Generates the line-data representation of a histogram distribution.
+   *
+   * @param name                    The name of the distribution.
+   * @param centroids               The distribution of histogram points.
+   *                                Each centroid is a 2-dimensional {@link Pair} where the
+   *                                first dimension is the mean value (Double) of the centroid
+   *                                and second dimension is the count of points in that centroid.
+   * @param histogramGranularities  The set of intervals (minute, hour, and/or day) by which
+   *                                histogram data should be aggregated.
+   * @param timestamp               The timestamp in milliseconds since the epoch. Can be null.
+   * @param source                  The source (or host) of the distribution.
+   *                                If null, {@code defaultSource} is used.
+   * @param tags                    The tags associated with this distribution. Can be null.
+   * @param defaultSource           The source to default to if {@code source} is null or empty.
+   * @return returns the distribution in line-data format.
+   */
   public static String histogramToLineData(String name, List<Pair<Double, Integer>> centroids,
                                            Set<HistogramGranularity> histogramGranularities,
-                                           @Nullable Long timestamp, String source,
-                                           @Nullable Map<String, String> tags,
+                                           Long timestamp, String source, Map<String, String> tags,
                                            String defaultSource) {
     /*
      * Wavefront Histogram Data format
@@ -145,12 +171,29 @@ public class Utils {
     return sb.toString();
   }
 
+  /**
+   * Generates the line-data representation of a tracing span.
+   *
+   * @param name            The operation name of the span.
+   * @param startMillis     The start time in milliseconds for this span.
+   * @param durationMillis  The duration of the span in milliseconds.
+   * @param source          The source (or host) that's sending the span.
+   *                        If null, {@code defaultSource} is used.
+   * @param traceId         The unique trace ID for the span.
+   * @param spanId          The unique span ID for the span.
+   * @param parents         The list of parent span IDs, can be null if this is a root span.
+   * @param followsFrom     The list of preceding span IDs, can be null if this is a root span.
+   * @param tags            The span tags associated with this span. Supports repeated tags.
+   *                        Can be null.
+   * @param spanLogs        The span logs associated with this span. Can be null.
+   * @param defaultSource   The source to default to if {@code source} is null or empty.
+   * @return returns the span in line-data format.
+   */
   public static String tracingSpanToLineData(String name, long startMillis, long durationMillis,
                                              String source, UUID traceId, UUID spanId,
-                                             @Nullable List<UUID> parents,
-                                             @Nullable List<UUID> followsFrom,
-                                             @Nullable List<Pair<String, String>> tags,
-                                             @Nullable List<SpanLog> spanLogs,
+                                             List<UUID> parents, List<UUID> followsFrom,
+                                             List<Pair<String, String>> tags,
+                                             List<SpanLog> spanLogs,
                                              String defaultSource) {
     /*
      * Wavefront Tracing Span Data format

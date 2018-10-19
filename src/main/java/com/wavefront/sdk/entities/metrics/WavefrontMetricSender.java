@@ -3,8 +3,6 @@ package com.wavefront.sdk.entities.metrics;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import static com.wavefront.sdk.common.Constants.DELTA_PREFIX;
 import static com.wavefront.sdk.common.Constants.DELTA_PREFIX_2;
 
@@ -25,11 +23,11 @@ public interface WavefrontMetricSender {
    *                  timestamp is assigned by Wavefront when data is received.
    * @param source    The source (or host) that's sending the metric. If null then assigned by
    *                  Wavefront.
-   * @param tags      The tags associated with this metric.
+   * @param tags      The tags associated with this metric. Can be null.
    * @throws IOException if there was an error sending the metric.
    */
-  void sendMetric(String name, double value, @Nullable Long timestamp, @Nullable String source,
-                  @Nullable Map<String, String> tags) throws IOException;
+  void sendMetric(String name, double value, Long timestamp, String source,
+                  Map<String, String> tags) throws IOException;
 
   /**
    * Sends the given delta counter to Wavefront. The timestamp for the point on the client side is
@@ -45,11 +43,11 @@ public interface WavefrontMetricSender {
    *                  side.
    * @param source    The source (or host) that's sending the metric. If null then assigned by
    *                  Wavefront.
-   * @param tags      The tags associated with this metric.
+   * @param tags      The tags associated with this metric. Can be null.
    * @throws IOException if there was an error sending the metric.
    */
-  default void sendDeltaCounter(String name, double value, @Nullable String source,
-                                @Nullable Map<String, String> tags) throws IOException {
+  default void sendDeltaCounter(String name, double value, String source,
+                                Map<String, String> tags) throws IOException {
     if (!name.startsWith(DELTA_PREFIX) && !name.startsWith(DELTA_PREFIX_2)) {
       name = DELTA_PREFIX + name;
     }

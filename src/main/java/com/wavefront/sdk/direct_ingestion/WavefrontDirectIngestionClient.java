@@ -23,8 +23,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.Nullable;
-
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
@@ -123,8 +121,8 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   }
 
   @Override
-  public void sendMetric(String name, double value, @Nullable Long timestamp,
-                         @Nullable String source, @Nullable Map<String, String> tags)
+  public void sendMetric(String name, double value, Long timestamp,
+                         String source, Map<String, String> tags)
       throws IOException {
     String point = metricToLineData(name, value, timestamp, source, tags, DEFAULT_SOURCE);
     if (!metricsBuffer.offer(point)) {
@@ -135,8 +133,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   @Override
   public void sendDistribution(String name, List<Pair<Double, Integer>> centroids,
                                Set<HistogramGranularity> histogramGranularities,
-                               @Nullable Long timestamp, @Nullable String source,
-                               @Nullable Map<String, String> tags)
+                               Long timestamp, String source, Map<String, String> tags)
       throws IOException {
     String histograms = histogramToLineData(name, centroids, histogramGranularities, timestamp,
         source, tags, DEFAULT_SOURCE);
@@ -147,9 +144,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public void sendSpan(String name, long startMillis, long durationMillis,
-                       @Nullable String source, UUID traceId, UUID spanId,
-                       @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
-                       @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
+                       String source, UUID traceId, UUID spanId,
+                       List<UUID> parents, List<UUID> followsFrom,
+                       List<Pair<String, String>> tags, List<SpanLog> spanLogs)
       throws IOException {
     String span = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
         spanId, parents, followsFrom, tags, spanLogs, DEFAULT_SOURCE);
