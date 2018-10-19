@@ -185,6 +185,12 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
       throws IOException {
+    if (metricsProxyConnectionHandler == null) {
+      logger.warning("Can't send data to Wavefront. " +
+              "Please configure metrics port for Wavefront proxy");
+      return;
+    }
+
     if (!metricsProxyConnectionHandler.isConnected()) {
       try {
         metricsProxyConnectionHandler.connect();
@@ -212,6 +218,12 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
                                @Nullable Long timestamp, @Nullable String source,
                                @Nullable Map<String, String> tags)
       throws IOException {
+    if (histogramProxyConnectionHandler == null) {
+      logger.warning("Can't send data to Wavefront. " +
+              "Please configure histogram distribution port for Wavefront proxy");
+      return;
+    }
+
     if (!histogramProxyConnectionHandler.isConnected()) {
       try {
         histogramProxyConnectionHandler.connect();
@@ -240,6 +252,12 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
                        @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                        @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
       throws IOException {
+    if (tracingProxyConnectionHandler == null) {
+      logger.warning("Can't send data to Wavefront. " +
+              "Please configure tracing port for Wavefront proxy");
+      return;
+    }
+
     if (!tracingProxyConnectionHandler.isConnected()) {
       try {
         tracingProxyConnectionHandler.connect();
