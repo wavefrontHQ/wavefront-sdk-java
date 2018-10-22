@@ -1,9 +1,9 @@
 package com.wavefront.sdk.common.application;
 
+import com.wavefront.sdk.common.annotation.Nullable;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 /**
  * Metadata about your application represented as tags in Wavefront.

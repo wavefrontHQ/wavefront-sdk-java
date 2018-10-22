@@ -1,9 +1,9 @@
 package com.wavefront.sdk.entities.events;
 
+import com.wavefront.sdk.common.annotation.Nullable;
+
 import java.io.IOException;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 /**
  * WavefrontEventSender interface that sends an event to Wavefront

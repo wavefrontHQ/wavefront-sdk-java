@@ -1,9 +1,9 @@
 package com.wavefront.sdk.entities.metrics;
 
+import com.wavefront.sdk.common.annotation.Nullable;
+
 import java.io.IOException;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 import static com.wavefront.sdk.common.Constants.DELTA_PREFIX;
 import static com.wavefront.sdk.common.Constants.DELTA_PREFIX_2;
