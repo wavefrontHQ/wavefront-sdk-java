@@ -64,7 +64,7 @@
                         <minimizeJar>true</minimizeJar>
                         <artifactSet>
                             <includes>
-                                <include>com.tdunning.math</include>
+                                <include>com.tdunning</include>
                             </includes>
                         </artifactSet>
                         <relocations>
