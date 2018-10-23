@@ -1,5 +1,6 @@
 package com.wavefront.sdk.common;
 
+import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
 
@@ -8,8 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
 
 /**
  * Common Util methods

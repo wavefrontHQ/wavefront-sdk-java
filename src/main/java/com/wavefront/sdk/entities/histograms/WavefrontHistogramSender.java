@@ -1,13 +1,12 @@
 package com.wavefront.sdk.entities.histograms;
 
 import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.common.annotation.Nullable;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * WavefrontHistogramSender interface that sends a distribution to Wavefront

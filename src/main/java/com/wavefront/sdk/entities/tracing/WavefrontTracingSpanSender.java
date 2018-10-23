@@ -1,12 +1,11 @@
 package com.wavefront.sdk.entities.tracing;
 
 import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.common.annotation.Nullable;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 /**
  * WavefrontTracingSpanSender interface that sends an open-tracing span to Wavefront
