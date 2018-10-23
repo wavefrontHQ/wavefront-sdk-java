@@ -63,10 +63,9 @@
                     <configuration>
                         <minimizeJar>true</minimizeJar>
                         <artifactSet>
-                            <excludes>
-                                <exclude>org.junit.jupiter:junit-jupiter-api</exclude>
-                                <exclude>com.google.code.findbugs:jsr305</exclude>
-                            </excludes>
+                            <includes>
+                                <include>com.tdunning.math</include>
+                            </includes>
                         </artifactSet>
                         <relocations>
                             <relocation>
