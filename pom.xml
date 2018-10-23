@@ -64,7 +64,7 @@
                         <minimizeJar>true</minimizeJar>
                         <artifactSet>
                             <includes>
-                                <include>com.tdunning</include>
+                                <include>com.tdunning:t-digest</include>
                             </includes>
                         </artifactSet>
                         <relocations>
