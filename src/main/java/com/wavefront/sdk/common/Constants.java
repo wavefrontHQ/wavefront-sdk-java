@@ -38,7 +38,7 @@ public final class Constants {
   /**
    * Heartbeat metric
    */
-  public static final String HEART_BEAT_METRIC = "component.heartbeat";
+  public static final String HEART_BEAT_METRIC = "~component.heartbeat";
 
   /**
    * Internal source used for internal and aggregated metrics
