@@ -17,6 +17,12 @@ The WavefrontSender interface has two implementations.<br/>
 1) WavefrontProxyClient
 2) WavefrontDirectIngestionClient
 
+Note: Please do not implement WavefrontSender, instead use one of the 2 implementations of that interface below.
+Option 1: If you have a Wavefront proxy installed, please instantiate WavefrontProxyClient.
+<br/>
+Option 2 : If you want to send data to Wavefront using direct ingestion API, then please instantiate WavefrontDirectIngestionClient.
+<br/> 
+
 ### WavefrontProxyClient
 ```java
   /*
