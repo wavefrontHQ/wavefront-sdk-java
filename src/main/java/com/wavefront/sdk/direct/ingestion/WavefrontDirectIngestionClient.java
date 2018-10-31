@@ -1,4 +1,4 @@
-package com.wavefront.sdk.direct_ingestion;
+package com.wavefront.sdk.direct.ingestion;
 
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;

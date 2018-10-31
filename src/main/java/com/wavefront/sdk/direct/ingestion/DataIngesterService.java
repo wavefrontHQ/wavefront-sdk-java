@@ -1,4 +1,4 @@
-package com.wavefront.sdk.direct_ingestion;
+package com.wavefront.sdk.direct.ingestion;
 
 import java.io.IOException;
 import java.io.InputStream;
