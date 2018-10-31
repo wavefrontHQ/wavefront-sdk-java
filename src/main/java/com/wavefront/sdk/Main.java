@@ -1,7 +1,7 @@
 package com.wavefront.sdk;
 
 import com.wavefront.sdk.common.Pair;
-import com.wavefront.sdk.direct_ingestion.WavefrontDirectIngestionClient;
+import com.wavefront.sdk.direct.ingestion.WavefrontDirectIngestionClient;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.proxy.WavefrontProxyClient;
 
