@@ -1,6 +1,6 @@
 open_source_licenses.txt
 
-Wavefront by VMware SDK for 1.0 GA
+Wavefront by VMware SDK for Java 1.0 GA
 
 ======================================================================
 
