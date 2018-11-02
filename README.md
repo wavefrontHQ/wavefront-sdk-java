@@ -1,156 +1,148 @@
 # wavefront-sdk-java [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-sdk-java.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-sdk-java)
 
-Wavefront by VMware SDK for Java is a library that provides support for sending metrics, histograms and opentracing spans from your Java application to Wavefront via WavefrontSender interface.
+Wavefront by VMware SDK for Java is a library that supports sending metrics, histograms and opentracing spans from your Java application to Wavefront using a `WavefrontSender` interface.
 
-## Usage
-If you are using Maven, add following maven dependency to your pom.xml
+## Maven
+If you are using Maven, add the following maven dependency to your pom.xml:
 ```
 <dependency>
     <groupId>com.wavefront</groupId>
     <artifactId>wavefront-sdk-java</artifactId>
-    <version>0.9.0</version>
+    <version>$releaseVersion</version>
 </dependency>
 ```
 
-### WavefrontSender
-The WavefrontSender interface has two implementations.<br/>
-1) WavefrontProxyClient
-2) WavefrontDirectIngestionClient
+## WavefrontSender
+You can send data to Wavefront using either the [proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
 
-Note: Please do not implement WavefrontSender, instead use one of the 2 implementations of that interface below.
-<br/>
-Option 1: If you have a Wavefront proxy installed, please instantiate WavefrontProxyClient.
-<br/>
-Option 2: If you want to send data to Wavefront using direct ingestion API, then please instantiate WavefrontDirectIngestionClient.
-<br/> 
+Thus, there are two implementations of the WavefrontSender interface:
+* `WavefrontProxyClient`: To send data to a Wavefront proxy
+* `WavefrontDirectIngestionClient`: To send data directly to a Wavefront service
+
+Depending on how you wish to send data to Wavefront, you would instantiate either a `WavefrontProxyClient` or a `WavefrontDirectIngestionClient`. See below for details.
 
 ### WavefrontProxyClient
+To create a WavefrontProxyClient, assuming you have a Wavefront proxy listening on at least one of metrics/distribution/tracing ports:
 ```java
-  /*
-   * Assume you have a running Wavefront proxy listening on at least one of 
-   * metrics/direct-distribution/tracing ports and you know the proxy hostname
-   */
-  WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHost);
- 
-  /* set this (Example - 2878) if you want to send metrics to Wavefront */
-  builder.metricsPort(metricsPort);
- 
-  /* set this (Example - 40,000) if you want to send histograms to Wavefront */
-  builder.distributionPort(distributionPort);
- 
-  /* set this (Example - 30,000) if you want to send opentracing spans to Wavefront */
-  builder.tracingPort(tracingPort);
- 
-  /* set this if you want to override the default SocketFactory */
-  builder.socketFactory(<SocketFactory>);
-  
-  /* set this if you want to change the default flush interval of 5 seconds */
-  builder.flushIntervalSeconds(2);
-  
-  WavefrontProxyClient wavefrontProxyClient = builder.build();
+// Create the builder with the proxy hostname or address
+WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHost);
+
+// Set the proxy metrics port (example: 2878) to send metrics to Wavefront
+builder.metricsPort(metricsPort);
+
+// Set the proxy distribution port (example: 40,000) to send histograms to Wavefront
+builder.distributionPort(distributionPort);
+
+// Set the trace port (example: 30,000) to send opentracing spans to Wavefront
+builder.tracingPort(tracingPort);
+
+// Set a custom socketFactory if you wish to override the default SocketFactory
+builder.socketFactory(<SocketFactory>);
+
+// Set the flushInterval to override the default flush interval of 5 seconds
+builder.flushIntervalSeconds(2);
+
+// Finally create a WavefrontProxyClient
+WavefrontSender wavefrontSender = builder.build();
  ```
- 
+
 ### WavefrontDirectIngestionClient
+To create a WavefrontDirectIngestionClient, assuming you have access to a Wavefront instance with direct data ingestion permission:
 ```java
-  /*
-   * Assume you have a running Wavefront cluster and you know the 
-   * server URL (example - https://mydomain.wavefront.com) and the API token
-   */
-  WavefrontDirectIngestionClient.Builder builder = 
-  new WavefrontDirectIngestionClient.Builder(wavefrontServer, token);
- 
-  // set this if you want to change the defualt max queue size of 50,000
-  builder.maxQueueSize(100_000);
- 
-  // set this if you want to change the default batch size of 10,000
-  builder.batchSize(20_000);
- 
-  // set this if you want to change the default flush interval value of 1 seconds
-  builder.flushIntervalSeconds(2);
-   
-  WavefrontDirectIngestionClient wavefrontDirectIngestionClient = builder.build();
+ // Create a builder with the URL of the form "https://DOMAIN.wavefront.com"
+ // and a Wavefront API token with direct ingestion permission
+WavefrontDirectIngestionClient.Builder builder =
+  new WavefrontDirectIngestionClient.Builder(wavefrontURL, token);
+
+// This is the size of internal buffer beyond which data is dropped
+// Set this to override the default max queue size of 50,000
+builder.maxQueueSize(100_000);
+
+// This is the max batch of data sent per flush interval
+// Set this to override the default batch size of 10,000
+builder.batchSize(20_000);
+
+// Together with batch size controls the max theoretical throughput of the sender
+// Set this to override the default flush interval value of 1 second
+builder.flushIntervalSeconds(2);
+
+// Finally create a WavefrontDirectIngestionClient
+WavefrontSender wavefrontSender = builder.build();
  ```
- 
- ### Send data to Wavefront via WavefrontSender
- 
+
+ ### Sending data to Wavefront via WavefrontSender
+
+ To send data to Wavefront using the `wavefrontSender` you instantiated:
+
+ #### Metrics and Delta Counters
+
  ```java
-  // 1) Send Metric to Wavefront
-  /*
-   * Wavefront Metrics Data format
-   * <metricName> <metricValue> [<timestamp>] source=<source> [pointTags]
-   *
-   * Example: "new-york.power.usage 42422 1533529977 source=localhost datacenter=dc1"
-   */
-  wavefrontSender.sendMetric("new-york.power.usage", 42422.0, 1533529977L,
-        "localhost", ImmutableMap.<String, String>builder().put("datacenter", "dc1").build());
+// Wavefront Metrics Data format
+// <metricName> <metricValue> [<timestamp>] source=<source> [pointTags]
+// Example: "new-york.power.usage 42422 1533529977 source=localhost datacenter=dc1"
+wavefrontSender.sendMetric("new-york.power.usage", 42422.0, 1533529977L,
+    "localhost", ImmutableMap.<String, String>builder().put("datacenter", "dc1").build());
 
-  // 2) Send Delta Counter to Wavefront     
-  /*
-   * Wavefront Delta Counter format
-   * <metricName> <metricValue> source=<source> [pointTags]
-   *
-   * Example: "lambda.thumbnail.generate 10 source=lambda_thumbnail_service image-format=jpeg"
-   */
-   wavefrontSender.sendDeltaCounter("lambda.thumbnail.generate", 10,
-        "lambda_thumbnail_service",
-        ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
+// Wavefront Delta Counter format
+// <metricName> <metricValue> source=<source> [pointTags]
+// Example: "lambda.thumbnail.generate 10 source=lambda_thumbnail_service image-format=jpeg"
+wavefrontSender.sendDeltaCounter("lambda.thumbnail.generate", 10,
+    "lambda_thumbnail_service",
+    ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
+```
 
-  // 3) Send Direct Distribution (Histogram) to Wavefront
-  /*
-   * Wavefront Histogram Data format
-   * {!M | !H | !D} [<timestamp>] #<count> <mean> [centroids] <histogramName> source=<source> 
-   * [pointTags]
-   *
-   * Example: You can choose to send to atmost 3 bins - Minute/Hour/Day
-   * 1) Send to minute bin    =>    
-   *    "!M 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
-   * 2) Send to hour bin      =>    
-   *    "!H 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
-   * 3) Send to day bin       =>    
-   *    "!D 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
-   */
-  wavefrontSender.sendDistribution("request.latency", 
-        ImmutableList.<Pair<Double, Integer>>builder().add(new Pair<>(30.0, 20)).
-        add(new Pair<>(5.1, 10)).build(),
-        ImmutableSet.<HistogramGranularity>builder().add(HistogramGranularity.MINUTE).
-            add(HistogramGranularity.HOUR).
-            add(HistogramGranularity.DAY).build(), 
-        1533529977L, "appServer1",
-        ImmutableMap.<String, String>builder().put("region", "us-west").build());
+#### Distributions (Histograms)
 
-  // 4) Send OpenTracing Span to Wavefront
-  /*
-   * Wavefront Tracing Span Data format
-   * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milliseconds>
-   *
-   * Example: "getAllUsers source=localhost
-   *           traceId=7b3bf470-9456-11e8-9eb6-529269fb1459
-   *           spanId=0313bafe-9457-11e8-9eb6-529269fb1459
-   *           parent=2f64e538-9457-11e8-9eb6-529269fb1459
-   *           application=Wavefront http.method=GET
-   *           1533529977 343500"
-   */
-  wavefrontSender.sendSpan("getAllUsers",1533529977L, 343500L, "localhost",
-        UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
-        UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
-        ImmutableList.<UUID>builder().add(UUID.fromString(
-            "2f64e538-9457-11e8-9eb6-529269fb1459")).build(), null,
-        ImmutableList.<Pair<String, String>>builder().
-            add(new Pair<>("application", "Wavefront")).
-            add(new Pair<>("http.method", "GET")).build(), null);
+```java
+// Wavefront Histogram Data format
+// {!M | !H | !D} [<timestamp>] #<count> <mean> [centroids] <histogramName> source=<source>
+// [pointTags]
+// Example: You can choose to send to at most 3 bins: Minute, Hour, Day
+// "!M 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
+// "!H 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
+// "!D 1533529977 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
+wavefrontSender.sendDistribution("request.latency",
+    ImmutableList.<Pair<Double, Integer>>builder().add(new Pair<>(30.0, 20)).
+      add(new Pair<>(5.1, 10)).build(),
+    ImmutableSet.<HistogramGranularity>builder().add(HistogramGranularity.MINUTE).
+      add(HistogramGranularity.HOUR).
+      add(HistogramGranularity.DAY).build(),
+    1533529977L, "appServer1",
+    ImmutableMap.<String, String>builder().put("region", "us-west").build());
+```
 
-  /*
-   * If there are any failures observed while sending metrics/histograms/tracing-spans above, 
-   * you get the total failure count using the below API
-   */
-  int totalFailures = wavefrontSender.getFailureCount();
-  
-  /* on-demand buffer flush (might want to do this if you are shutting down your JVM) */
-  wavefrontSender.flush();
-  
-  /*
-   * close connection before shutting down JVM 
-   * (this will flush in-flight buffer and close connection)
-   */
-  wavefrontSender.close();
+#### Tracing Spans
+
+```java
+ // Wavefront Tracing Span Data format
+ // <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milliseconds>
+ // Example: "getAllUsers source=localhost
+ //           traceId=7b3bf470-9456-11e8-9eb6-529269fb1459
+ //           spanId=0313bafe-9457-11e8-9eb6-529269fb1459
+ //           parent=2f64e538-9457-11e8-9eb6-529269fb1459
+ //           application=Wavefront http.method=GET
+ //           1533529977 343500"
+wavefrontSender.sendSpan("getAllUsers",1533529977L, 343500L, "localhost",
+      UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
+      UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
+      ImmutableList.<UUID>builder().add(UUID.fromString(
+        "2f64e538-9457-11e8-9eb6-529269fb1459")).build(), null,
+      ImmutableList.<Pair<String, String>>builder().
+        add(new Pair<>("application", "Wavefront")).
+        add(new Pair<>("http.method", "GET")).build(), null);
+```
+
+### Closing the Sender
+Remember to flush the buffer and close the sender before shutting down your application.
+```java
+// If there are any failures observed while sending metrics/histograms/tracing-spans above,
+// you get the total failure count using the below API
+int totalFailures = wavefrontSender.getFailureCount();
+
+// on-demand buffer flush (may want to do this if you are shutting down your application)
+wavefrontSender.flush();
+
+// close the sender connection before shutting down application
+// this will flush in-flight buffer and close connection
+wavefrontSender.close();
 ```
