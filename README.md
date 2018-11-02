@@ -27,6 +27,10 @@ To create a WavefrontProxyClient, assuming you have a Wavefront proxy listening 
 // Create the builder with the proxy hostname or address
 WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHost);
 
+// Note: At least one of metrics/histogram/tracing port is required.
+// Only set a port if you wish to send that type of data to Wavefront and you
+// have the port enabled on the proxy.
+
 // Set the proxy metrics port (example: 2878) to send metrics to Wavefront
 builder.metricsPort(metricsPort);
 
@@ -49,8 +53,8 @@ WavefrontSender wavefrontSender = builder.build();
 ### WavefrontDirectIngestionClient
 To create a WavefrontDirectIngestionClient, assuming you have access to a Wavefront instance with direct data ingestion permission:
 ```java
- // Create a builder with the URL of the form "https://DOMAIN.wavefront.com"
- // and a Wavefront API token with direct ingestion permission
+// Create a builder with the URL of the form "https://DOMAIN.wavefront.com"
+// and a Wavefront API token with direct ingestion permission
 WavefrontDirectIngestionClient.Builder builder =
   new WavefrontDirectIngestionClient.Builder(wavefrontURL, token);
 
