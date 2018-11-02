@@ -1,6 +1,6 @@
 # wavefront-sdk-java [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-sdk-java.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-sdk-java)
 
-Wavefront by VMware SDK for Java is a library that supports sending metrics, histograms and opentracing spans from your Java application to Wavefront using a `WavefrontSender` interface.
+Wavefront by VMware SDK for Java is the core library for sending metrics, histograms and trace data from your Java application to Wavefront using a `WavefrontSender` interface.
 
 ## Maven
 If you are using Maven, add the following maven dependency to your pom.xml:
@@ -12,17 +12,21 @@ If you are using Maven, add the following maven dependency to your pom.xml:
 </dependency>
 ```
 
-## WavefrontSender
-You can send data to Wavefront using either the [proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
+## Set Up a WavefrontSender
+You can choose to send data to Wavefront using either the [Wavefront proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
 
-Thus, there are two implementations of the WavefrontSender interface:
-* `WavefrontProxyClient`: To send data to a Wavefront proxy
-* `WavefrontDirectIngestionClient`: To send data directly to a Wavefront service
+The `WavefrontSender` interface has two implementations. Instantiate the implementation that corresponds to your choice:
+* [Create a `WavefrontProxyClient`](#create-a-wavefrontproxyclient) to send data to a Wavefront proxy
+* [Create a `WavefrontDirectIngestionClient`](#create-a-wavefrontdirectingestionclient) to send data directly to a Wavefront service
 
-Depending on how you wish to send data to Wavefront, you would instantiate either a `WavefrontProxyClient` or a `WavefrontDirectIngestionClient`. See below for details.
+### Create a WavefrontProxyClient
+To create a WavefrontProxyClient, you specify the proxy host and one or more ports for the proxy to listen on.
 
-### WavefrontProxyClient
-To create a WavefrontProxyClient, assuming you have a Wavefront proxy listening on at least one of metrics/distribution/tracing ports:
+Before data can be sent from your application, you must ensure the Wavefront proxy is configured and running:
+* [Install](http://docs.wavefront.com/proxies_installing.html) a Wavefront proxy on the specified proxy host if necessary.
+* [Configure](http://docs.wavefront.com/proxies_configuring.html) the proxy to listen on the specified port(s) by setting the corresponding properties: `pushListenerPort`, `histogramDistListenerPort`, `traceListenerPort`
+* Start (or restart) the proxy.
+
 ```java
 // Create the builder with the proxy hostname or address
 WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHost);
@@ -32,15 +36,15 @@ WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHos
 // have the port enabled on the proxy.
 
 // Set the proxy metrics port (example: 2878) to send metrics to Wavefront
-builder.metricsPort(metricsPort);
+builder.metricsPort(2878);
 
 // Set the proxy distribution port (example: 40,000) to send histograms to Wavefront
-builder.distributionPort(distributionPort);
+builder.distributionPort(40_000);
 
 // Set the trace port (example: 30,000) to send opentracing spans to Wavefront
-builder.tracingPort(tracingPort);
+builder.tracingPort(30_000);
 
-// Set a custom socketFactory if you wish to override the default SocketFactory
+// Set a custom socketFactory to override the default SocketFactory
 builder.socketFactory(<SocketFactory>);
 
 // Set the flushInterval to override the default flush interval of 5 seconds
@@ -50,8 +54,8 @@ builder.flushIntervalSeconds(2);
 WavefrontSender wavefrontSender = builder.build();
  ```
 
-### WavefrontDirectIngestionClient
-To create a WavefrontDirectIngestionClient, assuming you have access to a Wavefront instance with direct data ingestion permission:
+### Create a WavefrontDirectIngestionClient
+To create a `WavefrontDirectIngestionClient`, you must have access to a Wavefront instance with direct data ingestion permission:
 ```java
 // Create a builder with the URL of the form "https://DOMAIN.wavefront.com"
 // and a Wavefront API token with direct ingestion permission
@@ -74,11 +78,11 @@ builder.flushIntervalSeconds(2);
 WavefrontSender wavefrontSender = builder.build();
  ```
 
- ### Sending data to Wavefront via WavefrontSender
+## Send Data to Wavefront
 
- To send data to Wavefront using the `wavefrontSender` you instantiated:
+ To send data to Wavefront using the `WavefrontSender` you instantiated:
 
- #### Metrics and Delta Counters
+### Metrics and Delta Counters
 
  ```java
 // Wavefront Metrics Data format
@@ -95,7 +99,7 @@ wavefrontSender.sendDeltaCounter("lambda.thumbnail.generate", 10,
     ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
 ```
 
-#### Distributions (Histograms)
+### Distributions (Histograms)
 
 ```java
 // Wavefront Histogram Data format
@@ -115,7 +119,7 @@ wavefrontSender.sendDistribution("request.latency",
     ImmutableMap.<String, String>builder().put("region", "us-west").build());
 ```
 
-#### Tracing Spans
+### Tracing Spans
 
 ```java
  // Wavefront Tracing Span Data format
@@ -136,7 +140,7 @@ wavefrontSender.sendSpan("getAllUsers",1533529977L, 343500L, "localhost",
         add(new Pair<>("http.method", "GET")).build(), null);
 ```
 
-### Closing the Sender
+## Close the WavefrontSender
 Remember to flush the buffer and close the sender before shutting down your application.
 ```java
 // If there are any failures observed while sending metrics/histograms/tracing-spans above,
