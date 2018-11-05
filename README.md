@@ -1,4 +1,4 @@
-# wavefront-sdk-java [![travis build status](https://travis-ci.com/wavefrontHQ/wavefront-sdk-java.svg?branch=master)](https://travis-ci.com/wavefrontHQ/wavefront-sdk-java)
+# wavefront-sdk-java [![build status][ci-img]][ci] [![Released Version][maven-img]][maven]
 
 Wavefront by VMware SDK for Java is the core library for sending metrics, histograms and trace data from your Java application to Wavefront using a `WavefrontSender` interface.
 
@@ -11,6 +11,7 @@ If you are using Maven, add the following maven dependency to your pom.xml:
     <version>$releaseVersion</version>
 </dependency>
 ```
+Replace `$releaseVersion` with the latest version available on [maven].
 
 ## Set Up a WavefrontSender
 You can choose to send data to Wavefront using either the [Wavefront proxy](https://docs.wavefront.com/proxies.html) or [direct ingestion](https://docs.wavefront.com/direct_ingestion.html).
@@ -44,10 +45,10 @@ builder.distributionPort(40_000);
 // Set the trace port (example: 30,000) to send opentracing spans to Wavefront
 builder.tracingPort(30_000);
 
-// Set a custom socketFactory to override the default SocketFactory
+// Optional: Set a custom socketFactory to override the default SocketFactory
 builder.socketFactory(<SocketFactory>);
 
-// Set the flushInterval to override the default flush interval of 5 seconds
+// Optional: Set this to override the default flush interval of 5 seconds
 builder.flushIntervalSeconds(2);
 
 // Finally create a WavefrontProxyClient
@@ -61,6 +62,9 @@ To create a `WavefrontDirectIngestionClient`, you must have access to a Wavefron
 // and a Wavefront API token with direct ingestion permission
 WavefrontDirectIngestionClient.Builder builder =
   new WavefrontDirectIngestionClient.Builder(wavefrontURL, token);
+
+// Optional configuration properties.
+// Only override the defaults to set higher values.
 
 // This is the size of internal buffer beyond which data is dropped
 // Set this to override the default max queue size of 50,000
@@ -154,3 +158,8 @@ wavefrontSender.flush();
 // this will flush in-flight buffer and close connection
 wavefrontSender.close();
 ```
+
+[ci-img]: https://travis-ci.com/wavefrontHQ/wavefront-sdk-java.svg?branch=master
+[ci]: https://travis-ci.com/wavefrontHQ/wavefront-sdk-java
+[maven-img]: https://img.shields.io/maven-central/v/com.wavefront/wavefront-sdk-java.svg?maxAge=2592000
+[maven]: http://search.maven.org/#search%7Cga%7C1%7Cwavefront-sdk-java
