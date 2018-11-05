@@ -67,15 +67,15 @@ WavefrontDirectIngestionClient.Builder builder =
 // Only override the defaults to set higher values.
 
 // This is the size of internal buffer beyond which data is dropped
-// Set this to override the default max queue size of 50,000
+// Optional: Set this to override the default max queue size of 50,000
 builder.maxQueueSize(100_000);
 
 // This is the max batch of data sent per flush interval
-// Set this to override the default batch size of 10,000
+// Optional: Set this to override the default batch size of 10,000
 builder.batchSize(20_000);
 
 // Together with batch size controls the max theoretical throughput of the sender
-// Set this to override the default flush interval value of 1 second
+// Optional: Set this to override the default flush interval value of 1 second
 builder.flushIntervalSeconds(2);
 
 // Finally create a WavefrontDirectIngestionClient
