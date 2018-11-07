@@ -30,29 +30,29 @@ Before data can be sent from your application, you must ensure the Wavefront pro
 
 ```java
 // Create the builder with the proxy hostname or address
-WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHostName);
+WavefrontProxyClient.Builder wfProxyClientBuilder = new WavefrontProxyClient.Builder(proxyHostName);
 
 // Note: At least one of metrics/histogram/tracing port is required.
 // Only set a port if you wish to send that type of data to Wavefront and you
 // have the port enabled on the proxy.
 
 // Set the pushListenerPort (example: 2878) to send metrics to Wavefront
-builder.metricsPort(2878);
+wfProxyClientBuilder.metricsPort(2878);
 
 // Set the histogramDistListenerPort (example: 40,000) to send histograms to Wavefront
-builder.distributionPort(40_000);
+wfProxyClientBuilder.distributionPort(40_000);
 
 // Set the traceListenerPort (example: 30,000) to send opentracing spans to Wavefront
-builder.tracingPort(30_000);
+wfProxyClientBuilder.tracingPort(30_000);
 
 // Optional: Set a custom socketFactory to override the default SocketFactory
-builder.socketFactory(<SocketFactory>);
+wfProxyClientBuilder.socketFactory(<SocketFactory>);
 
 // Optional: Set this to override the default flush interval of 5 seconds
-builder.flushIntervalSeconds(2);
+wfProxyClientBuilder.flushIntervalSeconds(2);
 
 // Finally create a WavefrontProxyClient
-WavefrontSender wavefrontSender = builder.build();
+WavefrontSender wavefrontSender = wfProxyClientBuilder.build();
  ```
 
 ### Create a WavefrontDirectIngestionClient
@@ -60,7 +60,7 @@ To create a `WavefrontDirectIngestionClient`, you must have access to a Wavefron
 ```java
 // Create a builder with the URL of the form "https://DOMAIN.wavefront.com"
 // and a Wavefront API token with direct ingestion permission
-WavefrontDirectIngestionClient.Builder builder =
+WavefrontDirectIngestionClient.Builder wfDirectIngestionClientBuilder =
   new WavefrontDirectIngestionClient.Builder(wavefrontURL, token);
 
 // Optional configuration properties.
@@ -68,18 +68,18 @@ WavefrontDirectIngestionClient.Builder builder =
 
 // This is the size of internal buffer beyond which data is dropped
 // Optional: Set this to override the default max queue size of 50,000
-builder.maxQueueSize(100_000);
+wfDirectIngestionClientBuilder.maxQueueSize(100_000);
 
 // This is the max batch of data sent per flush interval
 // Optional: Set this to override the default batch size of 10,000
-builder.batchSize(20_000);
+wfDirectIngestionClientBuilder.batchSize(20_000);
 
 // Together with batch size controls the max theoretical throughput of the sender
 // Optional: Set this to override the default flush interval value of 1 second
-builder.flushIntervalSeconds(2);
+wfDirectIngestionClientBuilder.flushIntervalSeconds(2);
 
 // Finally create a WavefrontDirectIngestionClient
-WavefrontSender wavefrontSender = builder.build();
+WavefrontSender wavefrontSender = wfDirectIngestionClientBuilder.build();
  ```
 
 ## Send Data to Wavefront
