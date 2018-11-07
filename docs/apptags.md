@@ -12,7 +12,7 @@ The following tags are optional:
 * `cluster`: For example: `us-west-2`.
 * `shard`: The shard (aka mirror), for example: `secondary`.
 
-You can also optionally add custom tags specific to your application in the form of a `HashMap` (see snippet below).
+You can also optionally add custom tags specific to your application in the form of a `Map` (see snippet below).
 
 To create the application tags:
 ```java
