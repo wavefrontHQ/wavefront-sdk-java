@@ -30,19 +30,19 @@ Before data can be sent from your application, you must ensure the Wavefront pro
 
 ```java
 // Create the builder with the proxy hostname or address
-WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHost);
+WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHostName);
 
 // Note: At least one of metrics/histogram/tracing port is required.
 // Only set a port if you wish to send that type of data to Wavefront and you
 // have the port enabled on the proxy.
 
-// Set the proxy metrics port (example: 2878) to send metrics to Wavefront
+// Set the pushListenerPort (example: 2878) to send metrics to Wavefront
 builder.metricsPort(2878);
 
-// Set the proxy distribution port (example: 40,000) to send histograms to Wavefront
+// Set the histogramDistListenerPort (example: 40,000) to send histograms to Wavefront
 builder.distributionPort(40_000);
 
-// Set the trace port (example: 30,000) to send opentracing spans to Wavefront
+// Set the traceListenerPort (example: 30,000) to send opentracing spans to Wavefront
 builder.tracingPort(30_000);
 
 // Optional: Set a custom socketFactory to override the default SocketFactory
