@@ -7,7 +7,7 @@ package com.wavefront.sdk.entities.tracing.sampling;
  */
 public class DurationSampler implements Sampler {
 
-  private final long duration;
+  private volatile long duration;
 
   /**
    * Constructor.
@@ -15,7 +15,7 @@ public class DurationSampler implements Sampler {
    * @param duration The duration in milliseconds. Spans with durations higher than this are reported.
    */
   public DurationSampler(long duration) {
-    this.duration = duration;
+    setDuration(duration);
   }
 
   @Override
@@ -26,5 +26,14 @@ public class DurationSampler implements Sampler {
   @Override
   public boolean isEarly() {
     return false;
+  }
+
+  /**
+   * Sets the duration for this sampler.
+   *
+   * @param duration The duration in milliseconds
+   */
+  public void setDuration(long duration) {
+    this.duration = duration;
   }
 }

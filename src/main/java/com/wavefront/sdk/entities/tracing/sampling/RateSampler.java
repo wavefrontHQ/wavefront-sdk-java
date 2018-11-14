@@ -13,7 +13,7 @@ public class RateSampler implements Sampler {
   private static final double MAX_SAMPLING_RATE = 1.0;
   private static final long MOD_FACTOR = 10000L;
 
-  private final long boundary;
+  private volatile long boundary;
 
   /**
    * Constructor.
@@ -21,11 +21,7 @@ public class RateSampler implements Sampler {
    * @param samplingRate a sampling rate between 0.0 and 1.0.
    */
   public RateSampler(double samplingRate) {
-    if (samplingRate <= MIN_SAMPLING_RATE || samplingRate >= MAX_SAMPLING_RATE) {
-      throw new IllegalArgumentException("sampling rate must be between " + MIN_SAMPLING_RATE +
-          " and " + MAX_SAMPLING_RATE);
-    }
-    boundary = (long) (samplingRate * MOD_FACTOR);
+    setSamplingRate(samplingRate);
   }
 
   @Override
@@ -36,5 +32,18 @@ public class RateSampler implements Sampler {
   @Override
   public boolean isEarly() {
     return true;
+  }
+
+  /**
+   * Sets the sampling rate for this sampler.
+   *
+   * @param samplingRate the sampling rate between 0.0 and 1.0
+   */
+  public void setSamplingRate(double samplingRate) {
+    if (samplingRate <= MIN_SAMPLING_RATE || samplingRate >= MAX_SAMPLING_RATE) {
+      throw new IllegalArgumentException("sampling rate must be between " + MIN_SAMPLING_RATE +
+              " and " + MAX_SAMPLING_RATE);
+    }
+    boundary = (long) (samplingRate * MOD_FACTOR);
   }
 }

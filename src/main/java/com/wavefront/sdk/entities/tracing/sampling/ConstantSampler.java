@@ -7,7 +7,7 @@ package com.wavefront.sdk.entities.tracing.sampling;
  */
 public class ConstantSampler implements Sampler {
 
-  private final boolean decision;
+  private volatile boolean decision;
 
   public ConstantSampler(boolean decision) {
     this.decision = decision;
@@ -21,5 +21,14 @@ public class ConstantSampler implements Sampler {
   @Override
   public boolean isEarly() {
     return true;
+  }
+
+  /**
+   * Sets the decision for this sampler.
+   *
+   * @param decision the sampling decision
+   */
+  public void setDecision(boolean decision) {
+    this.decision = decision;
   }
 }
