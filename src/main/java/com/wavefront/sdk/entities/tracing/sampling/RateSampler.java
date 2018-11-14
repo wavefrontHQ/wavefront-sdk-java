@@ -40,7 +40,7 @@ public class RateSampler implements Sampler {
    * @param samplingRate the sampling rate between 0.0 and 1.0
    */
   public void setSamplingRate(double samplingRate) {
-    if (samplingRate <= MIN_SAMPLING_RATE || samplingRate >= MAX_SAMPLING_RATE) {
+    if (samplingRate < MIN_SAMPLING_RATE || samplingRate > MAX_SAMPLING_RATE) {
       throw new IllegalArgumentException("sampling rate must be between " + MIN_SAMPLING_RATE +
               " and " + MAX_SAMPLING_RATE);
     }
