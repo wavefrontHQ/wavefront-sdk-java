@@ -102,11 +102,11 @@ WavefrontSender wavefrontSender = wfDirectIngestionClientBuilder.build();
  ```
  
  
-# Using a WavefrontSender in Wavefront SDKs
+# Sharing a WavefrontSender
 
 Various Wavefront SDKs for Java use this library and require a `WavefrontSender` instance.
 
-If you are using multiple Wavefront Java SDKs within the same JVM process, you can instantiate the WavefrontSender just once and share it amongst the SDKs. 
+If you are using multiple Wavefront Java SDKs within the same JVM process, you can instantiate the WavefrontSender just once and share it among the SDKs. 
  
 For example, the following snippet shows how to use the same `WavefrontSender` when setting up the [wavefront-opentracing-sdk-java](https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java) and  [wavefront-dropwizard-metrics-sdk-java](https://github.com/wavefrontHQ/wavefront-dropwizard-metrics-sdk-java) SDKs.
 
