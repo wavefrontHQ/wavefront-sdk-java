@@ -102,7 +102,7 @@ WavefrontSender wavefrontSender = wfDirectIngestionClientBuilder.build();
  ```
  
  
-# Sharing a WavefrontSender
+# Share a WavefrontSender
 
 Various Wavefront SDKs for Java use this library and require a `WavefrontSender` instance.
 
