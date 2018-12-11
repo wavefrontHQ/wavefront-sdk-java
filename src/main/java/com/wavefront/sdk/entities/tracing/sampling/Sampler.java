@@ -8,12 +8,12 @@ package com.wavefront.sdk.entities.tracing.sampling;
 public interface Sampler {
 
   /**
-   * Gets whether a span should be sampled given it's operation and trace id.
+   * Gets whether a span should be allowed given it's operation and trace id.
    *
    * @param operationName The operation name of the span
    * @param traceId The traceId of the span
    * @param duration The duration of the span in milliseconds
-   * @return true if the trace should be sampled, false otherwise
+   * @return true if the span should be allowed, false otherwise
    */
   boolean sample(String operationName, long traceId, long duration);
 

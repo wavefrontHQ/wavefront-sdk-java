@@ -1,7 +1,7 @@
 package com.wavefront.sdk.entities.tracing.sampling;
 
 /**
- * Sampler that allows traces through at a constant rate (all in or all out).
+ * Sampler that allows spans through at a constant rate (all in or all out).
  *
  * @author Vikram Raman (vikram@wavefront.com)
  */
