@@ -1,6 +1,6 @@
 open_source_licenses.txt
 
-Wavefront by VMware SDK for Java 1.0 GA
+Wavefront Java SDK 1.1 GA
 
 ======================================================================
 
@@ -324,6 +324,8 @@ UNLESS OTHERWISE MUTUALLY AGREED TO BY THE PARTIES IN WRITING, LICENSOR OFFERS T
     No term or provision of this License shall be deemed waived and no breach consented to unless such waiver or consent shall be in writing and signed by the party to be charged with such waiver or consent.
     This License constitutes the entire agreement between the parties with respect to the Work licensed here. There are no understandings, agreements or representations with respect to the Work not specified here. Licensor shall not be bound by any additional provisions that may appear in any communication from You. This License may not be modified without the mutual written agreement of the Licensor and You.
 
+	
+	
 ======================================================================
 
 To the extent any open source components are licensed under the GPL
@@ -342,4 +344,4 @@ Source Files is valid for three years from the date you acquired or last used th
 Software product. Alternatively, the Source Files may accompany the
 VMware service.
 
-[WAVEFRONTSDKJAVA10GAPS110118]
+[WAVEFRONTSDKJAVA11GAPS121218]
