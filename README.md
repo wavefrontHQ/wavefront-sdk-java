@@ -16,7 +16,7 @@ Replace `$releaseVersion` with the latest version available on [maven].
 ## Set Up a WavefrontSender
 You can choose to send metrics, histograms, or trace data from your application to the Wavefront service using one of the following techniques:
 * Use [direct ingestion](https://docs.wavefront.com/direct_ingestion.html) to send the data directly to the Wavefront service. This is the simplest way to get up and running quickly.
-* Use a [Wavefront proxy](https://docs.wavefront.com/proxies.html), which then forwards the data to the Wavefront service. This is the recommended choice for a large-scale deployment that needs resilience to internet outages, control over data queuing and filtering, and more. 
+* Use a [Wavefront proxy](https://docs.wavefront.com/proxies.html), which then forwards the data to the Wavefront service. This is the recommended choice for a large-scale deployment that needs resilience to internet outages, control over data queuing and filtering, and more.
 
 The `WavefrontSender` interface has two implementations. Instantiate the implementation that corresponds to your choice:
 * Option 1: [Create a `WavefrontDirectIngestionClient`](#option-1-create-a-wavefrontdirectingestionclient) to send data directly to a Wavefront service.
@@ -75,7 +75,7 @@ WavefrontSender wavefrontSender = wfDirectIngestionClientBuilder.build();
 To create a `WavefrontProxyClient`, you build it with the information it needs to send data to the Wavefront proxy, including:
 
 * The name of the host that will run the Wavefront proxy.
-* One or more proxy listening ports to send data to. The ports you specify depend on the kinds of data you want to send (metrics, histograms, and/or trace data). You must specify at least one listener port. 
+* One or more proxy listening ports to send data to. The ports you specify depend on the kinds of data you want to send (metrics, histograms, and/or trace data). You must specify at least one listener port.
 * Optional settings for tuning communication with the proxy.
 
 
@@ -102,7 +102,7 @@ wfProxyClientBuilder.flushIntervalSeconds(2);
 WavefrontSender wavefrontSender = wfProxyClientBuilder.build();
  ```
 
- **Note:** When you [set up a Wavefront proxy](https://github.com/wavefrontHQ/java/tree/master/proxy#set-up-a-wavefront-proxy) on the specified proxy host, you specify the port it will listen to for each type of data to be sent. The `WavefrontProxyClient` must send data to the same ports that the Wavefront proxy listens to. Consequently, the port-related builder methods must specify the same port numbers as the corresponding proxy configuration properties: 
+ **Note:** When you [set up a Wavefront proxy](https://github.com/wavefrontHQ/java/tree/master/proxy#set-up-a-wavefront-proxy) on the specified proxy host, you specify the port it will listen to for each type of data to be sent. The `WavefrontProxyClient` must send data to the same ports that the Wavefront proxy listens to. Consequently, the port-related builder methods must specify the same port numbers as the corresponding proxy configuration properties:
 
  | `WavefrontProxyClient` builder method | Corresponding property in `wavefront.conf` |
  | ----- | -------- |
@@ -189,5 +189,5 @@ wavefrontSender.close();
 
 [ci-img]: https://travis-ci.com/wavefrontHQ/wavefront-sdk-java.svg?branch=master
 [ci]: https://travis-ci.com/wavefrontHQ/wavefront-sdk-java
-[maven-img]: https://img.shields.io/maven-central/v/com.wavefront/wavefront-sdk-java.svg?maxAge=2592000
+[maven-img]: https://img.shields.io/maven-central/v/com.wavefront/wavefront-sdk-java.svg?maxAge=604800
 [maven]: http://search.maven.org/#search%7Cga%7C1%7Cwavefront-sdk-java
