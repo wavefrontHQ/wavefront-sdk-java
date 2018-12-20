@@ -114,6 +114,21 @@ public class WavefrontHistogramImplTest {
   }
 
   @Test
+  public void testFlushSnapshot() {
+    WavefrontHistogramImpl wh = createPow10Histogram(clock::get);
+    clock.addAndGet(60000L + 1);
+    wh.update(-1);
+
+    Snapshot snapshot = wh.flushSnapshot();
+
+    assertEquals(9, snapshot.getCount());
+    assertEquals(121121.1, snapshot.getSum(), DELTA);
+
+    // check that all prior minutes in the histogram have been cleared
+    assertEquals(1, wh.getCount());
+  }
+
+  @Test
   public void testBulkUpdate() {
     WavefrontHistogramImpl wh = new WavefrontHistogramImpl(clock::get);
     wh.bulkUpdate(Arrays.asList(24.2, 84.35, 1002.0), Arrays.asList(80, 1, 9));

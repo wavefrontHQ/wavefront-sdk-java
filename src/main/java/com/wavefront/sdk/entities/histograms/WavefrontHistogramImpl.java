@@ -245,6 +245,50 @@ public class WavefrontHistogramImpl {
     return distributions;
   }
 
+  private Snapshot processGlobalHistogramBinsListForSnapshot(long cutoffMillis) {
+    final TDigest snapshot = new AVLTreeDigest(ACCURACY);
+    Iterator<WeakReference<ConcurrentLinkedDeque<MinuteBin>>> globalBinsIter =
+            globalHistogramBinsList.iterator();
+    while (globalBinsIter.hasNext()) {
+      WeakReference<ConcurrentLinkedDeque<MinuteBin>> weakRef = globalBinsIter.next();
+      ConcurrentLinkedDeque<MinuteBin> sharedBinsInstance = weakRef.get();
+      if (sharedBinsInstance == null) {
+        // Weak reference already garbage collected, hence remove the weakRef from global list
+        globalBinsIter.remove();
+        continue;
+      }
+
+      Iterator<MinuteBin> binsIter = sharedBinsInstance.iterator();
+      while (binsIter.hasNext()) {
+        MinuteBin minuteBin = binsIter.next();
+        if (minuteBin.minuteMillis < cutoffMillis) {
+          snapshot.add(minuteBin.distribution);
+          binsIter.remove();
+        }
+      }
+    }
+    return new Snapshot(snapshot);
+  }
+
+  /**
+   * Aggregates all the minute bins prior to the current minute (because threads might be
+   * updating the current minute bin while the method is invoked) and returns a {@link Snapshot}
+   * of the distributions across all aggregated bins. Note that invoking this method will also
+   * clear all data from the aggregated bins, thereby changing the state of the system and
+   * preventing data from being flushed more than once.
+   *
+   * @return returns a statistical {@link Snapshot} of the histogram distribution.
+   */
+  public Snapshot flushSnapshot() {
+    final long cutoffMillis = currentMinuteMillis();
+    try {
+      writeLock.lock();
+      return processGlobalHistogramBinsListForSnapshot(cutoffMillis);
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
   /**
    * @return returns a statistical {@link Snapshot} of the histogram distribution.
    */
