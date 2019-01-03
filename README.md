@@ -13,6 +13,13 @@ If you are using Maven, add the following maven dependency to your pom.xml:
 ```
 Replace `$releaseVersion` with the latest version available on [maven].
 
+## Gradle
+If you are using Gradle, add the following to dependencies:
+```
+compile group: 'com.wavefront', name: 'wavefront-sdk-java', version: '$releaseVersion'
+```
+Replace `$releaseVersion` with the latest version available on [maven].
+
 ## Set Up a WavefrontSender
 You can choose to send metrics, histograms, or trace data from your application to the Wavefront service using one of the following techniques:
 * Use [direct ingestion](https://docs.wavefront.com/direct_ingestion.html) to send the data directly to the Wavefront service. This is the simplest way to get up and running quickly.
