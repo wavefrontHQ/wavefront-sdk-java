@@ -113,9 +113,9 @@ WavefrontSender wavefrontSender = wfProxyClientBuilder.build();
 
  | `WavefrontProxyClient` builder method | Corresponding property in `wavefront.conf` |
  | ----- | -------- |
- | `metricsPort()` | `pushListenerPort=` |
- | `distributionPort()` | `histogramDistListenerPort=` |
- | `tracingPort()` | `traceListenerPort=` |
+ | `metricsPort()` | `pushListenerPorts=` |
+ | `distributionPort()` | `histogramDistListenerPorts=` |
+ | `tracingPort()` | `traceListenerPorts=` |
 
 ## Send Data to Wavefront
 
