@@ -1,9 +1,16 @@
 package com.wavefront.sdk.common.application;
 
+import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.annotation.Nullable;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.wavefront.sdk.common.Constants.APPLICATION_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.CLUSTER_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.SERVICE_TAG_KEY;
+import static com.wavefront.sdk.common.Constants.SHARD_TAG_KEY;
 
 /**
  * Metadata about your application represented as tags in Wavefront.
@@ -143,5 +150,22 @@ public class ApplicationTags {
   @Nullable
   public Map<String, String> getCustomTags() {
     return customTags;
+  }
+
+  /**
+   * Converts ApplicationTags to PointTags HashMap.
+   *
+   * @return PointTag Map which is immutable.
+   */
+  public Map<String, String> toPointTags() {
+    return Collections.unmodifiableMap(new HashMap<String, String>() {{
+      put(APPLICATION_TAG_KEY, application);
+      put(CLUSTER_TAG_KEY, cluster == null ? Constants.NULL_TAG_VAL : cluster);
+      put(SERVICE_TAG_KEY, service);
+      put(SHARD_TAG_KEY, shard == null ? Constants.NULL_TAG_VAL : shard);
+      if (customTags != null) {
+        putAll(customTags);
+      }
+    }});
   }
 }
