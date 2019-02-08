@@ -163,6 +163,9 @@ public class ApplicationTags {
       put(CLUSTER_TAG_KEY, cluster == null ? Constants.NULL_TAG_VAL : cluster);
       put(SERVICE_TAG_KEY, service);
       put(SHARD_TAG_KEY, shard == null ? Constants.NULL_TAG_VAL : shard);
+      if (customTags != null) {
+        putAll(customTags);
+      }
     }});
   }
 }
