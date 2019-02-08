@@ -3,6 +3,7 @@ package com.wavefront.sdk;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.proxy.WavefrontProxyClient;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

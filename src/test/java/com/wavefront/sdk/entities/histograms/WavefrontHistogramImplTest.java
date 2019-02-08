@@ -3,6 +3,7 @@ package com.wavefront.sdk.entities.histograms;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.entities.histograms.WavefrontHistogramImpl.Distribution;
 import com.wavefront.sdk.entities.histograms.WavefrontHistogramImpl.Snapshot;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
