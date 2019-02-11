@@ -50,10 +50,10 @@ public class Utils {
     final StringBuilder sb = new StringBuilder();
     sb.append(sanitize(name));
     sb.append(' ');
-    sb.append(Double.toString(value));
+    sb.append(value);
     if (timestamp != null) {
       sb.append(' ');
-      sb.append(Long.toString(timestamp));
+      sb.append(timestamp);
     }
     sb.append(" source=");
     sb.append(sanitize(source));
