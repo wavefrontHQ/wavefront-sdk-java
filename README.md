@@ -168,8 +168,8 @@ wavefrontSender.sendDistribution("request.latency",
  //           spanId=0313bafe-9457-11e8-9eb6-529269fb1459
  //           parent=2f64e538-9457-11e8-9eb6-529269fb1459
  //           application=Wavefront http.method=GET
- //           1533529977 343500"
-wavefrontSender.sendSpan("getAllUsers",1533529977L, 343500L, "localhost",
+ //           1552949776000 343"
+wavefrontSender.sendSpan("getAllUsers", 1552949776000L, 343, "localhost",
       UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
       UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
       ImmutableList.<UUID>builder().add(UUID.fromString(
