@@ -33,7 +33,8 @@ public class DataIngesterService implements DataIngesterAPI {
     int statusCode = 400;
     HttpURLConnection urlConn = null;
     try {
-      URL url = new URL(uri.getScheme(), uri.getHost(), uri.getPort(), "/report?f=" + format);
+      String originalPath = uri.getPath() != null ? uri.getPath() : "";
+      URL url = new URL(uri.getScheme(), uri.getHost(), uri.getPort(), originalPath + "/report?f=" + format);
       urlConn = (HttpURLConnection) url.openConnection();
       urlConn.setDoOutput(true);
       urlConn.addRequestProperty("Content-Type", "application/octet-stream");
