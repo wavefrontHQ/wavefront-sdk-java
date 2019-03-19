@@ -44,12 +44,9 @@ public class DataIngesterService implements DataIngesterAPI {
       urlConn.setReadTimeout(READ_TIMEOUT_MILLIS);
 
       try (GZIPOutputStream gzipOS = new GZIPOutputStream(urlConn.getOutputStream())) {
-        // As long as there are bytes remaining to be read, read them in chunks of 4k bytes.
+        byte[] buffer = new byte[4096];
         while (stream.available() > 0) {
-          // Allocate only as much as required.
-          byte[] buffer = new byte[Math.min(stream.available(), 4096)];
-          stream.read(buffer);
-          gzipOS.write(buffer);
+          gzipOS.write(buffer, 0, stream.read(buffer));
         }
         gzipOS.flush();
       }
