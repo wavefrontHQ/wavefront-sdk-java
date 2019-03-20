@@ -46,8 +46,8 @@ public class DataIngesterService implements DataIngesterAPI {
 
       try (GZIPOutputStream gzipOS = new GZIPOutputStream(urlConn.getOutputStream())) {
         byte[] buffer = new byte[4096];
-        while (stream.read(buffer) > 0) {
-          gzipOS.write(buffer);
+        while (stream.available() > 0) {
+          gzipOS.write(buffer, 0, stream.read(buffer));
         }
         gzipOS.flush();
       }
