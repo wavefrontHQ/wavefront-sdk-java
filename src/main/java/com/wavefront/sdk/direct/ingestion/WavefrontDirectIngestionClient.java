@@ -18,6 +18,7 @@ import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +52,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final String clientId;
 
   private final int batchSize;
+  private final Integer messageSize;
   private final LinkedBlockingQueue<String> metricsBuffer;
   private final LinkedBlockingQueue<String> histogramsBuffer;
   private final LinkedBlockingQueue<String> tracingSpansBuffer;
@@ -92,6 +94,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     private int maxQueueSize = 50000;
     private int batchSize = 10000;
     private int flushIntervalSeconds = 1;
+    private Integer messageSizeKb = null;
 
     /**
      * Create a new WavefrontDirectIngestionClient.Builder
@@ -138,6 +141,19 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     }
 
     /**
+     * If configured, each batch is reported as one or more messages, with no message exceeding the
+     * specified number of kilobytes of data. By default, each batch is reported as a single
+     * message.
+     *
+     * @param kilobytes Maximum number of kilobytes of data that each reported message contains.
+     * @return {@code this}
+     */
+    public Builder messageSize(int kilobytes) {
+      this.messageSizeKb = kilobytes;
+      return this;
+    }
+
+    /**
      * Creates a new client that connects directly to a given Wavefront service.
      *
      * return {@link WavefrontDirectIngestionClient}
@@ -158,6 +174,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     defaultSource = tempSource;
 
     batchSize = builder.batchSize;
+    messageSize = builder.messageSizeKb == null ? null : builder.messageSizeKb * 1024;
     metricsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     histogramsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     tracingSpansBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
@@ -337,8 +354,55 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private void internalFlush(LinkedBlockingQueue<String> buffer, String format, String entityPrefix,
                              WavefrontSdkCounter dropped, WavefrontSdkCounter reportErrors)
       throws IOException {
+    for (List<String> batch : getBatches(buffer)) {
+      internalFlushBatch(buffer, format, batch);
+    }
+  }
 
-    List<String> batch = getBatch(buffer);
+  private List<List<String>> getBatches(LinkedBlockingQueue<String> buffer) {
+    List<String> block = getBlock(buffer);
+
+    if (messageSize == null) {
+      return Collections.singletonList(block);
+    }
+
+    List<List<String>> batches = new ArrayList<>();
+    List<String> batch = new ArrayList<>();
+    int numBytesInBatch = 0;
+
+    for (String item : block) {
+      int numBytes = item.getBytes().length;
+      if (numBytesInBatch + numBytes > messageSize) {
+        if (!batch.isEmpty()) {
+          batches.add(batch);
+        }
+        batch = new ArrayList<>();
+        numBytesInBatch = 0;
+      }
+      if (numBytes > messageSize) {
+        logger.log(Level.WARNING,
+                "Unable to report data that exceeds messageSize: " + item);
+      } else {
+        batch.add(item);
+      }
+      numBytesInBatch += numBytes;
+    }
+    if (!batch.isEmpty()) {
+      batches.add(batch);
+    }
+
+    return batches;
+  }
+
+  private List<String> getBlock(LinkedBlockingQueue<String> buffer) {
+    int blockSize = Math.min(buffer.size(), batchSize);
+    List<String> points = new ArrayList<>(blockSize);
+    buffer.drainTo(points, blockSize);
+    return points;
+  }
+
+  private void internalFlushBatch(LinkedBlockingQueue<String> buffer, String format,
+                                  List<String> batch) throws IOException {
     if (batch.isEmpty()) {
       return;
     }
@@ -364,13 +428,6 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       reportErrors.inc();
       throw ex;
     }
-  }
-
-  private List<String> getBatch(LinkedBlockingQueue<String> buffer) {
-    int blockSize = Math.min(buffer.size(), batchSize);
-    List<String> points = new ArrayList<>(blockSize);
-    buffer.drainTo(points, blockSize);
-    return points;
   }
 
   private InputStream batchToStream(List<String> batch) {
