@@ -64,8 +64,8 @@ WavefrontProxyClient.Builder wfProxyClientBuilder = new WavefrontProxyClient.Bui
 // Set the proxy port to send metrics to. Default: 2878
 wfProxyClientBuilder.metricsPort(2878);
 
-// Set a proxy port to send histograms to.  Recommended: 40000
-wfProxyClientBuilder.distributionPort(40_000);
+// Set a proxy port to send histograms to.  Recommended: 2878
+wfProxyClientBuilder.distributionPort(2878);
 
 // Set a proxy port to send trace data to. Recommended: 30000
 wfProxyClientBuilder.tracingPort(30_000);
