@@ -1,14 +1,21 @@
 package com.wavefront.sdk.common;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
+import com.wavefront.sdk.entities.tracing.SpanLogsDTO;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nonnull;
+
+import static com.wavefront.sdk.common.Constants.SPAN_LOG_KEY;
 
 /**
  * Common Util methods
@@ -18,6 +25,7 @@ import java.util.regex.Pattern;
 public class Utils {
 
   private static final Pattern WHITESPACE = Pattern.compile("[\\s]+");
+  private static final ObjectMapper JSON_PARSER = new ObjectMapper();
 
   public static String sanitize(String s) {
     final String whitespaceSanitized = WHITESPACE.matcher(s).replaceAll("-");
@@ -149,8 +157,7 @@ public class Utils {
                                              @Nullable List<UUID> parents,
                                              @Nullable List<UUID> followsFrom,
                                              @Nullable List<Pair<String, String>> tags,
-                                             @Nullable List<SpanLog> spanLogs,
-                                             String defaultSource) {
+                                             boolean addSpanLogsTag, String defaultSource) {
     /*
      * Wavefront Tracing Span Data format
      * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milli_seconds>
@@ -205,6 +212,12 @@ public class Utils {
         sb.append(sanitize(tag._2));
       }
     }
+    if (addSpanLogsTag) {
+      sb.append(' ');
+      sb.append(SPAN_LOG_KEY);
+      sb.append('=');
+      sb.append("true");
+    }
     sb.append(' ');
     sb.append(startMillis);
     sb.append(' ');
@@ -212,5 +225,13 @@ public class Utils {
     // TODO - Support SpanLogs
     sb.append('\n');
     return sb.toString();
+  }
+
+  public static String spanLogsToJsonLine(UUID traceId, UUID spanId, @Nonnull List<SpanLog> spanLogs)
+      throws JsonProcessingException {
+    StringBuilder toReturn = new StringBuilder();
+    toReturn.append(JSON_PARSER.writeValueAsString(new SpanLogsDTO(traceId, spanId, spanLogs)));
+    toReturn.append("\n");
+    return toReturn.toString();
   }
 }

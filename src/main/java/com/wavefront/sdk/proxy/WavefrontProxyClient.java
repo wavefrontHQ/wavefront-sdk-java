@@ -1,5 +1,6 @@
 package com.wavefront.sdk.proxy;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.WavefrontSender;
@@ -25,6 +26,7 @@ import javax.net.SocketFactory;
 
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
+import static com.wavefront.sdk.common.Utils.spanLogsToJsonLine;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 
 /**
@@ -267,16 +269,33 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
 
     try {
+      boolean spanLogsTag = (spanLogs != null && spanLogs.isEmpty());
       String lineData = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
-          spanId, parents, followsFrom, tags, spanLogs, defaultSource);
+          spanId, parents, followsFrom, tags, spanLogsTag, defaultSource);
       try {
         tracingProxyConnectionHandler.sendData(lineData);
       } catch (Exception e) {
         throw new IOException(e);
       }
+      if (spanLogsTag) {
+        sendSpanLogsData(traceId, spanId, spanLogs);
+      }
     } catch (IOException e) {
       tracingProxyConnectionHandler.incrementFailureCount();
       throw e;
+    }
+  }
+
+  private void sendSpanLogsData(UUID traceId, UUID spanId, List<SpanLog> spanLogs) {
+    try {
+      String spanLogsJson = spanLogsToJsonLine(traceId, spanId, spanLogs);
+      tracingProxyConnectionHandler.sendData(spanLogsJson);
+    } catch (JsonProcessingException e) {
+      logger.log(Level.WARNING, "unable to serialize span logs to json: traceId:" + traceId +
+          " spanId:" + spanId + " spanLogs:" + spanLogs);
+    } catch (Exception e) {
+      logger.log(Level.WARNING, "unable to send span logs for traceId:" + traceId +
+          " spanId:" + spanId + " due to exception: " + e);
     }
   }
 

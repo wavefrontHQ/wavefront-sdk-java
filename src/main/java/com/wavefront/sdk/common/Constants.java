@@ -26,6 +26,11 @@ public final class Constants {
   public static final String WAVEFRONT_TRACING_SPAN_FORMAT = "trace";
 
   /**
+   * Use this format to send tracing span log data to Wavefront
+   */
+  public static final String WAVEFRONT_TRACING_SPAN_LOG_FORMAT = "spanLogs";
+
+  /**
    * ∆: INCREMENT
    */
   public static final String DELTA_PREFIX = "\u2206";
@@ -79,4 +84,9 @@ public final class Constants {
    * Tag key for defining a component.
    */
   public static final String COMPONENT_TAG_KEY = "component";
+
+  /**
+   * Tag key for indicating spans log are present for a span.
+   */
+  public static final String SPAN_LOG_KEY = "spanLogs";
 }

@@ -1,5 +1,6 @@
 package com.wavefront.sdk.direct.ingestion;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
@@ -26,6 +27,7 @@ import java.util.logging.Logger;
 
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
+import static com.wavefront.sdk.common.Utils.spanLogsToJsonLine;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 
 /**
@@ -44,6 +46,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final LinkedBlockingQueue<String> metricsBuffer;
   private final LinkedBlockingQueue<String> histogramsBuffer;
   private final LinkedBlockingQueue<String> tracingSpansBuffer;
+  private final LinkedBlockingQueue<String> spanLogsBuffer;
   private final DataIngesterAPI directService;
   private final ScheduledExecutorService scheduler;
 
@@ -116,6 +119,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     metricsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     histogramsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     tracingSpansBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
+    spanLogsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     directService = new DataIngesterService(builder.server, builder.token);
     scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory(DEFAULT_SOURCE));
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
@@ -150,10 +154,29 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                        @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                        @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
       throws IOException {
+    // first set the tag to indicate spanLogs are present, attempt to serialize the span
+    boolean addSpanLogsTag = (spanLogs != null && !spanLogs.isEmpty());
     String span = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
-        spanId, parents, followsFrom, tags, spanLogs, DEFAULT_SOURCE);
+        spanId, parents, followsFrom, tags, addSpanLogsTag, DEFAULT_SOURCE);
     if (!tracingSpansBuffer.offer(span)) {
       logger.log(Level.WARNING, "Buffer full, dropping span: " + span);
+    }
+    // attempt span logs after span is sent.
+    if (addSpanLogsTag) {
+      sendSpanLogs(traceId, spanId, spanLogs);
+    }
+  }
+
+  private void sendSpanLogs(UUID traceId, UUID spanId, List<SpanLog> spanLogs) {
+    // attempt span logs
+    try {
+      String spanLogsJson = spanLogsToJsonLine(traceId, spanId, spanLogs);
+      if (!spanLogsBuffer.offer(spanLogsJson)) {
+        logger.log(Level.WARNING, "Buffer full, dropping spanLogs: " + spanLogsJson);
+      }
+    } catch (JsonProcessingException e) {
+      logger.log(Level.WARNING, "unable to serialize span logs to json: traceId:" + traceId +
+          " spanId:" + spanId + " spanLogs:" + spanLogs);
     }
   }
 
@@ -171,6 +194,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT);
     internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT);
     internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT);
+    internalFlush(spanLogsBuffer, Constants.WAVEFRONT_TRACING_SPAN_LOG_FORMAT);
   }
 
   private void internalFlush(LinkedBlockingQueue<String> buffer, String format)
