@@ -269,15 +269,14 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
 
     try {
-      boolean spanLogsTag = (spanLogs != null && spanLogs.isEmpty());
       String lineData = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
-          spanId, parents, followsFrom, tags, spanLogsTag, defaultSource);
+          spanId, parents, followsFrom, tags, spanLogs, defaultSource);
       try {
         tracingProxyConnectionHandler.sendData(lineData);
       } catch (Exception e) {
         throw new IOException(e);
       }
-      if (spanLogsTag) {
+      if (spanLogs != null && spanLogs.isEmpty()) {
         sendSpanLogsData(traceId, spanId, spanLogs);
       }
     } catch (IOException e) {

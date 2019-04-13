@@ -157,7 +157,7 @@ public class Utils {
                                              @Nullable List<UUID> parents,
                                              @Nullable List<UUID> followsFrom,
                                              @Nullable List<Pair<String, String>> tags,
-                                             boolean addSpanLogsTag, String defaultSource) {
+                                             @Nullable List<SpanLog> spanLogs, String defaultSource) {
     /*
      * Wavefront Tracing Span Data format
      * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milli_seconds>
@@ -212,7 +212,7 @@ public class Utils {
         sb.append(sanitize(tag._2));
       }
     }
-    if (addSpanLogsTag) {
+    if (spanLogs != null  && !spanLogs.isEmpty()) {
       sb.append(' ');
       sb.append(SPAN_LOG_KEY);
       sb.append('=');

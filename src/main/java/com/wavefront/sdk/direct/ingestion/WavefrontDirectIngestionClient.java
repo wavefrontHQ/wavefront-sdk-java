@@ -154,15 +154,13 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                        @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                        @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
       throws IOException {
-    // first set the tag to indicate spanLogs are present, attempt to serialize the span
-    boolean addSpanLogsTag = (spanLogs != null && !spanLogs.isEmpty());
     String span = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
-        spanId, parents, followsFrom, tags, addSpanLogsTag, DEFAULT_SOURCE);
+        spanId, parents, followsFrom, tags, spanLogs, DEFAULT_SOURCE);
     if (!tracingSpansBuffer.offer(span)) {
       logger.log(Level.WARNING, "Buffer full, dropping span: " + span);
     }
     // attempt span logs after span is sent.
-    if (addSpanLogsTag) {
+    if (spanLogs != null && !spanLogs.isEmpty()) {
       sendSpanLogs(traceId, spanId, spanLogs);
     }
   }

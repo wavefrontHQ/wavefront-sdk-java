@@ -141,7 +141,7 @@ public class WavefrontTest {
             Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")),
             Arrays.asList(UUID.fromString("5f64e538-9457-11e8-9eb6-529269fb1459")),
             Arrays.asList(new Pair<>("application", "Wavefront"),
-                new Pair<>("http.method", "GET")), false, "defaultSource"));
+                new Pair<>("http.method", "GET")), null, "defaultSource"));
 
     // null followsFrom
     assertEquals("\"getAllUsers\" source=\"localhost\" " +
@@ -153,7 +153,7 @@ public class WavefrontTest {
             UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
             Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")), null,
         Arrays.asList(new Pair<>("application", "Wavefront"),
-            new Pair<>("http.method", "GET")), false, "defaultSource"));
+            new Pair<>("http.method", "GET")), null, "defaultSource"));
 
     // root span
     assertEquals("\"getAllUsers\" source=\"localhost\" " +
@@ -164,7 +164,7 @@ public class WavefrontTest {
             UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"), UUID.fromString(
                 "0313bafe-9457-11e8-9eb6-529269fb1459"), null, null,
             Arrays.asList(new Pair<>("application", "Wavefront"),
-                new Pair<>("http.method", "GET")), false, "defaultSource"));
+                new Pair<>("http.method", "GET")), null, "defaultSource"));
 
     // null tags
     assertEquals("\"getAllUsers\" source=\"localhost\" " +
@@ -172,7 +172,7 @@ public class WavefrontTest {
             "1493773500 343500\n",
         tracingSpanToLineData("getAllUsers", 1493773500L, 343500L, "localhost",
             UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"), UUID.fromString(
-                "0313bafe-9457-11e8-9eb6-529269fb1459"), null, null, null, false, "defaultSource"));
+                "0313bafe-9457-11e8-9eb6-529269fb1459"), null, null, null, null, "defaultSource"));
   }
 
   @Test
