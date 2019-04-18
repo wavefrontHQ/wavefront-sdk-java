@@ -32,6 +32,15 @@ public interface WavefrontMetricSender {
                   @Nullable Map<String, String> tags) throws IOException;
 
   /**
+   * Similar to {@link #sendMetric(String, double, Long, String, Map)}, only the {@code point}
+   * argument is expected to already be in Wavefront Data Format
+   *
+   * @param point a single metric, encoded in Wavefront Data Format
+   * @throws IOException if there was an error sending the metric.
+   */
+  void sendMetric(String point) throws IOException;
+
+  /**
    * Sends the given delta counter to Wavefront. The timestamp for the point on the client side is
    * null because the final timestamp of the delta counter is assigned when the point is
    * aggregated on the server side. Do not use this method to send older points (say around 5 min

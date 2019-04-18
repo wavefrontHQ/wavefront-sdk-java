@@ -126,6 +126,11 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                          @Nullable String source, @Nullable Map<String, String> tags)
       throws IOException {
     String point = metricToLineData(name, value, timestamp, source, tags, DEFAULT_SOURCE);
+    sendMetric(point);
+  }
+
+  @Override
+  public void sendMetric(String point) throws IOException {
     if (!metricsBuffer.offer(point)) {
       logger.log(Level.WARNING, "Buffer full, dropping metric point: " + point);
     }
