@@ -38,7 +38,7 @@ public interface WavefrontMetricSender {
    * @param point a single metric, encoded in Wavefront Data Format
    * @throws IOException if there was an error sending the metric.
    */
-  void sendMetric(String point) throws IOException;
+  void sendFormattedMetric(String point) throws IOException;
 
   /**
    * Sends the given delta counter to Wavefront. The timestamp for the point on the client side is

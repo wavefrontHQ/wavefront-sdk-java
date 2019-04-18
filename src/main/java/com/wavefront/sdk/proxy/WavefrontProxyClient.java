@@ -181,7 +181,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
   }
 
-  private boolean setupSendMetric() throws IOException {
+  private boolean setupConnection() throws IOException {
     if (metricsProxyConnectionHandler == null) {
       logger.warning("Can't send data to Wavefront. " +
               "Please configure metrics port for Wavefront proxy");
@@ -202,7 +202,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
       throws IOException {
-    if (!setupSendMetric()) {
+    if (!setupConnection()) {
       return;
     }
 
@@ -220,8 +220,8 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   }
 
   @Override
-  public void sendMetric(String point) throws IOException {
-    if (!setupSendMetric()) {
+  public void sendFormattedMetric(String point) throws IOException {
+    if (!setupConnection()) {
       return;
     }
 

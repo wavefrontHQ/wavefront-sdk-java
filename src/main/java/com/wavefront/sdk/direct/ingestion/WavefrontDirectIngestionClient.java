@@ -126,13 +126,17 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                          @Nullable String source, @Nullable Map<String, String> tags)
       throws IOException {
     String point = metricToLineData(name, value, timestamp, source, tags, DEFAULT_SOURCE);
-    sendMetric(point);
+    sendFormattedMetric(point);
   }
 
   @Override
-  public void sendMetric(String point) throws IOException {
-    if (!metricsBuffer.offer(point)) {
-      logger.log(Level.WARNING, "Buffer full, dropping metric point: " + point);
+  public void sendFormattedMetric(String point) throws IOException {
+    if (point == null || "".equals(point.trim())) {
+      throw new IllegalArgumentException("point must be non-null and in WF data format");
+    }
+    String finalPoint = point.endsWith("\n") ? point : point + "\n";
+    if (!metricsBuffer.offer(finalPoint)) {
+      logger.log(Level.WARNING, "Buffer full, dropping metric point: " + finalPoint);
     }
   }
 
