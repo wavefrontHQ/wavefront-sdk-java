@@ -79,4 +79,9 @@ public final class Constants {
    * Tag key for defining a component.
    */
   public static final String COMPONENT_TAG_KEY = "component";
+
+  /**
+   * Name prefix for internal diagnostic metrics for Wavefront SDKs.
+   */
+  public static final String SDK_METRIC_PREFIX = "~sdk.java";
 }

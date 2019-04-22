@@ -1,9 +1,9 @@
 package com.wavefront.sdk.proxy;
 
-import com.wavefront.sdk.common.NamedThreadFactory;
-import com.wavefront.sdk.common.Pair;
-import com.wavefront.sdk.common.WavefrontSender;
+import com.wavefront.sdk.common.*;
 import com.wavefront.sdk.common.annotation.Nullable;
+import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
+import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
 
@@ -53,6 +53,21 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   private final String defaultSource;
 
   private final ScheduledExecutorService scheduler;
+  private final WavefrontSdkMetricsRegistry sdkMetricsRegistry;
+
+  // Internal point metrics
+  private final WavefrontSdkCounter pointsReceived;
+  private final WavefrontSdkCounter pointsDropped;
+
+  // Internal histogram metrics
+  private final WavefrontSdkCounter histogramsReceived;
+  private final WavefrontSdkCounter histogramsDropped;
+
+  // Internal tracing span metrics
+  private final WavefrontSdkCounter spansReceived;
+  private final WavefrontSdkCounter spansDropped;
+
+  private final WavefrontSdkCounter reportErrors;
 
   public static class Builder {
     // Required parameters
@@ -179,6 +194,21 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
         new NamedThreadFactory("wavefrontProxySender"));
     // flush every 5 seconds
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
+
+    sdkMetricsRegistry = new WavefrontSdkMetricsRegistry.Builder(this).
+        prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.proxy").
+        build();
+
+    pointsReceived = sdkMetricsRegistry.newCounter("points.received");
+    pointsDropped = sdkMetricsRegistry.newCounter("points.dropped");
+
+    histogramsReceived = sdkMetricsRegistry.newCounter("histograms.received");
+    histogramsDropped = sdkMetricsRegistry.newCounter("histograms.dropped");
+
+    spansReceived = sdkMetricsRegistry.newCounter("spans.received");
+    spansDropped = sdkMetricsRegistry.newCounter("spans.dropped");
+
+    reportErrors = sdkMetricsRegistry.newCounter("errors");
   }
 
   private boolean setupConnection() throws IOException {
@@ -207,13 +237,16 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
 
     try {
+      String lineData = metricToLineData(name, value, timestamp, source, tags, defaultSource);
+      pointsReceived.inc();
       try {
-        String lineData = metricToLineData(name, value, timestamp, source, tags, defaultSource);
         metricsProxyConnectionHandler.sendData(lineData);
       } catch (Exception e) {
         throw new IOException(e);
       }
     } catch (IOException e) {
+      pointsDropped.inc();
+      reportErrors.inc();
       metricsProxyConnectionHandler.incrementFailureCount();
       throw e;
     }
@@ -226,12 +259,19 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
 
     try {
+      if (point == null || "".equals(point.trim())) {
+        throw new IllegalArgumentException("point must be non-null and in WF data format");
+      }
+      pointsReceived.inc();
+      String finalPoint = point.endsWith("\n") ? point : point + "\n";
       try {
-        metricsProxyConnectionHandler.sendData(point);
+        metricsProxyConnectionHandler.sendData(finalPoint);
       } catch (Exception e) {
         throw new IOException(e);
       }
     } catch (IOException e) {
+      pointsDropped.inc();
+      reportErrors.inc();
       metricsProxyConnectionHandler.incrementFailureCount();
       throw e;
     }
@@ -260,12 +300,15 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     try {
       String lineData = histogramToLineData(name, centroids, histogramGranularities, timestamp,
           source, tags, defaultSource);
+      histogramsReceived.inc();
       try {
         histogramProxyConnectionHandler.sendData(lineData);
       } catch (Exception e) {
         throw new IOException(e);
       }
     } catch (IOException e) {
+      histogramsDropped.inc();
+      reportErrors.inc();
       histogramProxyConnectionHandler.incrementFailureCount();
       throw e;
     }
@@ -294,12 +337,15 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     try {
       String lineData = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
           spanId, parents, followsFrom, tags, spanLogs, defaultSource);
+      spansReceived.inc();
       try {
         tracingProxyConnectionHandler.sendData(lineData);
       } catch (Exception e) {
         throw new IOException(e);
       }
     } catch (IOException e) {
+      spansDropped.inc();
+      reportErrors.inc();
       tracingProxyConnectionHandler.incrementFailureCount();
       throw e;
     }
@@ -348,6 +394,8 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
 
   @Override
   public void close() {
+    sdkMetricsRegistry.close();
+
     // Flush before closing
     try {
       flush();

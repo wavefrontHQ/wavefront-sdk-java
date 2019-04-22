@@ -1,8 +1,6 @@
-package com.wavefront.sdk;
+package com.wavefront.sdk.common;
 
-import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
-import com.wavefront.sdk.proxy.WavefrontProxyClient;
 
 import org.junit.jupiter.api.Test;
 
@@ -22,11 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * Tests for {@link WavefrontProxyClient}
+ * Tests for {@link Utils}
  *
  * @author Clement Pang (clement@wavefront.com).
  */
-public class WavefrontTest {
+public class UtilsTest {
 
   @Test
   public void testSanitize() {

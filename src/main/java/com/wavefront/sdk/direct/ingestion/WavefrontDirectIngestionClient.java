@@ -1,10 +1,9 @@
 package com.wavefront.sdk.direct.ingestion;
 
-import com.wavefront.sdk.common.Constants;
-import com.wavefront.sdk.common.NamedThreadFactory;
-import com.wavefront.sdk.common.Pair;
-import com.wavefront.sdk.common.WavefrontSender;
+import com.wavefront.sdk.common.*;
 import com.wavefront.sdk.common.annotation.Nullable;
+import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
+import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
 
@@ -20,7 +19,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,13 +37,27 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private static final Logger logger = Logger.getLogger(
       WavefrontDirectIngestionClient.class.getCanonicalName());
 
-  private final AtomicInteger failures = new AtomicInteger();
   private final int batchSize;
   private final LinkedBlockingQueue<String> metricsBuffer;
   private final LinkedBlockingQueue<String> histogramsBuffer;
   private final LinkedBlockingQueue<String> tracingSpansBuffer;
   private final DataIngesterAPI directService;
   private final ScheduledExecutorService scheduler;
+  private final WavefrontSdkMetricsRegistry sdkMetricsRegistry;
+
+  // Internal point metrics
+  private final WavefrontSdkCounter pointsReceived;
+  private final WavefrontSdkCounter pointsDropped;
+
+  // Internal histogram metrics
+  private final WavefrontSdkCounter histogramsReceived;
+  private final WavefrontSdkCounter histogramsDropped;
+
+  // Internal tracing span metrics
+  private final WavefrontSdkCounter spansReceived;
+  private final WavefrontSdkCounter spansDropped;
+
+  private final WavefrontSdkCounter reportErrors;
 
   public static class Builder {
     // Required parameters
@@ -119,6 +131,29 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     directService = new DataIngesterService(builder.server, builder.token);
     scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory(DEFAULT_SOURCE));
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
+    sdkMetricsRegistry = new WavefrontSdkMetricsRegistry.Builder(this).
+        prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.direct").
+        build();
+
+    sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);
+    sdkMetricsRegistry.newGauge("points.queue.remaining_capacity",
+        metricsBuffer::remainingCapacity);
+    pointsReceived = sdkMetricsRegistry.newCounter("points.received");
+    pointsDropped = sdkMetricsRegistry.newCounter("points.dropped");
+
+    sdkMetricsRegistry.newGauge("histograms.queue.size", histogramsBuffer::size);
+    sdkMetricsRegistry.newGauge("histograms.queue.remaining_capacity",
+        histogramsBuffer::remainingCapacity);
+    histogramsReceived = sdkMetricsRegistry.newCounter("histograms.received");
+    histogramsDropped = sdkMetricsRegistry.newCounter("histograms.dropped");
+
+    sdkMetricsRegistry.newGauge("spans.queue.size", tracingSpansBuffer::size);
+    sdkMetricsRegistry.newGauge("spans.queue.remaining_capacity",
+        tracingSpansBuffer::remainingCapacity);
+    spansReceived = sdkMetricsRegistry.newCounter("spans.received");
+    spansDropped = sdkMetricsRegistry.newCounter("spans.dropped");
+
+    reportErrors = sdkMetricsRegistry.newCounter("errors");
   }
 
   @Override
@@ -134,8 +169,10 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     if (point == null || "".equals(point.trim())) {
       throw new IllegalArgumentException("point must be non-null and in WF data format");
     }
+    pointsReceived.inc();
     String finalPoint = point.endsWith("\n") ? point : point + "\n";
     if (!metricsBuffer.offer(finalPoint)) {
+      pointsDropped.inc();
       logger.log(Level.WARNING, "Buffer full, dropping metric point: " + finalPoint);
     }
   }
@@ -148,7 +185,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       throws IOException {
     String histograms = histogramToLineData(name, centroids, histogramGranularities, timestamp,
         source, tags, DEFAULT_SOURCE);
+    histogramsReceived.inc();
     if (!histogramsBuffer.offer(histograms)) {
+      histogramsDropped.inc();
       logger.log(Level.WARNING, "Buffer full, dropping histograms: " + histograms);
     }
   }
@@ -161,7 +200,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       throws IOException {
     String span = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
         spanId, parents, followsFrom, tags, spanLogs, DEFAULT_SOURCE);
+    spansReceived.inc();
     if (!tracingSpansBuffer.offer(span)) {
+      spansDropped.inc();
       logger.log(Level.WARNING, "Buffer full, dropping span: " + span);
     }
   }
@@ -177,12 +218,13 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public void flush() throws IOException {
-    internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT);
-    internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT);
-    internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT);
+    internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT, pointsDropped);
+    internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT, histogramsDropped);
+    internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT, spansDropped);
   }
 
-  private void internalFlush(LinkedBlockingQueue<String> buffer, String format)
+  private void internalFlush(LinkedBlockingQueue<String> buffer, String format,
+                             WavefrontSdkCounter dropped)
       throws IOException {
 
     List<String> batch = getBatch(buffer);
@@ -194,15 +236,20 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       int statusCode = directService.report(format, is);
       if (400 <= statusCode && statusCode <= 599) {
         logger.log(Level.WARNING, "Error reporting points, respStatus=" + statusCode);
-        try {
-          buffer.addAll(batch);
-        } catch (Exception ex) {
-          // unlike offer(), addAll adds partially and throws an exception if buffer full
-          logger.log(Level.WARNING, "Buffer full, dropping attempted points");
+        int numAddedBackToBuffer = 0;
+        for (String item : batch) {
+          if (buffer.offer(item)) {
+            numAddedBackToBuffer++;
+          } else {
+            dropped.inc(batch.size() - numAddedBackToBuffer);
+            logger.log(Level.WARNING, "Buffer full, dropping attempted points");
+            return;
+          }
         }
       }
     } catch (IOException ex) {
-      failures.incrementAndGet();
+      dropped.inc(batch.size());
+      reportErrors.inc();
       throw ex;
     }
   }
@@ -225,7 +272,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public int getFailureCount() {
-    return failures.get();
+    return (int)reportErrors.count();
   }
 
   @Override
@@ -236,6 +283,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     } catch (IOException e) {
       logger.log(Level.WARNING, "error flushing buffer", e);
     }
+
+    sdkMetricsRegistry.close();
+
     try {
       scheduler.shutdownNow();
     } catch (SecurityException ex) {
