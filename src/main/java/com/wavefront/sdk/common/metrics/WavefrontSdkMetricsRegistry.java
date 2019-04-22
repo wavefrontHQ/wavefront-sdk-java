@@ -129,7 +129,8 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
             wavefrontMetricSender.sendMetric(name, value.doubleValue(), timestamp, source, tags);
           }
         } else if (metric instanceof WavefrontSdkCounter) {
-          wavefrontMetricSender.sendMetric(name, ((WavefrontSdkCounter)metric).count(), timestamp,
+          wavefrontMetricSender.sendMetric(name + ".count", ((WavefrontSdkCounter)metric).count(),
+              timestamp,
               source, tags);
         }
       } catch (IOException e) {
