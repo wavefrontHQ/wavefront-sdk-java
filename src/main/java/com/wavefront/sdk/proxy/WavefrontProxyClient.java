@@ -181,14 +181,11 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
   }
 
-  @Override
-  public void sendMetric(String name, double value, @Nullable Long timestamp,
-                         @Nullable String source, @Nullable Map<String, String> tags)
-      throws IOException {
+  private boolean setupConnection() throws IOException {
     if (metricsProxyConnectionHandler == null) {
       logger.warning("Can't send data to Wavefront. " +
               "Please configure metrics port for Wavefront proxy");
-      return;
+      return false;
     }
 
     if (!metricsProxyConnectionHandler.isConnected()) {
@@ -198,11 +195,39 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
         // already connected.
       }
     }
+    return true;
+  }
+
+  @Override
+  public void sendMetric(String name, double value, @Nullable Long timestamp,
+                         @Nullable String source, @Nullable Map<String, String> tags)
+      throws IOException {
+    if (!setupConnection()) {
+      return;
+    }
 
     try {
       try {
         String lineData = metricToLineData(name, value, timestamp, source, tags, defaultSource);
         metricsProxyConnectionHandler.sendData(lineData);
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
+    } catch (IOException e) {
+      metricsProxyConnectionHandler.incrementFailureCount();
+      throw e;
+    }
+  }
+
+  @Override
+  public void sendFormattedMetric(String point) throws IOException {
+    if (!setupConnection()) {
+      return;
+    }
+
+    try {
+      try {
+        metricsProxyConnectionHandler.sendData(point);
       } catch (Exception e) {
         throw new IOException(e);
       }
