@@ -38,5 +38,8 @@ public class WavefrontSdkMetricsRegistryTest {
     assertEquals(3, counter.count());
     counter.clear();
     assertEquals(0, counter.count());
+    counter.inc(5);
+    assertEquals(5, registry.newCounter("counter").count());
+    assertEquals(0, registry.newCounter("counter2").count());
   }
 }

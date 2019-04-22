@@ -1,6 +1,9 @@
 package com.wavefront.sdk.proxy;
 
-import com.wavefront.sdk.common.*;
+import com.wavefront.sdk.common.Constants;
+import com.wavefront.sdk.common.NamedThreadFactory;
+import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
