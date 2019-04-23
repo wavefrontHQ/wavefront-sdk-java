@@ -53,7 +53,7 @@ public class ReconnectingSocket {
    * @throws IOException When we cannot open the remote socket.
    */
   public ReconnectingSocket(String host, int port, SocketFactory socketFactory,
-                     WavefrontSdkMetricsRegistry sdkMetricsRegistry, String entityPrefix)
+                            WavefrontSdkMetricsRegistry sdkMetricsRegistry, String entityPrefix)
       throws IOException {
     this.host = host;
     this.port = port;
