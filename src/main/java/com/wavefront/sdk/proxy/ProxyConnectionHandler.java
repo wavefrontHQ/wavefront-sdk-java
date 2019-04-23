@@ -77,6 +77,13 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
    * @throws Exception If there was failure sending the data
    */
   protected void sendData(String lineData) throws Exception {
+    if (reconnectingSocket == null) {
+      try {
+        connect();
+      } catch (IllegalStateException e) {
+        // already connected.
+      }
+    }
     reconnectingSocket.write(lineData);
   }
 }

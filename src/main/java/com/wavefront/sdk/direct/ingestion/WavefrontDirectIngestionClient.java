@@ -49,15 +49,18 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final WavefrontSdkMetricsRegistry sdkMetricsRegistry;
 
   // Internal point metrics
-  private final WavefrontSdkCounter pointsReceived;
+  private final WavefrontSdkCounter pointsValid;
+  private final WavefrontSdkCounter pointsInvalid;
   private final WavefrontSdkCounter pointsDropped;
 
   // Internal histogram metrics
-  private final WavefrontSdkCounter histogramsReceived;
+  private final WavefrontSdkCounter histogramsValid;
+  private final WavefrontSdkCounter histogramsInvalid;
   private final WavefrontSdkCounter histogramsDropped;
 
   // Internal tracing span metrics
-  private final WavefrontSdkCounter spansReceived;
+  private final WavefrontSdkCounter spansValid;
+  private final WavefrontSdkCounter spansInvalid;
   private final WavefrontSdkCounter spansDropped;
 
   private final WavefrontSdkCounter reportErrors;
@@ -141,19 +144,22 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);
     sdkMetricsRegistry.newGauge("points.queue.remaining_capacity",
         metricsBuffer::remainingCapacity);
-    pointsReceived = sdkMetricsRegistry.newCounter("points.received");
+    pointsValid = sdkMetricsRegistry.newCounter("points.valid");
+    pointsInvalid = sdkMetricsRegistry.newCounter("points.invalid");
     pointsDropped = sdkMetricsRegistry.newCounter("points.dropped");
 
     sdkMetricsRegistry.newGauge("histograms.queue.size", histogramsBuffer::size);
     sdkMetricsRegistry.newGauge("histograms.queue.remaining_capacity",
         histogramsBuffer::remainingCapacity);
-    histogramsReceived = sdkMetricsRegistry.newCounter("histograms.received");
+    histogramsValid = sdkMetricsRegistry.newCounter("histograms.valid");
+    histogramsInvalid = sdkMetricsRegistry.newCounter("histograms.invalid");
     histogramsDropped = sdkMetricsRegistry.newCounter("histograms.dropped");
 
     sdkMetricsRegistry.newGauge("spans.queue.size", tracingSpansBuffer::size);
     sdkMetricsRegistry.newGauge("spans.queue.remaining_capacity",
         tracingSpansBuffer::remainingCapacity);
-    spansReceived = sdkMetricsRegistry.newCounter("spans.received");
+    spansValid = sdkMetricsRegistry.newCounter("spans.valid");
+    spansInvalid = sdkMetricsRegistry.newCounter("spans.invalid");
     spansDropped = sdkMetricsRegistry.newCounter("spans.dropped");
 
     reportErrors = sdkMetricsRegistry.newCounter("errors");
@@ -163,17 +169,30 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
       throws IOException {
-    String point = metricToLineData(name, value, timestamp, source, tags, DEFAULT_SOURCE);
-    sendFormattedMetric(point);
+    String point;
+    try {
+      point = metricToLineData(name, value, timestamp, source, tags, DEFAULT_SOURCE);
+      pointsValid.inc();
+    } catch (IllegalArgumentException e) {
+      pointsInvalid.inc();
+      throw e;
+    }
+
+    if (!metricsBuffer.offer(point)) {
+      pointsDropped.inc();
+      logger.log(Level.WARNING, "Buffer full, dropping metric point: " + point);
+    }
   }
 
   @Override
   public void sendFormattedMetric(String point) throws IOException {
     if (point == null || "".equals(point.trim())) {
+      pointsInvalid.inc();
       throw new IllegalArgumentException("point must be non-null and in WF data format");
     }
-    pointsReceived.inc();
+    pointsValid.inc();
     String finalPoint = point.endsWith("\n") ? point : point + "\n";
+
     if (!metricsBuffer.offer(finalPoint)) {
       pointsDropped.inc();
       logger.log(Level.WARNING, "Buffer full, dropping metric point: " + finalPoint);
@@ -186,9 +205,16 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                                @Nullable Long timestamp, @Nullable String source,
                                @Nullable Map<String, String> tags)
       throws IOException {
-    String histograms = histogramToLineData(name, centroids, histogramGranularities, timestamp,
-        source, tags, DEFAULT_SOURCE);
-    histogramsReceived.inc();
+    String histograms;
+    try {
+      histograms = histogramToLineData(name, centroids, histogramGranularities, timestamp,
+          source, tags, DEFAULT_SOURCE);
+      histogramsValid.inc();
+    } catch (IllegalArgumentException e) {
+      histogramsInvalid.inc();
+      throw e;
+    }
+
     if (!histogramsBuffer.offer(histograms)) {
       histogramsDropped.inc();
       logger.log(Level.WARNING, "Buffer full, dropping histograms: " + histograms);
@@ -201,9 +227,16 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                        @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                        @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
       throws IOException {
-    String span = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
-        spanId, parents, followsFrom, tags, spanLogs, DEFAULT_SOURCE);
-    spansReceived.inc();
+    String span;
+    try {
+      span = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
+          spanId, parents, followsFrom, tags, spanLogs, DEFAULT_SOURCE);
+      spansValid.inc();
+    } catch (IllegalArgumentException e) {
+      spansInvalid.inc();
+      throw e;
+    }
+
     if (!tracingSpansBuffer.offer(span)) {
       spansDropped.inc();
       logger.log(Level.WARNING, "Buffer full, dropping span: " + span);
