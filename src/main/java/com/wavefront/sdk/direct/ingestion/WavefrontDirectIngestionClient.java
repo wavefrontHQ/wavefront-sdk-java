@@ -264,7 +264,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
         spansDropped, spanReportErrors);
   }
 
-  private void internalFlush(LinkedBlockingQueue<String> buffer, String format, String metricPrefix,
+  private void internalFlush(LinkedBlockingQueue<String> buffer, String format, String entityPrefix,
                              WavefrontSdkCounter dropped, WavefrontSdkCounter reportErrors)
       throws IOException {
 
@@ -275,7 +275,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
     try (InputStream is = batchToStream(batch)) {
       int statusCode = directService.report(format, is);
-      sdkMetricsRegistry.newCounter(metricPrefix + ".report." + statusCode).inc();
+      sdkMetricsRegistry.newCounter(entityPrefix + ".report." + statusCode).inc();
       if (400 <= statusCode && statusCode <= 599) {
         logger.log(Level.WARNING, "Error reporting points, respStatus=" + statusCode);
         int numAddedBackToBuffer = 0;
