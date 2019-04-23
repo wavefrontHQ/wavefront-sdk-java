@@ -33,11 +33,7 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
   @Nullable
   private WavefrontSdkCounter connectErrors;
 
-  protected ProxyConnectionHandler(InetSocketAddress address, SocketFactory socketFactory) {
-    this(address, socketFactory, null, null);
-  }
-
-  protected ProxyConnectionHandler(InetSocketAddress address, SocketFactory socketFactory,
+  ProxyConnectionHandler(InetSocketAddress address, SocketFactory socketFactory,
                                    @Nullable WavefrontSdkMetricsRegistry sdkMetricsRegistry,
                                    @Nullable String metricPrefix) {
     this.address = address;
@@ -53,7 +49,7 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
     }
   }
 
-  public synchronized void connect() throws IllegalStateException, IOException {
+  synchronized void connect() throws IllegalStateException, IOException {
     if (reconnectingSocket != null) {
       throw new IllegalStateException("Already connected");
     }
@@ -68,7 +64,7 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
     }
   }
 
-  public boolean isConnected() {
+  boolean isConnected() {
     return reconnectingSocket != null;
   }
 
@@ -77,7 +73,7 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
     return failures.get();
   }
 
-  public void incrementFailureCount() {
+  void incrementFailureCount() {
     failures.incrementAndGet();
   }
 
@@ -102,7 +98,7 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
    * @param lineData line data in a WavefrontProxyClient supported format
    * @throws Exception If there was failure sending the data
    */
-  protected void sendData(String lineData) throws Exception {
+  void sendData(String lineData) throws Exception {
     if (!isConnected()) {
       try {
         connect();
