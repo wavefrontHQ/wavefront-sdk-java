@@ -2,14 +2,12 @@ package com.wavefront.sdk.proxy;
 
 import com.wavefront.sdk.common.BufferFlusher;
 import com.wavefront.sdk.common.ReconnectingSocket;
-import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.SocketFactory;
 
@@ -24,29 +22,22 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
   private final InetSocketAddress address;
   private final SocketFactory socketFactory;
   private volatile ReconnectingSocket reconnectingSocket;
-  private final AtomicInteger failures;
 
-  @Nullable
   private final WavefrontSdkMetricsRegistry sdkMetricsRegistry;
-  @Nullable
-  private String metricPrefix;
-  @Nullable
+  private String entityPrefix;
+  private WavefrontSdkCounter errors;
   private WavefrontSdkCounter connectErrors;
 
   ProxyConnectionHandler(InetSocketAddress address, SocketFactory socketFactory,
-                                   @Nullable WavefrontSdkMetricsRegistry sdkMetricsRegistry,
-                                   @Nullable String metricPrefix) {
+                         WavefrontSdkMetricsRegistry sdkMetricsRegistry, String entityPrefix) {
     this.address = address;
     this.socketFactory = socketFactory;
     this.reconnectingSocket = null;
-    failures = new AtomicInteger();
 
     this.sdkMetricsRegistry = sdkMetricsRegistry;
-    this.metricPrefix = metricPrefix == null || metricPrefix.isEmpty() ? "" : metricPrefix + ".";
-    if (this.sdkMetricsRegistry != null) {
-      this.sdkMetricsRegistry.newGauge(this.metricPrefix + "errors.count", this::getFailureCount);
-      connectErrors = this.sdkMetricsRegistry.newCounter(this.metricPrefix + "connect.errors");
-    }
+    this.entityPrefix = entityPrefix == null || entityPrefix.isEmpty() ? "" : entityPrefix + ".";
+    errors = this.sdkMetricsRegistry.newCounter(this.entityPrefix + "errors");
+    connectErrors = this.sdkMetricsRegistry.newCounter(this.entityPrefix + "connect.errors");
   }
 
   synchronized void connect() throws IllegalStateException, IOException {
@@ -55,11 +46,9 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
     }
     try {
       reconnectingSocket = new ReconnectingSocket(address.getHostName(), address.getPort(),
-          socketFactory, sdkMetricsRegistry, metricPrefix + "socket");
+          socketFactory, sdkMetricsRegistry, entityPrefix + "socket");
     } catch (Exception e) {
-      if (connectErrors != null) {
-        connectErrors.inc();
-      }
+      connectErrors.inc();
       throw new IOException(e);
     }
   }
@@ -70,11 +59,11 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
 
   @Override
   public int getFailureCount() {
-    return failures.get();
+    return (int)errors.count();
   }
 
   void incrementFailureCount() {
-    failures.incrementAndGet();
+    errors.inc();
   }
 
   @Override
