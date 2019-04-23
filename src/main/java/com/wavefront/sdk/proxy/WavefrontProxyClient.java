@@ -76,8 +76,6 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   private final WavefrontSdkCounter spansInvalid;
   private final WavefrontSdkCounter spansDropped;
 
-  private final WavefrontSdkCounter reportErrors;
-
   public static class Builder {
     // Required parameters
     private final String proxyHostName;
@@ -175,12 +173,16 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
     defaultSource = tempSource;
 
+    sdkMetricsRegistry = new WavefrontSdkMetricsRegistry.Builder(this).
+        prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.proxy").
+        build();
+
     if (builder.metricsPort == null) {
       metricsProxyConnectionHandler = null;
     } else {
       metricsProxyConnectionHandler = new ProxyConnectionHandler(
           new InetSocketAddress(builder.proxyHostName, builder.metricsPort),
-          builder.socketFactory);
+          builder.socketFactory, sdkMetricsRegistry, "metricHandler");
     }
 
     if (builder.distributionPort == null) {
@@ -188,7 +190,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     } else {
       histogramProxyConnectionHandler = new ProxyConnectionHandler(
           new InetSocketAddress(builder.proxyHostName, builder.distributionPort),
-          builder.socketFactory);
+          builder.socketFactory, sdkMetricsRegistry, "histogramHandler");
     }
 
     if (builder.tracingPort == null) {
@@ -196,7 +198,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     } else {
       tracingProxyConnectionHandler = new ProxyConnectionHandler(
           new InetSocketAddress(builder.proxyHostName, builder.tracingPort),
-          builder.socketFactory);
+          builder.socketFactory, sdkMetricsRegistry, "tracingHandler");
     }
 
     scheduler = Executors.newScheduledThreadPool(1,
@@ -204,15 +206,10 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     // flush every 5 seconds
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
 
-    sdkMetricsRegistry = new WavefrontSdkMetricsRegistry.Builder(this).
-        prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.proxy").
-        build();
-
     pointsDiscarded = sdkMetricsRegistry.newCounter("points.discarded");
     pointsValid = sdkMetricsRegistry.newCounter("points.valid");
     pointsInvalid = sdkMetricsRegistry.newCounter("points.invalid");
     pointsDropped = sdkMetricsRegistry.newCounter("points.dropped");
-
 
     histogramsDiscarded = sdkMetricsRegistry.newCounter("histograms.discarded");
     histogramsValid = sdkMetricsRegistry.newCounter("histograms.valid");
@@ -223,8 +220,6 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     spansValid = sdkMetricsRegistry.newCounter("spans.valid");
     spansInvalid = sdkMetricsRegistry.newCounter("spans.invalid");
     spansDropped = sdkMetricsRegistry.newCounter("spans.dropped");
-
-    reportErrors = sdkMetricsRegistry.newCounter("errors");
   }
 
   @Override
@@ -251,7 +246,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
       metricsProxyConnectionHandler.sendData(lineData);
     } catch (Exception e) {
       pointsDropped.inc();
-      reportErrors.inc();
+      metricsProxyConnectionHandler.incrementFailureCount();
       throw new IOException(e);
     }
   }
@@ -276,7 +271,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
       metricsProxyConnectionHandler.sendData(finalPoint);
     } catch (Exception e) {
       pointsDropped.inc();
-      reportErrors.inc();
+      metricsProxyConnectionHandler.incrementFailureCount();
       throw new IOException(e);
     }
   }
@@ -308,7 +303,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
       histogramProxyConnectionHandler.sendData(lineData);
     } catch (Exception e) {
       histogramsDropped.inc();
-      reportErrors.inc();
+      histogramProxyConnectionHandler.incrementFailureCount();
       throw new IOException(e);
     }
   }
@@ -340,7 +335,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
       tracingProxyConnectionHandler.sendData(lineData);
     } catch (Exception e) {
       spansDropped.inc();
-      reportErrors.inc();
+      tracingProxyConnectionHandler.incrementFailureCount();
       throw new IOException(e);
     }
   }
@@ -371,7 +366,19 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
 
   @Override
   public int getFailureCount() {
-    return (int)reportErrors.count();
+    int failureCount = 0;
+    if (metricsProxyConnectionHandler != null) {
+      failureCount += metricsProxyConnectionHandler.getFailureCount();
+    }
+
+    if (histogramProxyConnectionHandler != null) {
+      failureCount += histogramProxyConnectionHandler.getFailureCount();
+    }
+
+    if (tracingProxyConnectionHandler != null) {
+      failureCount += tracingProxyConnectionHandler.getFailureCount();
+    }
+    return failureCount;
   }
 
   @Override

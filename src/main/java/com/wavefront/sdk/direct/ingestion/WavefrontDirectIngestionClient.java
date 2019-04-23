@@ -52,18 +52,19 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final WavefrontSdkCounter pointsValid;
   private final WavefrontSdkCounter pointsInvalid;
   private final WavefrontSdkCounter pointsDropped;
+  private final WavefrontSdkCounter pointReportErrors;
 
   // Internal histogram metrics
   private final WavefrontSdkCounter histogramsValid;
   private final WavefrontSdkCounter histogramsInvalid;
   private final WavefrontSdkCounter histogramsDropped;
+  private final WavefrontSdkCounter histogramReportErrors;
 
   // Internal tracing span metrics
   private final WavefrontSdkCounter spansValid;
   private final WavefrontSdkCounter spansInvalid;
   private final WavefrontSdkCounter spansDropped;
-
-  private final WavefrontSdkCounter reportErrors;
+  private final WavefrontSdkCounter spanReportErrors;
 
   public static class Builder {
     // Required parameters
@@ -147,6 +148,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     pointsValid = sdkMetricsRegistry.newCounter("points.valid");
     pointsInvalid = sdkMetricsRegistry.newCounter("points.invalid");
     pointsDropped = sdkMetricsRegistry.newCounter("points.dropped");
+    pointReportErrors = sdkMetricsRegistry.newCounter("points.report.errors");
 
     sdkMetricsRegistry.newGauge("histograms.queue.size", histogramsBuffer::size);
     sdkMetricsRegistry.newGauge("histograms.queue.remaining_capacity",
@@ -154,6 +156,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     histogramsValid = sdkMetricsRegistry.newCounter("histograms.valid");
     histogramsInvalid = sdkMetricsRegistry.newCounter("histograms.invalid");
     histogramsDropped = sdkMetricsRegistry.newCounter("histograms.dropped");
+    histogramReportErrors = sdkMetricsRegistry.newCounter("histograms.report.errors");
 
     sdkMetricsRegistry.newGauge("spans.queue.size", tracingSpansBuffer::size);
     sdkMetricsRegistry.newGauge("spans.queue.remaining_capacity",
@@ -161,8 +164,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     spansValid = sdkMetricsRegistry.newCounter("spans.valid");
     spansInvalid = sdkMetricsRegistry.newCounter("spans.invalid");
     spansDropped = sdkMetricsRegistry.newCounter("spans.dropped");
-
-    reportErrors = sdkMetricsRegistry.newCounter("errors");
+    spanReportErrors = sdkMetricsRegistry.newCounter("spans.report.errors");
   }
 
   @Override
@@ -254,13 +256,16 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public void flush() throws IOException {
-    internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT, pointsDropped);
-    internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT, histogramsDropped);
-    internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT, spansDropped);
+    internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT, "points",
+        pointsDropped, pointReportErrors);
+    internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT, "histograms",
+        histogramsDropped, histogramReportErrors);
+    internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT, "spans",
+        spansDropped, spanReportErrors);
   }
 
-  private void internalFlush(LinkedBlockingQueue<String> buffer, String format,
-                             WavefrontSdkCounter dropped)
+  private void internalFlush(LinkedBlockingQueue<String> buffer, String format, String metricPrefix,
+                             WavefrontSdkCounter dropped, WavefrontSdkCounter reportErrors)
       throws IOException {
 
     List<String> batch = getBatch(buffer);
@@ -270,6 +275,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
     try (InputStream is = batchToStream(batch)) {
       int statusCode = directService.report(format, is);
+      sdkMetricsRegistry.newCounter(metricPrefix + ".report." + statusCode).inc();
       if (400 <= statusCode && statusCode <= 599) {
         logger.log(Level.WARNING, "Error reporting points, respStatus=" + statusCode);
         int numAddedBackToBuffer = 0;
@@ -308,7 +314,8 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public int getFailureCount() {
-    return (int)reportErrors.count();
+    return (int)(pointReportErrors.count() + histogramReportErrors.count() +
+        spanReportErrors.count());
   }
 
   @Override

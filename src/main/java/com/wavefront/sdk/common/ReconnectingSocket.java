@@ -1,5 +1,9 @@
 package com.wavefront.sdk.common;
 
+import com.wavefront.sdk.common.annotation.Nullable;
+import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
+import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
+
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -39,10 +43,25 @@ public class ReconnectingSocket {
   private AtomicReference<Socket> underlyingSocket;
   private AtomicReference<BufferedOutputStream> socketOutputStream;
 
+  @Nullable
+  private WavefrontSdkCounter writeSuccesses;
+  @Nullable
+  private WavefrontSdkCounter writeErrors;
+  @Nullable
+  private WavefrontSdkCounter flushSuccesses;
+  @Nullable
+  private WavefrontSdkCounter flushErrors;
+  @Nullable
+  private WavefrontSdkCounter resetSuccesses;
+  @Nullable
+  private WavefrontSdkCounter resetErrors;
+
   /**
    * @throws IOException When we cannot open the remote socket.
    */
-  public ReconnectingSocket(String host, int port, SocketFactory socketFactory)
+  public ReconnectingSocket(String host, int port, SocketFactory socketFactory,
+                            @Nullable WavefrontSdkMetricsRegistry sdkMetricsRegistry,
+                            @Nullable String metricPrefix)
       throws IOException {
     this.host = host;
     this.port = port;
@@ -63,6 +82,24 @@ public class ReconnectingSocket {
       }
     }, SERVER_POLL_INTERVAL_MILLIS, SERVER_POLL_INTERVAL_MILLIS);
 
+    metricPrefix = metricPrefix == null || metricPrefix.isEmpty() ? "" : metricPrefix + ".";
+    if (sdkMetricsRegistry != null) {
+      writeSuccesses = sdkMetricsRegistry.newCounter(metricPrefix + "write.success");
+      writeErrors = sdkMetricsRegistry.newCounter(metricPrefix + "write.errors");
+      flushSuccesses = sdkMetricsRegistry.newCounter(metricPrefix + "flush.success");
+      flushErrors = sdkMetricsRegistry.newCounter(metricPrefix + "flush.errors");
+      resetSuccesses = sdkMetricsRegistry.newCounter(metricPrefix + "reset.success");
+      resetErrors = sdkMetricsRegistry.newCounter(metricPrefix + "reset.errors");
+    }
+  }
+
+  public ReconnectingSocket(String host, int port, SocketFactory socketFactory)
+      throws IOException {
+    this(host, port, socketFactory, null, null);
+  }
+
+  public ReconnectingSocket(String host, int port) throws IOException {
+    this(host, port, SocketFactory.getDefault());
   }
 
   void maybeReconnect() {
@@ -83,10 +120,6 @@ public class ReconnectingSocket {
     }
   }
 
-  public ReconnectingSocket(String host, int port) throws IOException {
-    this(host, port, SocketFactory.getDefault());
-  }
-
   /**
    * Closes the outputStream best-effort. Tries to re-instantiate the outputStream.
    *
@@ -95,20 +128,30 @@ public class ReconnectingSocket {
    */
   private synchronized void resetSocket() throws IOException {
     try {
-      BufferedOutputStream old = socketOutputStream.get();
-      if (old != null) old.close();
-    } catch (SocketException e) {
-      logger.log(Level.INFO, "Could not flush to socket.", e);
-    } finally {
-      serverTerminated = false;
       try {
-        underlyingSocket.getAndSet(socketFactory.createSocket(host, port)).close();
+        BufferedOutputStream old = socketOutputStream.get();
+        if (old != null) old.close();
       } catch (SocketException e) {
-        logger.log(Level.WARNING, "Could not close old socket.", e);
+        logger.log(Level.INFO, "Could not flush to socket.", e);
+      } finally {
+        serverTerminated = false;
+        try {
+          underlyingSocket.getAndSet(socketFactory.createSocket(host, port)).close();
+        } catch (SocketException e) {
+          logger.log(Level.WARNING, "Could not close old socket.", e);
+        }
+        underlyingSocket.get().setSoTimeout(SERVER_READ_TIMEOUT_MILLIS);
+        socketOutputStream.set(new BufferedOutputStream(underlyingSocket.get().getOutputStream()));
+        if (resetSuccesses != null) {
+          resetSuccesses.inc();
+        }
+        logger.log(Level.INFO, String.format("Successfully reset connection to %s:%d", host, port));
       }
-      underlyingSocket.get().setSoTimeout(SERVER_READ_TIMEOUT_MILLIS);
-      socketOutputStream.set(new BufferedOutputStream(underlyingSocket.get().getOutputStream()));
-      logger.log(Level.INFO, String.format("Successfully reset connection to %s:%d", host, port));
+    } catch (Exception e) {
+      if (resetErrors != null) {
+        resetErrors.inc();
+      }
+      throw e;
     }
   }
 
@@ -126,12 +169,21 @@ public class ReconnectingSocket {
       }
       // Might be NPE due to previously failed call to resetSocket.
       socketOutputStream.get().write(message.getBytes());
+      if (writeSuccesses != null) {
+        writeSuccesses.inc();
+      }
     } catch (Exception e) {
       try {
         logger.log(Level.WARNING, "Attempting to reset socket connection.", e);
         resetSocket();
         socketOutputStream.get().write(message.getBytes());
+        if (writeSuccesses != null) {
+          writeSuccesses.inc();
+        }
       } catch (Exception e2) {
+        if (writeErrors != null) {
+          writeErrors.inc();
+        }
         throw e2;
       }
     }
@@ -143,7 +195,13 @@ public class ReconnectingSocket {
   public void flush() throws IOException {
     try {
       socketOutputStream.get().flush();
+      if (flushSuccesses != null) {
+        flushSuccesses.inc();
+      }
     } catch (Exception e) {
+      if (flushErrors != null) {
+        flushErrors.inc();
+      }
       logger.log(Level.WARNING, "Attempting to reset socket connection.", e);
       resetSocket();
     }

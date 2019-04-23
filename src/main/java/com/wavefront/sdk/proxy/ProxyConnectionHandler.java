@@ -2,6 +2,9 @@ package com.wavefront.sdk.proxy;
 
 import com.wavefront.sdk.common.BufferFlusher;
 import com.wavefront.sdk.common.ReconnectingSocket;
+import com.wavefront.sdk.common.annotation.Nullable;
+import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
+import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -23,11 +26,31 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
   private volatile ReconnectingSocket reconnectingSocket;
   private final AtomicInteger failures;
 
+  @Nullable
+  private final WavefrontSdkMetricsRegistry sdkMetricsRegistry;
+  @Nullable
+  private String metricPrefix;
+  @Nullable
+  private WavefrontSdkCounter connectErrors;
+
   protected ProxyConnectionHandler(InetSocketAddress address, SocketFactory socketFactory) {
+    this(address, socketFactory, null, null);
+  }
+
+  protected ProxyConnectionHandler(InetSocketAddress address, SocketFactory socketFactory,
+                                   @Nullable WavefrontSdkMetricsRegistry sdkMetricsRegistry,
+                                   @Nullable String metricPrefix) {
     this.address = address;
     this.socketFactory = socketFactory;
     this.reconnectingSocket = null;
     failures = new AtomicInteger();
+
+    this.sdkMetricsRegistry = sdkMetricsRegistry;
+    this.metricPrefix = metricPrefix == null || metricPrefix.isEmpty() ? "" : metricPrefix + ".";
+    if (this.sdkMetricsRegistry != null) {
+      this.sdkMetricsRegistry.newGauge(this.metricPrefix + "errors.count", this::getFailureCount);
+      connectErrors = this.sdkMetricsRegistry.newCounter(this.metricPrefix + "connect.errors");
+    }
   }
 
   public synchronized void connect() throws IllegalStateException, IOException {
@@ -36,8 +59,11 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
     }
     try {
       reconnectingSocket = new ReconnectingSocket(address.getHostName(), address.getPort(),
-          socketFactory);
+          socketFactory, sdkMetricsRegistry, metricPrefix + "socket");
     } catch (Exception e) {
+      if (connectErrors != null) {
+        connectErrors.inc();
+      }
       throw new IOException(e);
     }
   }
@@ -57,14 +83,14 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
 
   @Override
   public void flush() throws IOException {
-    if (reconnectingSocket != null) {
+    if (isConnected()) {
       reconnectingSocket.flush();
     }
   }
 
   @Override
   public synchronized void close() throws IOException {
-    if (reconnectingSocket != null) {
+    if (isConnected()) {
       reconnectingSocket.close();
       reconnectingSocket = null;
     }
@@ -77,7 +103,7 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
    * @throws Exception If there was failure sending the data
    */
   protected void sendData(String lineData) throws Exception {
-    if (reconnectingSocket == null) {
+    if (!isConnected()) {
       try {
         connect();
       } catch (IllegalStateException e) {

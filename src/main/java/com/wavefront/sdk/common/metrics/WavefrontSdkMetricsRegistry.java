@@ -130,10 +130,9 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
           }
         } else if (metric instanceof WavefrontSdkCounter) {
           wavefrontMetricSender.sendMetric(name + ".count", ((WavefrontSdkCounter)metric).count(),
-              timestamp,
-              source, tags);
+              timestamp, source, tags);
         }
-      } catch (IOException e) {
+      } catch (Throwable e) {
         logger.log(Level.WARNING, "Unable to send internal SDK metric", e);
       }
     }
