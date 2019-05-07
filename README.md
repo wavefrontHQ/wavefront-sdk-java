@@ -194,6 +194,9 @@ wavefrontSender.flush();
 wavefrontSender.close();
 ```
 
+## Monitoring the SDK
+See the [diagnostic metrics documentation](https://github.com/wavefrontHQ/wavefront-sdk-java/tree/master/docs/internal_metrics.md) for details on the internal metrics that the SDK collects and reports to Wavefront.
+
 [ci-img]: https://travis-ci.com/wavefrontHQ/wavefront-sdk-java.svg?branch=master
 [ci]: https://travis-ci.com/wavefrontHQ/wavefront-sdk-java
 [maven-img]: https://img.shields.io/maven-central/v/com.wavefront/wavefront-sdk-java.svg?maxAge=604800
