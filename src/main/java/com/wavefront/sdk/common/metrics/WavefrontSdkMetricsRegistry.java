@@ -4,7 +4,7 @@ import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.entities.metrics.WavefrontMetricSender;
 
 import java.io.Closeable;
-import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -36,9 +36,9 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
     private final WavefrontMetricSender wavefrontMetricSender;
 
     // Optional parameters
+    private final Map<String, String> tags;
     private int reportingIntervalSeconds = 60;
     private String source;
-    private Map<String, String> tags;
     private String prefix;
 
     /**
@@ -48,6 +48,7 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
      */
     public Builder(WavefrontMetricSender wavefrontMetricSender) {
       this.wavefrontMetricSender = wavefrontMetricSender;
+      tags = new HashMap<>();
     }
 
     /**
@@ -73,13 +74,25 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
     }
 
     /**
-     * Sets the point tags associated with the registry's metrics.
+     * Adds point tags associated with the registry's metrics.
      *
      * @param tags  The point tags associated with the registry's metrics.
      * @return {@code this}
      */
     public Builder tags(Map<String, String> tags) {
-      this.tags = tags;
+      this.tags.putAll(tags);
+      return this;
+    }
+
+    /**
+     * Adds a point tag associated with the registry's metrics.
+     *
+     * @param key   The tag key.
+     * @param value The tag value.
+     * @return {@code this}
+     */
+    public Builder tag(String key, String value) {
+      this.tags.put(key, value);
       return this;
     }
 

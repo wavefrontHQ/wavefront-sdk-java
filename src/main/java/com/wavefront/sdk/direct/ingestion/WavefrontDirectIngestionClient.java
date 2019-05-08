@@ -13,6 +13,9 @@ import com.wavefront.sdk.entities.tracing.SpanLog;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,9 +39,13 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
  */
 public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable {
 
-  private static final String DEFAULT_SOURCE = "wavefrontDirectSender";
   private static final Logger logger = Logger.getLogger(
       WavefrontDirectIngestionClient.class.getCanonicalName());
+
+  /**
+   * Source to use if entity source is null
+   */
+  private final String defaultSource;
 
   private final int batchSize;
   private final LinkedBlockingQueue<String> metricsBuffer;
@@ -131,15 +138,28 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   }
 
   private WavefrontDirectIngestionClient(Builder builder) {
+    String tempSource = "unknown";
+    try {
+      tempSource = InetAddress.getLocalHost().getHostName();
+    }
+    catch (UnknownHostException ex) {
+      logger.log(Level.WARNING,
+          "Unable to resolve local host name. Source will default to 'unknown'", ex);
+    }
+    defaultSource = tempSource;
+
     batchSize = builder.batchSize;
     metricsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     histogramsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     tracingSpansBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     directService = new DataIngesterService(builder.server, builder.token);
-    scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory(DEFAULT_SOURCE));
+    scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory("wavefrontDirectSender"));
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
+
+    String processId = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
     sdkMetricsRegistry = new WavefrontSdkMetricsRegistry.Builder(this).
         prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.direct").
+        tag(Constants.PROCESS_TAG_KEY, processId).
         build();
 
     sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);
@@ -173,7 +193,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       throws IOException {
     String point;
     try {
-      point = metricToLineData(name, value, timestamp, source, tags, DEFAULT_SOURCE);
+      point = metricToLineData(name, value, timestamp, source, tags, defaultSource);
       pointsValid.inc();
     } catch (IllegalArgumentException e) {
       pointsInvalid.inc();
@@ -210,7 +230,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     String histograms;
     try {
       histograms = histogramToLineData(name, centroids, histogramGranularities, timestamp,
-          source, tags, DEFAULT_SOURCE);
+          source, tags, defaultSource);
       histogramsValid.inc();
     } catch (IllegalArgumentException e) {
       histogramsInvalid.inc();
@@ -232,7 +252,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     String span;
     try {
       span = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
-          spanId, parents, followsFrom, tags, spanLogs, DEFAULT_SOURCE);
+          spanId, parents, followsFrom, tags, spanLogs, defaultSource);
       spansValid.inc();
     } catch (IllegalArgumentException e) {
       spansInvalid.inc();
