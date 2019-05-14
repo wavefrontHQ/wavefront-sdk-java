@@ -81,6 +81,11 @@ public final class Constants {
   public static final String COMPONENT_TAG_KEY = "component";
 
   /**
+   * Tag key for defining a process identifier.
+   */
+  public static final String PROCESS_TAG_KEY = "pid";
+
+  /**
    * Name prefix for internal diagnostic metrics for Wavefront SDKs.
    */
   public static final String SDK_METRIC_PREFIX = "~sdk.java";

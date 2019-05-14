@@ -11,6 +11,7 @@ import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -173,8 +174,10 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
     defaultSource = tempSource;
 
+    String processId = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
     sdkMetricsRegistry = new WavefrontSdkMetricsRegistry.Builder(this).
         prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.proxy").
+        tag(Constants.PROCESS_TAG_KEY, processId).
         build();
 
     if (builder.metricsPort == null) {
