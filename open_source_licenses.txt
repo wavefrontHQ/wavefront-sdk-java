@@ -1,6 +1,6 @@
 open_source_license.txt
 
-Wavefront Java 1.4 GA
+Wavefront Java 1.5 GA
 
 ======================================================================
 
