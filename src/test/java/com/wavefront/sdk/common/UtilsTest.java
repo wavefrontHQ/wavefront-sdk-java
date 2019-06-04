@@ -1,9 +1,7 @@
-package com.wavefront.sdk;
+package com.wavefront.sdk.common;
 
-import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
-import com.wavefront.sdk.proxy.WavefrontProxyClient;
 
 import org.junit.jupiter.api.Test;
 
@@ -19,17 +17,17 @@ import java.util.UUID;
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.sanitize;
-import static com.wavefront.sdk.common.Utils.spanLogsToJsonLine;
+import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * Tests for {@link WavefrontProxyClient}
+ * Tests for {@link Utils}
  *
  * @author Clement Pang (clement@wavefront.com).
  */
-public class WavefrontTest {
+public class UtilsTest {
 
   @Test
   public void testSanitize() {
@@ -180,7 +178,7 @@ public class WavefrontTest {
     assertEquals("{\"traceId\":\"7b3bf470-9456-11e8-9eb6-529269fb1459\"," +
         "\"spanId\":\"0313bafe-9457-11e8-9eb6-529269fb1459\"," +
         "\"logs\":[{\"timestamp\":91616745187,\"fields\":{\"key1\":\"val1\"}}]}\n",
-        spanLogsToJsonLine(UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
+        spanLogsToLineData(UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
             UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
             Arrays.asList(new SpanLog(91616745187L,
                 new HashMap<String, String>() {{ put("key1", "val1"); }}))));

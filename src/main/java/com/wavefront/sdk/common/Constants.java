@@ -28,7 +28,7 @@ public final class Constants {
   /**
    * Use this format to send tracing span log data to Wavefront
    */
-  public static final String WAVEFRONT_TRACING_SPAN_LOG_FORMAT = "spanLogs";
+  public static final String WAVEFRONT_SPAN_LOG_FORMAT = "spanLogs";
 
   /**
    * ∆: INCREMENT
@@ -88,5 +88,15 @@ public final class Constants {
   /**
    * Tag key for indicating spans log are present for a span.
    */
-  public static final String SPAN_LOG_KEY = "spanLogs";
+  public static final String SPAN_LOG_KEY = "_spanLogs";
+
+  /**
+   * Tag key for defining a process identifier.
+   */
+  public static final String PROCESS_TAG_KEY = "pid";
+
+  /**
+   * Name prefix for internal diagnostic metrics for Wavefront SDKs.
+   */
+  public static final String SDK_METRIC_PREFIX = "~sdk.java";
 }

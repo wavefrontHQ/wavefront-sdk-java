@@ -227,7 +227,7 @@ public class Utils {
     return sb.toString();
   }
 
-  public static String spanLogsToJsonLine(UUID traceId, UUID spanId, @Nonnull List<SpanLog> spanLogs)
+  public static String spanLogsToLineData(UUID traceId, UUID spanId, @Nonnull List<SpanLog> spanLogs)
       throws JsonProcessingException {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(JSON_PARSER.writeValueAsString(new SpanLogsDTO(traceId, spanId, spanLogs)));
