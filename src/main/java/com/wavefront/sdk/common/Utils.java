@@ -2,6 +2,7 @@ package com.wavefront.sdk.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wavefront.sdk.common.annotation.NonNull;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
@@ -12,8 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nonnull;
 
 import static com.wavefront.sdk.common.Constants.SPAN_LOG_KEY;
 
@@ -227,7 +226,7 @@ public class Utils {
     return sb.toString();
   }
 
-  public static String spanLogsToLineData(UUID traceId, UUID spanId, @Nonnull List<SpanLog> spanLogs)
+  public static String spanLogsToLineData(UUID traceId, UUID spanId, @NonNull List<SpanLog> spanLogs)
       throws JsonProcessingException {
     /*
      * Wavefront Span Log Data format
