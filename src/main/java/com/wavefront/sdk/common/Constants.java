@@ -86,7 +86,7 @@ public final class Constants {
   public static final String COMPONENT_TAG_KEY = "component";
 
   /**
-   * Tag key for indicating spans log are present for a span.
+   * Tag key for indicating span logs are present for a span.
    */
   public static final String SPAN_LOG_KEY = "_spanLogs";
 
