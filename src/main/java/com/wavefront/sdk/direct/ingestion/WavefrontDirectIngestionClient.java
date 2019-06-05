@@ -197,7 +197,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     spanReportErrors = sdkMetricsRegistry.newCounter("spans.report.errors");
 
     sdkMetricsRegistry.newGauge("span_logs.queue.size", spanLogsBuffer::size);
-    sdkMetricsRegistry.newGauge("spans_logs.queue.remaining_capacity",
+    sdkMetricsRegistry.newGauge("span_logs.queue.remaining_capacity",
         spanLogsBuffer::remainingCapacity);
     spanLogsValid = sdkMetricsRegistry.newCounter("span_logs.valid");
     spanLogsInvalid = sdkMetricsRegistry.newCounter("span_logs.invalid");

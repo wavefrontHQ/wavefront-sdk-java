@@ -213,9 +213,9 @@ public class Utils {
     }
     if (spanLogs != null  && !spanLogs.isEmpty()) {
       sb.append(' ');
-      sb.append(SPAN_LOG_KEY);
+      sb.append(sanitize(SPAN_LOG_KEY));
       sb.append('=');
-      sb.append("true");
+      sb.append(sanitize("true"));
     }
     sb.append(' ');
     sb.append(startMillis);
