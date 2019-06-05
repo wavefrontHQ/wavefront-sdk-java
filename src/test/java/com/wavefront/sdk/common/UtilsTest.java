@@ -174,7 +174,7 @@ public class UtilsTest {
   }
 
   @Test
-  public void testSpanLogsToJsonLine() throws IOException {
+  public void testSpanLogsToLineData() throws IOException {
     assertEquals("{\"traceId\":\"7b3bf470-9456-11e8-9eb6-529269fb1459\"," +
         "\"spanId\":\"0313bafe-9457-11e8-9eb6-529269fb1459\"," +
         "\"logs\":[{\"timestamp\":91616745187,\"fields\":{\"key1\":\"val1\"}}]}\n",

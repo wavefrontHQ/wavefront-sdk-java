@@ -229,6 +229,26 @@ public class Utils {
 
   public static String spanLogsToLineData(UUID traceId, UUID spanId, @Nonnull List<SpanLog> spanLogs)
       throws JsonProcessingException {
+    /*
+     * Wavefront Span Log Data format
+     * Example:
+     *  {
+     *      "traceId": "7b3bf470-9456-11e8-9eb6-529269fb1459",
+     *      "spanId": "0313bafe-9457-11e8-9eb6-529269fb1459",
+     *      "logs": [
+     *          {
+     *              "timestamp": "1533531013",
+     *              "fields": {
+     *                  "event": "error",
+     *                  "error.kind": "exception",
+     *                  "message": "timed out",
+     *                  "stack": "File \"example.py\", line 7, in \<module\>\ncaller()\nFile \"example.py\""
+     *              }
+     *          }
+     *      ]
+     *  }
+     */
+
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(JSON_PARSER.writeValueAsString(new SpanLogsDTO(traceId, spanId, spanLogs)));
     toReturn.append("\n");
