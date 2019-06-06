@@ -3,6 +3,7 @@ package com.wavefront.sdk;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.direct.ingestion.WavefrontDirectIngestionClient;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
+import com.wavefront.sdk.entities.tracing.SpanLog;
 import com.wavefront.sdk.proxy.WavefrontProxyClient;
 
 import java.io.IOException;
@@ -176,7 +177,9 @@ public class Main {
         UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
         Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")),
         null, Arrays.asList(new Pair<>("application", "Wavefront"),
-            new Pair<>("http.method", "GET")), null);
+            new Pair<>("http.method", "GET")),
+        Arrays.asList(new SpanLog(91616745187L,
+            new HashMap<String, String>() {{ put("info", "requesting getAllUsers took 5 ms"); }})));
     System.out.println("Sent tracing span: 'getAllUsers' to direct ingestion API");
   }
 

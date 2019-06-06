@@ -1,5 +1,6 @@
 package com.wavefront.sdk.direct.ingestion;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
@@ -30,6 +31,7 @@ import java.util.logging.Logger;
 
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
+import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 
 /**
@@ -51,6 +53,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final LinkedBlockingQueue<String> metricsBuffer;
   private final LinkedBlockingQueue<String> histogramsBuffer;
   private final LinkedBlockingQueue<String> tracingSpansBuffer;
+  private final LinkedBlockingQueue<String> spanLogsBuffer;
   private final DataIngesterAPI directService;
   private final ScheduledExecutorService scheduler;
   private final WavefrontSdkMetricsRegistry sdkMetricsRegistry;
@@ -72,6 +75,12 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final WavefrontSdkCounter spansInvalid;
   private final WavefrontSdkCounter spansDropped;
   private final WavefrontSdkCounter spanReportErrors;
+
+  // Internal span log metrics
+  private final WavefrontSdkCounter spanLogsValid;
+  private final WavefrontSdkCounter spanLogsInvalid;
+  private final WavefrontSdkCounter spanLogsDropped;
+  private final WavefrontSdkCounter spanLogReportErrors;
 
   public static class Builder {
     // Required parameters
@@ -152,6 +161,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     metricsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     histogramsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     tracingSpansBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
+    spanLogsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     directService = new DataIngesterService(builder.server, builder.token);
     scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory("wavefrontDirectSender"));
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
@@ -185,6 +195,14 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     spansInvalid = sdkMetricsRegistry.newCounter("spans.invalid");
     spansDropped = sdkMetricsRegistry.newCounter("spans.dropped");
     spanReportErrors = sdkMetricsRegistry.newCounter("spans.report.errors");
+
+    sdkMetricsRegistry.newGauge("span_logs.queue.size", spanLogsBuffer::size);
+    sdkMetricsRegistry.newGauge("span_logs.queue.remaining_capacity",
+        spanLogsBuffer::remainingCapacity);
+    spanLogsValid = sdkMetricsRegistry.newCounter("span_logs.valid");
+    spanLogsInvalid = sdkMetricsRegistry.newCounter("span_logs.invalid");
+    spanLogsDropped = sdkMetricsRegistry.newCounter("span_logs.dropped");
+    spanLogReportErrors = sdkMetricsRegistry.newCounter("span_logs.report.errors");
   }
 
   @Override
@@ -259,9 +277,33 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       throw e;
     }
 
-    if (!tracingSpansBuffer.offer(span)) {
+    if (tracingSpansBuffer.offer(span)) {
+      // attempt span logs after span is sent.
+      if (spanLogs != null && !spanLogs.isEmpty()) {
+        sendSpanLogs(traceId, spanId, spanLogs);
+      }
+    } else {
       spansDropped.inc();
+      if (spanLogs != null && !spanLogs.isEmpty()) {
+        spanLogsDropped.inc();
+      }
       logger.log(Level.WARNING, "Buffer full, dropping span: " + span);
+    }
+  }
+
+  private void sendSpanLogs(UUID traceId, UUID spanId, List<SpanLog> spanLogs) {
+    // attempt span logs
+    try {
+      String spanLogsJson = spanLogsToLineData(traceId, spanId, spanLogs);
+      spanLogsValid.inc();
+      if (!spanLogsBuffer.offer(spanLogsJson)) {
+        spanLogsDropped.inc();
+        logger.log(Level.WARNING, "Buffer full, dropping spanLogs: " + spanLogsJson);
+      }
+    } catch (JsonProcessingException e) {
+      spanLogsInvalid.inc();
+      logger.log(Level.WARNING, "unable to serialize span logs to json: traceId:" + traceId +
+          " spanId:" + spanId + " spanLogs:" + spanLogs);
     }
   }
 
@@ -282,6 +324,8 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
         histogramsDropped, histogramReportErrors);
     internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT, "spans",
         spansDropped, spanReportErrors);
+    internalFlush(spanLogsBuffer, Constants.WAVEFRONT_SPAN_LOG_FORMAT, "span_logs",
+        spanLogsDropped, spanLogReportErrors);
   }
 
   private void internalFlush(LinkedBlockingQueue<String> buffer, String format, String entityPrefix,

@@ -1,5 +1,6 @@
 package com.wavefront.sdk.proxy;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
@@ -29,6 +30,7 @@ import javax.net.SocketFactory;
 
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
+import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 
 /**
@@ -76,6 +78,12 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   private final WavefrontSdkCounter spansValid;
   private final WavefrontSdkCounter spansInvalid;
   private final WavefrontSdkCounter spansDropped;
+
+  // Internal span log metrics
+  private final WavefrontSdkCounter spanLogsDiscarded;
+  private final WavefrontSdkCounter spanLogsValid;
+  private final WavefrontSdkCounter spanLogsInvalid;
+  private final WavefrontSdkCounter spanLogsDropped;
 
   public static class Builder {
     // Required parameters
@@ -223,6 +231,11 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     spansValid = sdkMetricsRegistry.newCounter("spans.valid");
     spansInvalid = sdkMetricsRegistry.newCounter("spans.invalid");
     spansDropped = sdkMetricsRegistry.newCounter("spans.dropped");
+
+    spanLogsDiscarded = sdkMetricsRegistry.newCounter("span_logs.discarded");
+    spanLogsValid = sdkMetricsRegistry.newCounter("span_logs.valid");
+    spanLogsInvalid = sdkMetricsRegistry.newCounter("span_logs.invalid");
+    spanLogsDropped = sdkMetricsRegistry.newCounter("span_logs.dropped");
   }
 
   @Override
@@ -319,6 +332,9 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
       throws IOException {
     if (tracingProxyConnectionHandler == null) {
       spansDiscarded.inc();
+      if (spanLogs != null && !spanLogs.isEmpty()) {
+        spanLogsDiscarded.inc();
+      }
       logger.warning("Can't send data to Wavefront. " +
               "Please configure tracing port for Wavefront proxy");
       return;
@@ -338,8 +354,31 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
       tracingProxyConnectionHandler.sendData(lineData);
     } catch (Exception e) {
       spansDropped.inc();
+      if (spanLogs != null && !spanLogs.isEmpty()) {
+        spanLogsDropped.inc();
+      }
       tracingProxyConnectionHandler.incrementFailureCount();
       throw new IOException(e);
+    }
+
+    if (spanLogs != null && !spanLogs.isEmpty()) {
+      sendSpanLogsData(traceId, spanId, spanLogs);
+    }
+  }
+
+  private void sendSpanLogsData(UUID traceId, UUID spanId, List<SpanLog> spanLogs) {
+    try {
+      String lineData = spanLogsToLineData(traceId, spanId, spanLogs);
+      spanLogsValid.inc();
+      tracingProxyConnectionHandler.sendData(lineData);
+    } catch (JsonProcessingException e) {
+      spanLogsInvalid.inc();
+      logger.log(Level.WARNING, "unable to serialize span logs to json: traceId:" + traceId +
+          " spanId:" + spanId + " spanLogs:" + spanLogs);
+    } catch (Exception e) {
+      spanLogsDropped.inc();
+      logger.log(Level.WARNING, "unable to send span logs for traceId:" + traceId +
+          " spanId:" + spanId + " due to exception: " + e);
     }
   }
 

@@ -1,14 +1,20 @@
 package com.wavefront.sdk.common;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wavefront.sdk.common.annotation.NonNull;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
+import com.wavefront.sdk.entities.tracing.SpanLogsDTO;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
+import static com.wavefront.sdk.common.Constants.SPAN_LOG_KEY;
 
 /**
  * Common Util methods
@@ -18,6 +24,7 @@ import java.util.regex.Pattern;
 public class Utils {
 
   private static final Pattern WHITESPACE = Pattern.compile("[\\s]+");
+  private static final ObjectMapper JSON_PARSER = new ObjectMapper();
 
   public static String sanitize(String s) {
     final String whitespaceSanitized = WHITESPACE.matcher(s).replaceAll("-");
@@ -149,8 +156,7 @@ public class Utils {
                                              @Nullable List<UUID> parents,
                                              @Nullable List<UUID> followsFrom,
                                              @Nullable List<Pair<String, String>> tags,
-                                             @Nullable List<SpanLog> spanLogs,
-                                             String defaultSource) {
+                                             @Nullable List<SpanLog> spanLogs, String defaultSource) {
     /*
      * Wavefront Tracing Span Data format
      * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milli_seconds>
@@ -205,6 +211,12 @@ public class Utils {
         sb.append(sanitize(tag._2));
       }
     }
+    if (spanLogs != null  && !spanLogs.isEmpty()) {
+      sb.append(' ');
+      sb.append(sanitize(SPAN_LOG_KEY));
+      sb.append('=');
+      sb.append(sanitize("true"));
+    }
     sb.append(' ');
     sb.append(startMillis);
     sb.append(' ');
@@ -212,5 +224,33 @@ public class Utils {
     // TODO - Support SpanLogs
     sb.append('\n');
     return sb.toString();
+  }
+
+  public static String spanLogsToLineData(UUID traceId, UUID spanId, @NonNull List<SpanLog> spanLogs)
+      throws JsonProcessingException {
+    /*
+     * Wavefront Span Log Data format
+     * Example:
+     *  {
+     *      "traceId": "7b3bf470-9456-11e8-9eb6-529269fb1459",
+     *      "spanId": "0313bafe-9457-11e8-9eb6-529269fb1459",
+     *      "logs": [
+     *          {
+     *              "timestamp": "1533531013",
+     *              "fields": {
+     *                  "event": "error",
+     *                  "error.kind": "exception",
+     *                  "message": "timed out",
+     *                  "stack": "File \"example.py\", line 7, in \<module\>\ncaller()\nFile \"example.py\""
+     *              }
+     *          }
+     *      ]
+     *  }
+     */
+
+    StringBuilder toReturn = new StringBuilder();
+    toReturn.append(JSON_PARSER.writeValueAsString(new SpanLogsDTO(traceId, spanId, spanLogs)));
+    toReturn.append("\n");
+    return toReturn.toString();
   }
 }
