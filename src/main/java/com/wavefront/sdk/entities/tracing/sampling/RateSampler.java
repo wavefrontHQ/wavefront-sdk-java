@@ -5,7 +5,7 @@ package com.wavefront.sdk.entities.tracing.sampling;
  *
  * Note: Sampling is performed per trace id. All spans for a sampled trace will be reported.
  *
- * @author Vikram Raman
+ * @author Vikram Raman (rvikram@vmware.com)
  */
 public class RateSampler implements Sampler {
 
