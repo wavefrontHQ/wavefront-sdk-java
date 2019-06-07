@@ -1,7 +1,7 @@
 package com.wavefront.sdk.entities.tracing.sampling;
 
 /**
- * Sampler that allows a certain probabilistic rate (between 0.0 and 1.0) of spans to be reported.
+ * Sampler that allows a certain probabilistic rate (between 0.0 and 1.0) of traces to be reported.
  *
  * Note: Sampling is performed per trace id. All spans for a sampled trace will be reported.
  *
