@@ -1,6 +1,6 @@
-open_source_license.txt
+open_source_licenses.txt
 
-Wavefront Java 1.5 GA
+Wavefront Java SDK 1.6 GA
 
 ======================================================================
 
@@ -27,6 +27,9 @@ of the license associated with each component.
 
 SECTION 1: Apache License, V2.0
 
+   >>> com.fasterxml.jackson.core:jackson-annotations-2.9.0
+   >>> com.fasterxml.jackson.core:jackson-core-2.9.9
+   >>> com.fasterxml.jackson.core:jackson-databind-2.9.9
    >>> com.tdunning:t-digest-3.2
 
 
@@ -47,6 +50,81 @@ APPENDIX. Standard License Files
 
 Apache License, V2.0 is applicable to the following component(s).
 
+
+>>> com.fasterxml.jackson.core:jackson-annotations-2.9.0
+
+This copy of Jackson JSON processor annotations is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
+
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+>>> com.fasterxml.jackson.core:jackson-core-2.9.9
+
+# Jackson JSON processor
+
+Jackson is a high-performance, Free/Open Source JSON processing library.
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers, as well as supported
+commercially by FasterXML.com.
+
+## Licensing
+
+Jackson core and extension components may licensed under different licenses.
+To find the details that apply to this artifact see the accompanying LICENSE file.
+For more information, including possible other licensing options, contact
+FasterXML.com (http://fasterxml.com).
+
+## Credits
+
+A list of contributors may be found from CREDITS file, which is included
+in some artifacts (usually source distributions); but is always available
+from the source code management (SCM) system project uses.
+
+This copy of Jackson JSON processor streaming parser/generator is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
+
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+>>> com.fasterxml.jackson.core:jackson-databind-2.9.9
+
+# Jackson JSON processor
+
+Jackson is a high-performance, Free/Open Source JSON processing library.
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers, as well as supported
+commercially by FasterXML.com.
+
+## Licensing
+
+Jackson core and extension components may be licensed under different licenses.
+To find the details that apply to this artifact see the accompanying LICENSE file.
+For more information, including possible other licensing options, contact
+FasterXML.com (http://fasterxml.com).
+
+## Credits
+
+A list of contributors may be found from CREDITS file, which is included
+in some artifacts (usually source distributions); but is always available
+from the source code management (SCM) system project uses.
+
+This copy of Jackson JSON processor databind module is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
+
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
 
 >>> com.tdunning:t-digest-3.2
 
@@ -341,4 +419,5 @@ a CD or equivalent physical medium. This offer to obtain a copy of the
 Source Files is valid for three years from the date you acquired or last used this
 Software product. Alternatively, the Source Files may accompany the
 VMware service.
-[WAVEFRONTSDKJAVA14GARZ032419]
+
+[WAVEFRONTSDKJAVA16GAPS061419]
