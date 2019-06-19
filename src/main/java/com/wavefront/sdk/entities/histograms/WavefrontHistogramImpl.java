@@ -168,8 +168,9 @@ public class WavefrontHistogramImpl {
     } finally {
       readLock.unlock();
     }
-    return centroids.size() == 0 ? NaN : centroids.stream().
-        mapToDouble(c -> (c.count() * c.mean()) / centroids.size()).sum();
+    Centroid mean = centroids.stream().
+            reduce((x, y) -> new Centroid(x.mean() + (y.mean() * y.count()), x.count() + y.count())).orElse(null);
+    return mean == null || centroids.size() == 0 ? Double.NaN : mean.mean() / mean.count();
   }
 
   /**
@@ -322,8 +323,9 @@ public class WavefrontHistogramImpl {
      */
     public double getMean() {
       Collection<Centroid> centroids = distribution.centroids();
-      return centroids.size() == 0 ? NaN : centroids.stream()
-          .mapToDouble(c -> (c.count() * c.mean()) / centroids.size()).sum();
+      Centroid mean = centroids.stream().
+              reduce((x, y) -> new Centroid(x.mean() + (y.mean() * y.count()), x.count() + y.count())).orElse(null);
+      return mean == null || centroids.size() == 0 ? Double.NaN : mean.mean() / mean.count();
     }
 
     /**
