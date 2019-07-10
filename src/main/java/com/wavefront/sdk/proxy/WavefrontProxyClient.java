@@ -57,6 +57,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
    * Source to use if entity source is null
    */
   private final String defaultSource;
+  private final String clientId;
 
   private final ScheduledExecutorService scheduler;
   private final WavefrontSdkMetricsRegistry sdkMetricsRegistry;
@@ -188,12 +189,14 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
         tag(Constants.PROCESS_TAG_KEY, processId).
         build();
 
+    String uniqueId = builder.proxyHostName + ":";
     if (builder.metricsPort == null) {
       metricsProxyConnectionHandler = null;
     } else {
       metricsProxyConnectionHandler = new ProxyConnectionHandler(
           new InetSocketAddress(builder.proxyHostName, builder.metricsPort),
           builder.socketFactory, sdkMetricsRegistry, "metricHandler");
+      uniqueId += builder.metricsPort + ":";
     }
 
     if (builder.distributionPort == null) {
@@ -202,6 +205,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
       histogramProxyConnectionHandler = new ProxyConnectionHandler(
           new InetSocketAddress(builder.proxyHostName, builder.distributionPort),
           builder.socketFactory, sdkMetricsRegistry, "histogramHandler");
+      uniqueId += builder.distributionPort + ":";
     }
 
     if (builder.tracingPort == null) {
@@ -210,7 +214,10 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
       tracingProxyConnectionHandler = new ProxyConnectionHandler(
           new InetSocketAddress(builder.proxyHostName, builder.tracingPort),
           builder.socketFactory, sdkMetricsRegistry, "tracingHandler");
+      uniqueId += builder.tracingPort;
     }
+
+    this.clientId = uniqueId;
 
     scheduler = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("wavefrontProxySender"));
@@ -236,6 +243,11 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     spanLogsValid = sdkMetricsRegistry.newCounter("span_logs.valid");
     spanLogsInvalid = sdkMetricsRegistry.newCounter("span_logs.invalid");
     spanLogsDropped = sdkMetricsRegistry.newCounter("span_logs.dropped");
+  }
+
+  @Override
+  public String getClientId() {
+    return clientId;
   }
 
   @Override

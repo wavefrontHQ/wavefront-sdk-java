@@ -30,10 +30,11 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
     public static class Builder<T extends WavefrontSender & Runnable> {
         private final ConcurrentHashMap<String, T> wavefrontSenders = new ConcurrentHashMap<>();
 
-        public Builder withWavefrontSender(String id, T sender) {
-            if (wavefrontSenders.containsKey(id))
+        public Builder withWavefrontSender(T sender) {
+            if (wavefrontSenders.containsKey(sender.getClientId()))
                 throw new RuntimeException("Duplicate id specified");
-            wavefrontSenders.put(id, sender);
+
+            wavefrontSenders.put(sender.getClientId(), sender);
             return this;
         }
 
