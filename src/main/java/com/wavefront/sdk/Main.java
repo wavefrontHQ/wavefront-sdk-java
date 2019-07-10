@@ -2,9 +2,9 @@ package com.wavefront.sdk;
 
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.WavefrontSender;
+import com.wavefront.sdk.common.clients.WavefrontMultiClient;
 import com.wavefront.sdk.direct.ingestion.WavefrontDirectIngestionClient;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
-import com.wavefront.sdk.proxy.WavefrontMultiProxyClient;
 import com.wavefront.sdk.proxy.WavefrontProxyClient;
 
 import java.io.IOException;
@@ -122,12 +122,14 @@ public class Main {
     }
     WavefrontProxyClient wavefrontProxyClient = builder.build();
 
-    WavefrontMultiProxyClient.Builder mcBuilder = new WavefrontMultiProxyClient.Builder();
-    mcBuilder.withWavefrontProxyClient(proxyHost, wavefrontProxyClient);
-    WavefrontMultiProxyClient wavefrontMultiProxyClient = mcBuilder.build();
-
     WavefrontDirectIngestionClient wavefrontDirectIngestionClient =
         new WavefrontDirectIngestionClient.Builder(wavefrontServer, token).build();
+
+    WavefrontMultiClient.Builder<WavefrontProxyClient> mcBuilder = new WavefrontMultiClient.Builder<>();
+    mcBuilder.withWavefrontSender(proxyHost, wavefrontProxyClient);
+    WavefrontMultiClient<WavefrontProxyClient> wavefrontMultiClient = mcBuilder.build();
+
+    WavefrontProxyClient matched = wavefrontMultiClient.getClient(proxyHost);
 
     while (true) {
       // Send entities via Proxy
@@ -144,11 +146,11 @@ public class Main {
       sendTracingSpan(wavefrontDirectIngestionClient);
 
       // Send entities via the Multi Proxy Client
-      sendMetric(wavefrontMultiProxyClient);
-      sendDeltaCounter(wavefrontMultiProxyClient);
-      sendHistogram(wavefrontMultiProxyClient);
-      sendTracingSpan(wavefrontMultiProxyClient);
-      wavefrontMultiProxyClient.flush();
+      sendMetric(wavefrontMultiClient);
+      sendDeltaCounter(wavefrontMultiClient);
+      sendHistogram(wavefrontMultiClient);
+      sendTracingSpan(wavefrontMultiClient);
+      wavefrontMultiClient.flush();
 
       Thread.sleep(5000);
     }

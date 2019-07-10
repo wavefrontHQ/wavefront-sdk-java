@@ -1,10 +1,11 @@
-package com.wavefront.sdk.proxy;
+package com.wavefront.sdk.common.clients;
 
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
+import com.wavefront.sdk.proxy.WavefrontProxyClient;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,33 +16,32 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
- * WavefrontProxyMultiClient that sends data directly via TCP to multiple Wavefront endpoints running a Proxy Agent.
+ * WavefrontMultiClient supports multiple endpoints for either Proxy or Direct Ingestion.
  * User should probably attempt to reconnect when exceptions are thrown from any methods.
  *
  * @author Mike McMahon (mike.mcmahon@wavefront.com).
  */
-public class WavefrontMultiProxyClient implements WavefrontSender, Runnable {
-
+public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implements WavefrontSender, Runnable {
     private static final Logger logger = Logger.getLogger(
-            WavefrontMultiProxyClient.class.getCanonicalName());
-    private static final ConcurrentHashMap<String, WavefrontProxyClient> wavefrontProxyClients = new ConcurrentHashMap<>();
+            WavefrontProxyClient.class.getCanonicalName());
 
-    public static class Builder {
-        private final ConcurrentHashMap<String, WavefrontProxyClient> wavefrontProxyClients = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, T> wavefrontSenders = new ConcurrentHashMap<>();
 
-        public Builder withWavefrontProxyClient(String id, WavefrontProxyClient proxyClient) {
-            wavefrontProxyClients.put(id, proxyClient);
+    public static class Builder<T extends WavefrontSender & Runnable> {
+        private final ConcurrentHashMap<String, T> wavefrontSenders = new ConcurrentHashMap<>();
+
+        public Builder withWavefrontSender(String id, T sender) {
+            wavefrontSenders.put(id, sender);
             return this;
         }
 
-        public WavefrontMultiProxyClient build() {
-            return new WavefrontMultiProxyClient(this);
+        public WavefrontMultiClient<T> build() {
+            return new WavefrontMultiClient<T>(this);
         }
-
     }
 
-    private WavefrontMultiProxyClient(Builder builder) {
-        wavefrontProxyClients.putAll(builder.wavefrontProxyClients);
+    private WavefrontMultiClient(Builder<T> builder) {
+        this.wavefrontSenders.putAll(builder.wavefrontSenders);
     }
 
     /**
@@ -49,13 +49,13 @@ public class WavefrontMultiProxyClient implements WavefrontSender, Runnable {
      * @param id
      * @return
      */
-    public  WavefrontProxyClient getClient(String id) {
-        return wavefrontProxyClients.getOrDefault(id, null);
+    public T getClient(String id) {
+        return wavefrontSenders.getOrDefault(id, null);
     }
 
     @Override
     public void flush() throws IOException {
-        for (WavefrontProxyClient client : wavefrontProxyClients.values()) {
+        for (T client : wavefrontSenders.values()) {
             client.flush();
         }
     }
@@ -63,7 +63,7 @@ public class WavefrontMultiProxyClient implements WavefrontSender, Runnable {
     @Override
     public int getFailureCount() {
         int failureCount = 0;
-        for (WavefrontProxyClient client : wavefrontProxyClients.values()) {
+        for (T client : wavefrontSenders.values()) {
             failureCount += client.getFailureCount();
         }
         return failureCount;
@@ -73,14 +73,14 @@ public class WavefrontMultiProxyClient implements WavefrontSender, Runnable {
     public void sendMetric(String name, double value, @Nullable Long timestamp,
                            @Nullable String source, @Nullable Map<String, String> tags)
             throws IOException {
-        for (WavefrontProxyClient client : wavefrontProxyClients.values()) {
+        for (T client : wavefrontSenders.values()) {
             client.sendMetric(name, value, timestamp, source, tags);
         }
     }
 
     @Override
     public void sendFormattedMetric(String point) throws IOException {
-        for (WavefrontProxyClient client : wavefrontProxyClients.values()) {
+        for (T client : wavefrontSenders.values()) {
             client.sendFormattedMetric(point);
         }
     }
@@ -91,7 +91,7 @@ public class WavefrontMultiProxyClient implements WavefrontSender, Runnable {
                                  @Nullable Long timestamp, @Nullable String source,
                                  @Nullable Map<String, String> tags)
             throws IOException {
-        for (WavefrontProxyClient client : wavefrontProxyClients.values()) {
+        for (T client : wavefrontSenders.values()) {
             client.sendDistribution(name, centroids, histogramGranularities, timestamp, source, tags);
         }
     }
@@ -102,21 +102,22 @@ public class WavefrontMultiProxyClient implements WavefrontSender, Runnable {
                          @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                          @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
             throws IOException {
-        for (WavefrontProxyClient client : wavefrontProxyClients.values()) {
+        for (T client : wavefrontSenders.values()) {
             client.sendSpan(name, startMillis, durationMillis, source, traceId, spanId, parents, followsFrom, tags, spanLogs);
         }
     }
 
     @Override
     public void close() throws IOException {
-        for (WavefrontProxyClient client : wavefrontProxyClients.values()) {
+        for (T client : wavefrontSenders.values()) {
             client.close();
         }
     }
 
+
     @Override
     public void run() {
-        for (WavefrontProxyClient client : wavefrontProxyClients.values()) {
+        for (T client : wavefrontSenders.values()) {
             client.run();
         }
     }
