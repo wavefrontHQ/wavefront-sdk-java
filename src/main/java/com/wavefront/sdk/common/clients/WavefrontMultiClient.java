@@ -130,11 +130,15 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
         }
     }
 
-
     @Override
     public void run() {
         for (T client : wavefrontSenders.values()) {
             client.run();
         }
+    }
+
+    @Override
+    public String getClientId() {
+        return "MultiClient";
     }
 }
