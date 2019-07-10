@@ -125,7 +125,6 @@ public class Main {
     WavefrontMultiProxyClient.Builder mcBuilder = new WavefrontMultiProxyClient.Builder();
     mcBuilder.withWavefrontProxyClient(proxyHost, wavefrontProxyClient);
     WavefrontMultiProxyClient wavefrontMultiProxyClient = mcBuilder.build();
-    wavefrontMultiProxyClient.getClient<WavefrontProxyClient>("foo");
 
     WavefrontDirectIngestionClient wavefrontDirectIngestionClient =
         new WavefrontDirectIngestionClient.Builder(wavefrontServer, token).build();
