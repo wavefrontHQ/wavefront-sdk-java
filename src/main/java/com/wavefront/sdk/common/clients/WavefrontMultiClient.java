@@ -16,7 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
- * WavefrontMultiClient supports multicasting points onto multiple endpoints for either Proxy or Direct Ingestion.
+ * WavefrontMultiClient supports multicasting metrics/distributions/spans
+ * onto multiple endpoints for either Proxy or Direct Ingestion.
  * User should probably attempt to reconnect when exceptions are thrown from any methods.
  *
  * @author Mike McMahon (mike.mcmahon@wavefront.com).
@@ -48,9 +49,9 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
     }
 
     /**
-     * Provide direct access to a specific client by id
-     * @param clientId the unique client ID generated when a Proxy or DirectIngestion Client is instantiated
-     * @return The client found or null if no client is found matching the supplied clientId
+     * Provide direct access to a specific client by id.
+     * @param clientId the unique client ID generated when a Proxy or DirectIngestion Client is instantiated.
+     * @return The client found or null if no client is found matching the supplied clientId.
      */
     public T getClient(String clientId) {
         return wavefrontSenders.getOrDefault(clientId, null);
@@ -73,8 +74,8 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
     }
 
     /**
-     * Obtain the failure counts per endpoint
-     * @return a map of clientId's to failures per endpoint
+     * Obtain the failure counts per endpoint.
+     * @return a map of clientId's to failures per endpoint.
      */
     public Map<String, Integer> getFailureCountPerSender() {
         final ConcurrentHashMap<String, Integer> failuresPerSender = new ConcurrentHashMap<>();
