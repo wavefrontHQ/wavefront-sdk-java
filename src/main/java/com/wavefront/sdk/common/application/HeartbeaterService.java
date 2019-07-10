@@ -49,6 +49,9 @@ public class HeartbeaterService implements Runnable, Closeable {
         put(SHARD_TAG_KEY, applicationTags.getShard() == null ? Constants.NULL_TAG_VAL :
             applicationTags.getShard());
         put(COMPONENT_TAG_KEY, component);
+        if (applicationTags.getCustomTags() != null) {
+          putAll(applicationTags.getCustomTags());
+        }
       }});
     }
     scheduler = Executors.newScheduledThreadPool(1,
