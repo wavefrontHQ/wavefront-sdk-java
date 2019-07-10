@@ -126,7 +126,7 @@ public class Main {
         new WavefrontDirectIngestionClient.Builder(wavefrontServer, token).build();
 
     WavefrontMultiClient.Builder<WavefrontProxyClient> mcBuilder = new WavefrontMultiClient.Builder<>();
-    mcBuilder.withWavefrontSender(proxyHost, wavefrontProxyClient);
+    mcBuilder.withWavefrontSender(wavefrontProxyClient);
     WavefrontMultiClient<WavefrontProxyClient> wavefrontMultiClient = mcBuilder.build();
 
     WavefrontProxyClient matched = wavefrontMultiClient.getClient(proxyHost);
