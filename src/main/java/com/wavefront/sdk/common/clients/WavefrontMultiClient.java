@@ -31,6 +31,8 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
         private final ConcurrentHashMap<String, T> wavefrontSenders = new ConcurrentHashMap<>();
 
         public Builder withWavefrontSender(String id, T sender) {
+            if (wavefrontSenders.containsKey(id))
+                throw new RuntimeException("Duplicate id specified");
             wavefrontSenders.put(id, sender);
             return this;
         }
@@ -67,6 +69,19 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
             failureCount += client.getFailureCount();
         }
         return failureCount;
+    }
+
+    /**
+     * Obtain the failure counts per endpoint
+     * @return
+     */
+    public Map<String, Integer> getFailureCountPerSender() {
+        final ConcurrentHashMap<String, Integer> failuresPerSender = new ConcurrentHashMap<>();
+        for (Map.Entry<String, T> e : wavefrontSenders.entrySet()) {
+            failuresPerSender.put(e.getKey(), e.getValue().getFailureCount());
+        }
+
+        return failuresPerSender;
     }
 
     @Override
