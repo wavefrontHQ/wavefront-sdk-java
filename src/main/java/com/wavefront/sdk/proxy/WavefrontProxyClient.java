@@ -100,7 +100,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     /**
      * WavefrontProxyClient.Builder
      *
-     * @param proxyHostName     Hostname of the Wavefront proxy
+     * @param proxyHostName Hostname of the Wavefront proxy
      */
     public Builder(String proxyHostName) {
       this.proxyHostName = proxyHostName;
@@ -109,7 +109,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     /**
      * Invoke this method to enable sending metrics to Wavefront cluster via proxy
      *
-     * @param metricsPort       Metrics Port on which the Wavefront proxy is listening on
+     * @param metricsPort Metrics Port on which the Wavefront proxy is listening on
      * @return {@code this}
      */
     public Builder metricsPort(int metricsPort) {
@@ -120,7 +120,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     /**
      * Invoke this method to enable sending distribution to Wavefront cluster via proxy
      *
-     * @param distributionPort   Distribution Port on which the Wavefront proxy is listening on
+     * @param distributionPort Distribution Port on which the Wavefront proxy is listening on
      * @return {@code this}
      */
     public Builder distributionPort(int distributionPort) {
@@ -131,7 +131,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     /**
      * Invoke this method to enable sending tracing spans to Wavefront cluster via proxy
      *
-     * @param tracingPort        Tracing Port on which the Wavefront proxy is listening on
+     * @param tracingPort Tracing Port on which the Wavefront proxy is listening on
      * @return {@code this}
      */
     public Builder tracingPort(int tracingPort) {
@@ -142,7 +142,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     /**
      * Set an explicit SocketFactory
      *
-     * @param socketFactory       SocketFactory
+     * @param socketFactory SocketFactory
      * @return {@code this}
      */
     public Builder socketFactory(SocketFactory socketFactory) {
@@ -153,7 +153,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     /**
      * Set interval at which you want to flush points to Wavefront proxy
      *
-     * @param flushIntervalSeconds  Interval at which you want to flush points to Wavefront proxy
+     * @param flushIntervalSeconds Interval at which you want to flush points to Wavefront proxy
      * @return {@code this}
      */
     public Builder flushIntervalSeconds(int flushIntervalSeconds) {
@@ -165,7 +165,6 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
      * Builds WavefrontProxyClient instance
      *
      * @return {@link WavefrontProxyClient}
-     * @throws UnknownHostException
      */
     public WavefrontProxyClient build() {
       return new WavefrontProxyClient(this);
@@ -176,10 +175,9 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     String tempSource = "unknown";
     try {
       tempSource = InetAddress.getLocalHost().getHostName();
-    }
-    catch (UnknownHostException ex) {
+    } catch (UnknownHostException ex) {
       logger.log(Level.WARNING,
-              "Unable to resolve local host name. Source will default to 'unknown'", ex);
+          "Unable to resolve local host name. Source will default to 'unknown'", ex);
     }
     defaultSource = tempSource;
 
@@ -313,7 +311,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     if (histogramProxyConnectionHandler == null) {
       histogramsDiscarded.inc();
       logger.warning("Can't send data to Wavefront. " +
-              "Please configure histogram distribution port for Wavefront proxy");
+          "Please configure histogram distribution port for Wavefront proxy");
       return;
     }
 
@@ -348,7 +346,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
         spanLogsDiscarded.inc();
       }
       logger.warning("Can't send data to Wavefront. " +
-              "Please configure tracing port for Wavefront proxy");
+          "Please configure tracing port for Wavefront proxy");
       return;
     }
 

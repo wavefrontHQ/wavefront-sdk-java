@@ -13,5 +13,5 @@ import java.io.Closeable;
  */
 public interface WavefrontSender extends WavefrontMetricSender, WavefrontHistogramSender,
     WavefrontTracingSpanSender, BufferFlusher, Closeable {
-    String getClientId();
+  String getClientId();
 }

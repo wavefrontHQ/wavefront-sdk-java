@@ -97,7 +97,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
      * Create a new WavefrontDirectIngestionClient.Builder
      *
      * @param server A Wavefront server URL of the form "https://clusterName.wavefront.com"
-     * @param token A valid API token with direct ingestion permissions
+     * @param token  A valid API token with direct ingestion permissions
      */
     public Builder(String server, String token) {
       this.server = server;
@@ -151,8 +151,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     String tempSource = "unknown";
     try {
       tempSource = InetAddress.getLocalHost().getHostName();
-    }
-    catch (UnknownHostException ex) {
+    } catch (UnknownHostException ex) {
       logger.log(Level.WARNING,
           "Unable to resolve local host name. Source will default to 'unknown'", ex);
     }
@@ -385,7 +384,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public int getFailureCount() {
-    return (int)(pointReportErrors.count() + histogramReportErrors.count() +
+    return (int) (pointReportErrors.count() + histogramReportErrors.count() +
         spanReportErrors.count());
   }
 
