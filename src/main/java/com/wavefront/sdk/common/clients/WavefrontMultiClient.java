@@ -3,6 +3,7 @@ package com.wavefront.sdk.common.clients;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.Nullable;
+import com.wavefront.sdk.common.clients.exceptions.MultiClientIOException;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
 import com.wavefront.sdk.proxy.WavefrontProxyClient;
@@ -13,7 +14,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+
 
 /**
  * WavefrontMultiClient supports multicasting metrics/distributions/spans
@@ -33,7 +37,7 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
 
         public Builder withWavefrontSender(T sender) {
             if (wavefrontSenders.containsKey(sender.getClientId()))
-                throw new RuntimeException("Duplicate id specified");
+                throw new IllegalArgumentException("Duplicate Client specified");
 
             wavefrontSenders.put(sender.getClientId(), sender);
             return this;
@@ -50,6 +54,7 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
 
     /**
      * Provide direct access to a specific client by id.
+     *
      * @param clientId the unique client ID generated when a Proxy or DirectIngestion Client is instantiated.
      * @return The client found or null if no client is found matching the supplied clientId.
      */
@@ -59,9 +64,17 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
 
     @Override
     public void flush() throws IOException {
+        MultiClientIOException exceptions = new MultiClientIOException();
         for (T client : wavefrontSenders.values()) {
-            client.flush();
+            try {
+                client.flush();
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "Client " + getClientId() + " failed to flush.", ex);
+                exceptions.add(ex);
+            }
         }
+
+        exceptions.checkAndThrow();
     }
 
     @Override
@@ -75,6 +88,7 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
 
     /**
      * Obtain the failure counts per endpoint.
+     *
      * @return a map of clientId's to failures per endpoint.
      */
     public Map<String, Integer> getFailureCountPerSender() {
@@ -90,16 +104,32 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
     public void sendMetric(String name, double value, @Nullable Long timestamp,
                            @Nullable String source, @Nullable Map<String, String> tags)
             throws IOException {
+        MultiClientIOException exceptions = new MultiClientIOException();
         for (T client : wavefrontSenders.values()) {
-            client.sendMetric(name, value, timestamp, source, tags);
+            try {
+                client.sendMetric(name, value, timestamp, source, tags);
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "Client " + getClientId() + " failed to send metric.", ex);
+                exceptions.add(ex);
+            }
         }
+
+        exceptions.checkAndThrow();
     }
 
     @Override
     public void sendFormattedMetric(String point) throws IOException {
+        MultiClientIOException exceptions = new MultiClientIOException();
         for (T client : wavefrontSenders.values()) {
-            client.sendFormattedMetric(point);
+            try {
+                client.sendFormattedMetric(point);
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "Client " + getClientId() + " failed to send formatted metric.", ex);
+                exceptions.add(ex);
+            }
         }
+
+        exceptions.checkAndThrow();
     }
 
     @Override
@@ -108,9 +138,17 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
                                  @Nullable Long timestamp, @Nullable String source,
                                  @Nullable Map<String, String> tags)
             throws IOException {
+        MultiClientIOException exceptions = new MultiClientIOException();
         for (T client : wavefrontSenders.values()) {
-            client.sendDistribution(name, centroids, histogramGranularities, timestamp, source, tags);
+            try {
+                client.sendDistribution(name, centroids, histogramGranularities, timestamp, source, tags);
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "Client " + getClientId() + " failed to send distribution.", ex);
+                exceptions.add(ex);
+            }
         }
+
+        exceptions.checkAndThrow();
     }
 
     @Override
@@ -119,16 +157,32 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
                          @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                          @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
             throws IOException {
+        MultiClientIOException exceptions = new MultiClientIOException();
         for (T client : wavefrontSenders.values()) {
-            client.sendSpan(name, startMillis, durationMillis, source, traceId, spanId, parents, followsFrom, tags, spanLogs);
+            try {
+                client.sendSpan(name, startMillis, durationMillis, source, traceId, spanId, parents, followsFrom, tags, spanLogs);
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "Client " + getClientId() + " failed to send span.", ex);
+                exceptions.add(ex);
+            }
         }
+
+        exceptions.checkAndThrow();
     }
 
     @Override
     public void close() throws IOException {
+        MultiClientIOException exceptions = new MultiClientIOException();
         for (T client : wavefrontSenders.values()) {
-            client.close();
+            try {
+                client.close();
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "Client " + getClientId() + " failed to close.", ex);
+                exceptions.add(ex);
+            }
         }
+
+        exceptions.checkAndThrow();
     }
 
     @Override
