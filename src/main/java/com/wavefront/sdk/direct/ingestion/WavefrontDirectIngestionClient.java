@@ -48,6 +48,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
    * Source to use if entity source is null
    */
   private final String defaultSource;
+  private final String clientId;
 
   private final int batchSize;
   private final LinkedBlockingQueue<String> metricsBuffer;
@@ -203,6 +204,12 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     spanLogsInvalid = sdkMetricsRegistry.newCounter("span_logs.invalid");
     spanLogsDropped = sdkMetricsRegistry.newCounter("span_logs.dropped");
     spanLogReportErrors = sdkMetricsRegistry.newCounter("span_logs.report.errors");
+    this.clientId = builder.server;
+  }
+
+  @Override
+  public String getClientId() {
+    return clientId;
   }
 
   @Override
