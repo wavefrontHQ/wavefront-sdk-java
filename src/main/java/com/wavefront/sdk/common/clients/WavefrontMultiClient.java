@@ -109,7 +109,7 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
             try {
                 client.sendMetric(name, value, timestamp, source, tags);
             } catch (IOException ex) {
-                logger.log(Level.SEVERE, "Client " + getClientId() + " failed to send metric.", ex);
+                logger.log(Level.SEVERE, "Client " + client.getClientId() + " failed to send metric.", ex);
                 exceptions.add(ex);
             }
         }
@@ -124,7 +124,7 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
             try {
                 client.sendFormattedMetric(point);
             } catch (IOException ex) {
-                logger.log(Level.SEVERE, "Client " + getClientId() + " failed to send formatted metric.", ex);
+                logger.log(Level.SEVERE, "Client " + client.getClientId() + " failed to send formatted metric.", ex);
                 exceptions.add(ex);
             }
         }
@@ -143,7 +143,7 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
             try {
                 client.sendDistribution(name, centroids, histogramGranularities, timestamp, source, tags);
             } catch (IOException ex) {
-                logger.log(Level.SEVERE, "Client " + getClientId() + " failed to send distribution.", ex);
+                logger.log(Level.SEVERE, "Client " + client.getClientId() + " failed to send distribution.", ex);
                 exceptions.add(ex);
             }
         }
@@ -162,7 +162,7 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
             try {
                 client.sendSpan(name, startMillis, durationMillis, source, traceId, spanId, parents, followsFrom, tags, spanLogs);
             } catch (IOException ex) {
-                logger.log(Level.SEVERE, "Client " + getClientId() + " failed to send span.", ex);
+                logger.log(Level.SEVERE, "Client " + client.getClientId() + " failed to send span.", ex);
                 exceptions.add(ex);
             }
         }
@@ -177,7 +177,7 @@ public class WavefrontMultiClient<T extends WavefrontSender & Runnable> implemen
             try {
                 client.close();
             } catch (IOException ex) {
-                logger.log(Level.SEVERE, "Client " + getClientId() + " failed to close.", ex);
+                logger.log(Level.SEVERE, "Client " + client.getClientId() + " failed to close.", ex);
                 exceptions.add(ex);
             }
         }
