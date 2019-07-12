@@ -7,8 +7,8 @@ Many Wavefront SDKs require you to specify _application tags_ that describe the 
 * `service` - Name that identifies the microservice within your application, for example: `inventory`. Each microservice should have its own service name.
 
 **Optional tags** enable you to use the physical topology of your application to further filter your data:
-* `cluster` - Name of a group of related hosts that serves as a cluster or region in which the application will run, for example: `us-west-2`.
-* `shard` - Name of a subgroup of hosts within a cluster that serve as a partition, replica, shard, or mirror, for example: `secondary`.
+* `cluster` - Name of a group of related hosts that serves as a cluster or region in which the application will run, for example: `us-west-2`. Defaults to value of "none".
+* `shard` - Name of a subgroup of hosts within a cluster that serve as a partition, replica, shard, or mirror, for example: `secondary`. Defaults to value of "none".
 
 You can also optionally add custom tags specific to your application in the form of a `Map` (see snippet below).
 
