@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import static com.wavefront.sdk.common.Constants.SPAN_LOG_KEY;
@@ -158,7 +159,8 @@ public class Utils {
                                              @Nullable List<UUID> parents,
                                              @Nullable List<UUID> followsFrom,
                                              @Nullable List<Pair<String, String>> tags,
-                                             @Nullable List<SpanLog> spanLogs, String defaultSource) {
+                                             @Nullable List<SpanLog> spanLogs,
+                                             String defaultSource, @Nullable Logger logger) {
     /*
      * Wavefront Tracing Span Data format
      * <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milli_seconds>
@@ -207,8 +209,10 @@ public class Utils {
           throw new IllegalArgumentException("span tag key cannot be blank");
         }
         if (val == null || val.isEmpty()) {
-          throw new IllegalArgumentException("span tag value cannot be blank for " +
-              "tag key: " + key);
+          if (logger != null) {
+            logger.warning("span tag value cannot be blank for tag key: " + key);
+          }
+          continue;
         }
         sb.append(' ');
         sb.append(sanitize(key));

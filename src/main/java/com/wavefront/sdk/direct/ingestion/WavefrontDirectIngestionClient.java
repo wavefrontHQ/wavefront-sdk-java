@@ -276,7 +276,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     String span;
     try {
       span = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
-          spanId, parents, followsFrom, tags, spanLogs, defaultSource);
+          spanId, parents, followsFrom, tags, spanLogs, defaultSource, logger);
       spansValid.inc();
     } catch (IllegalArgumentException e) {
       spansInvalid.inc();
