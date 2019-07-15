@@ -149,7 +149,13 @@ public class ReconnectingSocket {
       writeSuccesses.inc();
     } catch (Exception e) {
       try {
-        logger.log(Level.WARNING, "Attempting to reset socket connection.");
+        String warningMsg = "Unable to write data to " + host + ":" + port +
+            " (" + e.getMessage() +  "), reconnecting ...";
+        if (logger.isLoggable(Level.FINE)) {
+          logger.log(Level.WARNING, warningMsg, e);
+        } else {
+          logger.warning(warningMsg);
+        }
         resetSocket();
         socketOutputStream.get().write(message.getBytes());
         writeSuccesses.inc();
@@ -169,7 +175,13 @@ public class ReconnectingSocket {
       flushSuccesses.inc();
     } catch (Exception e) {
       flushErrors.inc();
-      logger.log(Level.WARNING, "Attempting to reset socket connection.");
+      String warningMsg = "Unable to flush data to " + host + ":" + port +
+          " (" + e.getMessage() +  "), reconnecting ...";
+      if (logger.isLoggable(Level.FINE)) {
+        logger.log(Level.WARNING, warningMsg, e);
+      } else {
+        logger.warning(warningMsg);
+      }
       resetSocket();
     }
   }
