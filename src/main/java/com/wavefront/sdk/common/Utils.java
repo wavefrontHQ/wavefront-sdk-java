@@ -72,7 +72,8 @@ public class Utils {
           throw new IllegalArgumentException("metric point tag key cannot be blank");
         }
         if (val == null || val.isEmpty()) {
-          throw new IllegalArgumentException("metric point tag value cannot be blank");
+          throw new IllegalArgumentException("metric point tag value cannot be blank for " +
+              "tag key: " + key);
         }
         sb.append(' ');
         sb.append(sanitize(key));
@@ -138,7 +139,8 @@ public class Utils {
             throw new IllegalArgumentException("histogram tag key cannot be blank");
           }
           if (val == null || val.isEmpty()) {
-            throw new IllegalArgumentException("histogram tag value cannot be blank");
+            throw new IllegalArgumentException("histogram tag value cannot be blank for " +
+                "tag key: " + key);
           }
           sb.append(' ');
           sb.append(sanitize(tag.getKey()));
@@ -199,16 +201,19 @@ public class Utils {
     }
     if (tags != null) {
       for (final Pair<String, String> tag : tags) {
-        if (tag._1 == null || tag._1.isEmpty()) {
+        String key = tag._1;
+        String val = tag._2;
+        if (key == null || key.isEmpty()) {
           throw new IllegalArgumentException("span tag key cannot be blank");
         }
-        if (tag._2 == null || tag._2.isEmpty()) {
-          throw new IllegalArgumentException("span tag value cannot be blank");
+        if (val == null || val.isEmpty()) {
+          throw new IllegalArgumentException("span tag value cannot be blank for " +
+              "tag key: " + key);
         }
         sb.append(' ');
-        sb.append(sanitize(tag._1));
+        sb.append(sanitize(key));
         sb.append('=');
-        sb.append(sanitize(tag._2));
+        sb.append(sanitize(val));
       }
     }
     if (spanLogs != null  && !spanLogs.isEmpty()) {
