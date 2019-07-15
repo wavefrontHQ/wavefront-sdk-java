@@ -149,7 +149,7 @@ public class ReconnectingSocket {
       writeSuccesses.inc();
     } catch (Exception e) {
       try {
-        logger.log(Level.WARNING, "Attempting to reset socket connection.", e);
+        logger.log(Level.WARNING, "Attempting to reset socket connection.");
         resetSocket();
         socketOutputStream.get().write(message.getBytes());
         writeSuccesses.inc();
@@ -169,7 +169,7 @@ public class ReconnectingSocket {
       flushSuccesses.inc();
     } catch (Exception e) {
       flushErrors.inc();
-      logger.log(Level.WARNING, "Attempting to reset socket connection.", e);
+      logger.log(Level.WARNING, "Attempting to reset socket connection.");
       resetSocket();
     }
   }
