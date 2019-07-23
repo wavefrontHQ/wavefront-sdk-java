@@ -6,9 +6,13 @@ import com.wavefront.sdk.entities.metrics.WavefrontMetricSender;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +37,8 @@ public class HeartbeaterService implements Runnable, Closeable {
   private final List<Map<String, String>> heartbeatMetricTagsList = new ArrayList<>();
   private final ScheduledExecutorService scheduler;
   private final String source;
+  private final Set<Map<String, String>> customTagsSet =
+      Collections.newSetFromMap(new ConcurrentHashMap<>());
 
   public HeartbeaterService(WavefrontMetricSender wavefrontMetricSender,
                             ApplicationTags applicationTags,
@@ -59,8 +65,23 @@ public class HeartbeaterService implements Runnable, Closeable {
     scheduler.scheduleAtFixedRate(this, 1, 5, TimeUnit.MINUTES);
   }
 
+  public void reportCustomTags(Map<String, String> customTagsMap) {
+    customTagsSet.add(customTagsMap);
+  }
+
   @Override
   public void run() {
+    Iterator<Map<String, String>> iter = customTagsSet.iterator();
+    while (iter.hasNext()) {
+      try {
+        wavefrontMetricSender.sendMetric(Constants.HEART_BEAT_METRIC, 1.0,
+            System.currentTimeMillis(), source, iter.next());
+        iter.remove();
+      } catch (Throwable t) {
+        logger.warning("Cannot report custom " + Constants.HEART_BEAT_METRIC + " to Wavefront");
+      }
+    }
+
     for (Map<String, String> heartbeatMetricTags : heartbeatMetricTagsList) {
       try {
         wavefrontMetricSender.sendMetric(Constants.HEART_BEAT_METRIC, 1.0,
