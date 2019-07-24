@@ -1,6 +1,6 @@
 open_source_licenses.txt
 
-Wavefront Java SDK 1.7 GA
+Wavefront Java SDK 1.8 GA
 
 ======================================================================
 
@@ -656,4 +656,4 @@ Source Files is valid for three years from the date you acquired or last used th
 Software product. Alternatively, the Source Files may accompany the
 VMware service.
 
-[WAVEFRONTSDKJAVA17GAPS061419]
+[WAVEFRONTSDKJAVA18GAPS061419]
