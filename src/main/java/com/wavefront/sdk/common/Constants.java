@@ -96,6 +96,16 @@ public final class Constants {
   public static final String PROCESS_TAG_KEY = "pid";
 
   /**
+   * Tag key for defining an error span.
+   */
+  public static final String ERROR_TAG_KEY = "error";
+
+  /**
+   * Tag key for defining an debug span.
+   */
+  public static final String DEBUG_TAG_KEY = "debug";
+
+  /**
    * Name prefix for internal diagnostic metrics for Wavefront SDKs.
    */
   public static final String SDK_METRIC_PREFIX = "~sdk.java";
