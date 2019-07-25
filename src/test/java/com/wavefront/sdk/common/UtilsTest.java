@@ -72,6 +72,13 @@ public class UtilsTest {
     assertEquals("\"new-york.power.usage\" 42422.0 source=\"localhost\"\n",
         metricToLineData("new-york.power.usage", 42422, null, "localhost", null,
             "defaultSource"));
+    // Add tag key with invalid char, val with empty space
+    tags.put(" key name~1", " val name 1 ");
+    // Invalid char in source and metrics
+    assertEquals("\"new-york.power.usage\" 42422.0 1493773500 source=\"local-host\" " +
+                    "\"-key-name-1\"=\"val name 1\" " + "\"datacenter\"=\"dc1\"\n",
+            metricToLineData("new~york.power.usage", 42422, 1493773500L, "local~host", tags,
+                    "defaultSource"));
   }
 
   @Test
