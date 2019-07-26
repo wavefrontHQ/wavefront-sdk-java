@@ -17,6 +17,7 @@ import java.util.UUID;
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.sanitize;
+import static com.wavefront.sdk.common.Utils.sanitizeValue;
 import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,8 +35,21 @@ public class UtilsTest {
     assertEquals("\"hello\"", sanitize("hello"));
     assertEquals("\"hello-world\"", sanitize("hello world"));
     assertEquals("\"hello.world\"", sanitize("hello.world"));
-    assertEquals("\"hello\\\"world\\\"\"", sanitize("hello\"world\""));
-    assertEquals("\"hello'world\"", sanitize("hello'world"));
+    assertEquals("\"hello-world-\"", sanitize("hello\"world\""));
+    assertEquals("\"hello-world\"", sanitize("hello'world"));
+    assertEquals("\"~component.heartbeat\"", sanitize("~component.heartbeat"));
+    assertEquals("\"-component.heartbeat\"", sanitize("!component.heartbeat"));
+    assertEquals("\"Δcomponent.heartbeat\"", sanitize("Δcomponent.heartbeat"));
+    assertEquals("\"∆component.heartbeat\"", sanitize("∆component.heartbeat"));
+  }
+
+  @Test
+  public void testSanitizeValue() {
+      assertEquals("\"hello\"", sanitizeValue("hello"));
+      assertEquals("\"hello world\"", sanitizeValue("hello world"));
+      assertEquals("\"hello.world\"", sanitizeValue("hello.world"));
+      assertEquals("\"hello\\\"world\\\"\"", sanitizeValue("hello\"world\""));
+      assertEquals("\"hello'world\"", sanitizeValue("hello'world"));
   }
 
   @Test
@@ -58,6 +72,13 @@ public class UtilsTest {
     assertEquals("\"new-york.power.usage\" 42422.0 source=\"localhost\"\n",
         metricToLineData("new-york.power.usage", 42422, null, "localhost", null,
             "defaultSource"));
+    // Add tag key with invalid char, val with empty space
+    tags.put(" key name~1", " val name 1 ");
+    // Invalid char in source and metrics
+    assertEquals("\"new-york.power.usage\" 42422.0 1493773500 source=\"local-host\" " +
+                    "\"-key-name-1\"=\"val name 1\" " + "\"datacenter\"=\"dc1\"\n",
+            metricToLineData("new~york.power.usage", 42422, 1493773500L, "local~host", tags,
+                    "defaultSource"));
   }
 
   @Test

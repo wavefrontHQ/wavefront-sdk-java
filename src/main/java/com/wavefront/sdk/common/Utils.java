@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 import static com.wavefront.sdk.common.Constants.SPAN_LOG_KEY;
 
@@ -23,16 +22,41 @@ import static com.wavefront.sdk.common.Constants.SPAN_LOG_KEY;
  */
 public class Utils {
 
-  private static final Pattern WHITESPACE = Pattern.compile("[\\s]+");
   private static final ObjectMapper JSON_PARSER = new ObjectMapper();
 
   public static String sanitize(String s) {
-    final String whitespaceSanitized = WHITESPACE.matcher(s).replaceAll("-");
+    /*
+     * Sanitize string of metric name, source and key of tags according to the rule of Wavefront proxy.
+     */
+    
+    StringBuilder sb = new StringBuilder();
+    sb.append('"');
+    for (int i = 0; i < s.length(); i++) {
+      char cur = s.charAt(i);
+      boolean isLegal = true;
+      if (!(44 <= cur && cur <= 57) && !(65 <= cur && cur <= 90) && !(97 <= cur && cur <= 122) &&
+              cur != 95) {
+        if (!((i == 0 && cur == 0x2206) || (i == 0 && cur == 0x0394) || (i == 0 && cur == 126))) {
+          // first character can also be \u2206 (∆ - INCREMENT) or \u0394 (Δ - GREEK CAPITAL LETTER DELTA)
+          // or ~ tilda character for internal metrics
+          isLegal = false;
+        }
+      }
+      sb.append(isLegal ? cur : '-');
+    }
+    return sb.append('"').toString();
+  }
+
+  public static String sanitizeValue(String s) {
+    /*
+     * Sanitize string of tags value, etc.
+     */
+
     if (s.contains("\"") || s.contains("'")) {
       // for single quotes, once we are double-quoted, single quotes can exist happily inside it.
-      return "\"" + whitespaceSanitized.replaceAll("\"", "\\\\\"") + "\"";
+      return "\"" + s.trim().replaceAll("\"", "\\\\\"") + "\"";
     } else {
-      return "\"" + whitespaceSanitized + "\"";
+      return "\"" + s.trim() + "\"";
     }
   }
 
@@ -78,7 +102,7 @@ public class Utils {
         sb.append(' ');
         sb.append(sanitize(key));
         sb.append('=');
-        sb.append(sanitize(val));
+        sb.append(sanitizeValue(val));
       }
     }
     sb.append('\n');
@@ -145,7 +169,7 @@ public class Utils {
           sb.append(' ');
           sb.append(sanitize(tag.getKey()));
           sb.append('=');
-          sb.append(sanitize(tag.getValue()));
+          sb.append(sanitizeValue(tag.getValue()));
         }
       }
       sb.append('\n');
@@ -213,7 +237,7 @@ public class Utils {
         sb.append(' ');
         sb.append(sanitize(key));
         sb.append('=');
-        sb.append(sanitize(val));
+        sb.append(sanitizeValue(val));
       }
     }
     if (spanLogs != null  && !spanLogs.isEmpty()) {
