@@ -140,9 +140,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     }
 
     /**
-     * If configured, each batch is reported as one or more messages, with no message exceeding the
-     * specified number of bytes of data. By default, each batch is reported as a single
-     * message.
+     * Set max message size, such that each batch is reported as one or more messages where no
+     * message exceeds the specified size in bytes. The default message size is
+     * {@link Integer#MAX_VALUE}.
      *
      * @param bytes Maximum number of bytes of data that each reported message contains.
      * @return {@code this}
