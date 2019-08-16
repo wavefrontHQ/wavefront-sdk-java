@@ -204,7 +204,7 @@ public class Utils {
     }
 
     final StringBuilder sb = new StringBuilder();
-    sb.append(sanitize(name));
+    sb.append(sanitizeValue(name));
     sb.append(" source=");
     sb.append(sanitize(source));
     sb.append(" traceId=");
