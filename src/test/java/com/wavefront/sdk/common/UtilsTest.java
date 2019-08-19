@@ -50,6 +50,7 @@ public class UtilsTest {
       assertEquals("\"hello.world\"", sanitizeValue("hello.world"));
       assertEquals("\"hello\\\"world\\\"\"", sanitizeValue("hello\"world\""));
       assertEquals("\"hello'world\"", sanitizeValue("hello'world"));
+      assertEquals("\"hello\\nworld\"", sanitizeValue("hello\nworld"));
   }
 
   @Test
