@@ -51,13 +51,12 @@ public class Utils {
     /*
      * Sanitize string of tags value, etc.
      */
-
+    String res = s.trim();
     if (s.contains("\"") || s.contains("'")) {
       // for single quotes, once we are double-quoted, single quotes can exist happily inside it.
-      return "\"" + s.trim().replaceAll("\"", "\\\\\"") + "\"";
-    } else {
-      return "\"" + s.trim() + "\"";
+      res = res.replaceAll("\"", "\\\\\"");
     }
+    return "\"" +res.replaceAll("\\n", "\\\\n") + "\"";
   }
 
   public static String metricToLineData(String name, double value, @Nullable Long timestamp,
