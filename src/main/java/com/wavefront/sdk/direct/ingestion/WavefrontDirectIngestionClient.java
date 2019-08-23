@@ -51,6 +51,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final String clientId;
 
   private final int batchSize;
+  private final int messageSizeBytes;
   private final LinkedBlockingQueue<String> metricsBuffer;
   private final LinkedBlockingQueue<String> histogramsBuffer;
   private final LinkedBlockingQueue<String> tracingSpansBuffer;
@@ -92,6 +93,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     private int maxQueueSize = 50000;
     private int batchSize = 10000;
     private int flushIntervalSeconds = 1;
+    private int messageSizeBytes = Integer.MAX_VALUE;
 
     /**
      * Create a new WavefrontDirectIngestionClient.Builder
@@ -138,6 +140,19 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     }
 
     /**
+     * Set max message size, such that each batch is reported as one or more messages where no
+     * message exceeds the specified size in bytes. The default message size is
+     * {@link Integer#MAX_VALUE}.
+     *
+     * @param bytes Maximum number of bytes of data that each reported message contains.
+     * @return {@code this}
+     */
+    public Builder messageSizeBytes(int bytes) {
+      this.messageSizeBytes = bytes;
+      return this;
+    }
+
+    /**
      * Creates a new client that connects directly to a given Wavefront service.
      *
      * return {@link WavefrontDirectIngestionClient}
@@ -158,6 +173,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     defaultSource = tempSource;
 
     batchSize = builder.batchSize;
+    messageSizeBytes = builder.messageSizeBytes;
     metricsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     histogramsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     tracingSpansBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
@@ -337,45 +353,39 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private void internalFlush(LinkedBlockingQueue<String> buffer, String format, String entityPrefix,
                              WavefrontSdkCounter dropped, WavefrontSdkCounter reportErrors)
       throws IOException {
-
-    List<String> batch = getBatch(buffer);
-    if (batch.isEmpty()) {
-      return;
-    }
-
-    try (InputStream is = batchToStream(batch)) {
-      int statusCode = directService.report(format, is);
-      sdkMetricsRegistry.newCounter(entityPrefix + ".report." + statusCode).inc();
-      if (400 <= statusCode && statusCode <= 599) {
-        logger.log(Level.WARNING, "Error reporting points, respStatus=" + statusCode);
-        int numAddedBackToBuffer = 0;
-        for (String item : batch) {
-          if (buffer.offer(item)) {
-            numAddedBackToBuffer++;
-          } else {
-            dropped.inc(batch.size() - numAddedBackToBuffer);
-            logger.log(Level.WARNING, "Buffer full, dropping attempted points");
-            return;
+    List<List<String>> batch = getBatch(buffer, batchSize, messageSizeBytes, dropped);
+    for (int i = 0; i < batch.size(); i++) {
+      List<String> items = batch.get(i);
+      try (InputStream is = itemsToStream(items)) {
+        int statusCode = directService.report(format, is);
+        sdkMetricsRegistry.newCounter(entityPrefix + ".report." + statusCode).inc();
+        if (400 <= statusCode && statusCode <= 599) {
+          logger.log(Level.WARNING, "Error reporting points, respStatus=" + statusCode);
+          int numAddedBackToBuffer = 0;
+          for (String item : items) {
+            if (buffer.offer(item)) {
+              numAddedBackToBuffer++;
+            } else {
+              dropped.inc(items.size() - numAddedBackToBuffer);
+              logger.log(Level.WARNING, "Buffer full, dropping attempted points");
+              break;
+            }
           }
         }
+      } catch (IOException ex) {
+        dropped.inc(items.size());
+        reportErrors.inc();
+        for (int j = i + 1; j < batch.size(); j++) {
+          dropped.inc(batch.get(j).size());
+        }
+        throw ex;
       }
-    } catch (IOException ex) {
-      dropped.inc(batch.size());
-      reportErrors.inc();
-      throw ex;
     }
   }
 
-  private List<String> getBatch(LinkedBlockingQueue<String> buffer) {
-    int blockSize = Math.min(buffer.size(), batchSize);
-    List<String> points = new ArrayList<>(blockSize);
-    buffer.drainTo(points, blockSize);
-    return points;
-  }
-
-  private InputStream batchToStream(List<String> batch) {
+  private InputStream itemsToStream(List<String> items) {
     StringBuilder sb = new StringBuilder();
-    for (String item : batch) {
+    for (String item : items) {
       // every line item ends with \n
       sb.append(item);
     }
@@ -404,5 +414,55 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     } catch (SecurityException ex) {
       logger.log(Level.WARNING, "shutdown error", ex);
     }
+  }
+
+  /**
+   * Dequeue and return a batch of at most N items from buffer (where N = batchSize), broken into
+   * chunks where each chunk has at most M bytes of data (where M = messageSizeBytes).
+   *
+   * Visible for testing.
+   *
+   * @param buffer            The buffer queue to retrieve items from.
+   * @param batchSize         The maximum number of items to retrieve from the buffer.
+   * @param messageSizeBytes  The maximum number of bytes in each chunk.
+   * @param dropped           A counter counting the number of items that are dropped.
+   * @return A batch of items retrieved from buffer.
+   */
+  static List<List<String>> getBatch(LinkedBlockingQueue<String> buffer, int batchSize,
+                                     int messageSizeBytes, WavefrontSdkCounter dropped) {
+    batchSize = Math.min(buffer.size(), batchSize);
+    List<List<String>> batch = new ArrayList<>();
+    List<String> chunk = new ArrayList<>();
+    int numBytesInChunk = 0;
+    int count = 0;
+
+    while (count < batchSize) {
+      String item = buffer.poll();
+      if (item == null) {
+        break;
+      }
+      int numBytes = item.getBytes().length;
+      if (numBytes > messageSizeBytes) {
+        logger.log(Level.WARNING,
+            "Dropping data larger than " + messageSizeBytes + " bytes: " + item);
+        dropped.inc();
+        continue;
+      }
+      if (numBytesInChunk + numBytes > messageSizeBytes) {
+        if (!chunk.isEmpty()) {
+          batch.add(chunk);
+        }
+        chunk = new ArrayList<>();
+        numBytesInChunk = 0;
+      }
+      chunk.add(item);
+      numBytesInChunk += numBytes;
+      count++;
+    }
+    if (!chunk.isEmpty()) {
+      batch.add(chunk);
+    }
+
+    return batch;
   }
 }
