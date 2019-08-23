@@ -429,7 +429,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
    * @return A batch of items retrieved from buffer.
    */
   static List<List<String>> getBatch(LinkedBlockingQueue<String> buffer, int batchSize,
-                                       int messageSizeBytes, WavefrontSdkCounter dropped) {
+                                     int messageSizeBytes, WavefrontSdkCounter dropped) {
     batchSize = Math.min(buffer.size(), batchSize);
     List<List<String>> batch = new ArrayList<>();
     List<String> chunk = new ArrayList<>();
