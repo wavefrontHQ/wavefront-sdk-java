@@ -28,6 +28,11 @@ public class Pair<T, V> {
     return false;
   }
 
+  @Override
+  public String toString() {
+    return "com.wavefront.sdk.common.Pair (" + this._1.toString() + ", " + this._2.toString() + ")";
+  }
+
   public static <T, V> Pair<T, V> of(T t, V v) {
     return new Pair<T, V>(t, v);
   }
