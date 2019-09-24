@@ -1,6 +1,6 @@
 open_source_licenses.txt
 
-Wavefront by VMware SDK for Java 1.12 GA
+Wavefront by VMware SDK for Java 1.13 GA
 
 ======================================================================
 
@@ -27,9 +27,9 @@ of the license associated with each component.
 
 SECTION 1: Apache License, V2.0
 
-   >>> com.fasterxml.jackson.core:jackson-annotations-2.9.0
-   >>> com.fasterxml.jackson.core:jackson-core-2.9.9
-   >>> com.fasterxml.jackson.core:jackson-databind-2.9.9
+   >>> com.fasterxml.jackson.core:jackson-annotations-2.9.10
+   >>> com.fasterxml.jackson.core:jackson-core-2.9.10
+   >>> com.fasterxml.jackson.core:jackson-databind-2.9.10
    >>> com.tdunning:t-digest-3.2
 
 
@@ -51,7 +51,7 @@ APPENDIX. Standard License Files
 Apache License, V2.0 is applicable to the following component(s).
 
 
->>> com.fasterxml.jackson.core:jackson-annotations-2.9.0
+>>> com.fasterxml.jackson.core:jackson-annotations-2.9.10
 
 This copy of Jackson JSON processor annotations is licensed under the
 Apache (Software) License, version 2.0 ("the License").
@@ -62,7 +62,7 @@ You may obtain a copy of the License at:
 
 http://www.apache.org/licenses/LICENSE-2.0
 
->>> com.fasterxml.jackson.core:jackson-core-2.9.9
+>>> com.fasterxml.jackson.core:jackson-core-2.9.10
 
 # Jackson JSON processor
 
@@ -94,7 +94,7 @@ You may obtain a copy of the License at:
 
 http://www.apache.org/licenses/LICENSE-2.0
 
->>> com.fasterxml.jackson.core:jackson-databind-2.9.9
+>>> com.fasterxml.jackson.core:jackson-databind-2.9.10
 
 # Jackson JSON processor
 
@@ -419,4 +419,4 @@ Source Files is valid for three years from the date you acquired or last used th
 Software product. Alternatively, the Source Files may accompany the
 VMware service.
 
-[WAVEFRONTSDKJAVA112GAPS081419]
+[WAVEFRONTSDKJAVA113GAPS092419]
