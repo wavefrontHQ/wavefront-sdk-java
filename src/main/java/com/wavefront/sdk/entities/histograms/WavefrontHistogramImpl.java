@@ -159,17 +159,17 @@ public class WavefrontHistogramImpl {
    * Returns NaN if the distribution is empty.
    */
   public double getMean() {
-    final List<Centroid> centroids = new ArrayList<>();
-    try {
-      readLock.lock();
-      globalHistogramBinsList.stream().map(Reference::get).filter(Objects::nonNull).
-          flatMap(Collection::stream).
-          forEach(bin -> centroids.addAll(bin.distribution.centroids()));
-    } finally {
-      readLock.unlock();
-    }
-    Centroid mean = centroids.stream().
-            reduce((x, y) -> new Centroid(x.mean() + (y.mean() * y.count()), x.count() + y.count())).orElse(null);
+    final List<Centroid> centroids = getCentroids();
+    Centroid mean = getMeanCentroid(centroids);
+    return getMean(centroids, mean);
+  }
+
+  private Centroid getMeanCentroid(Collection<Centroid> centroids) {
+    return centroids.stream().reduce((x, y) -> new Centroid(x.mean() + (y.mean() * y.count()),
+        x.count() + y.count())).orElse(null);
+  }
+
+  private double getMean(Collection<Centroid> centroids, Centroid mean) {
     return mean == null || centroids.size() == 0 ? Double.NaN : mean.mean() / mean.count();
   }
 
@@ -177,6 +177,32 @@ public class WavefrontHistogramImpl {
    * @return returns the sum of the values in the distribution.
    */
   public double getSum() {
+    return getCentroids().stream().mapToDouble(c -> c.count() * c.mean()).sum();
+  }
+
+  /**
+   *
+   * @return returns the stdDev of the values in the distribution
+   */
+  public double stdDev() {
+    List<Centroid> centroids = getCentroids();
+
+    double mean = getMean(centroids, getMeanCentroid(centroids));
+    double varianceSum = centroids.stream().mapToDouble(c -> {
+      double diff = c.mean() - mean;
+      return diff * diff * c.count();
+    }).sum();
+    double count = centroids.stream().mapToDouble(Centroid::count).sum();
+    double variance = varianceSum / count;
+    return Math.sqrt(variance);
+  }
+
+  /**
+   * This method is protected against race condition via a Read Lock.
+   *
+   * @return list of aggregated centroids in memory
+   */
+  private List<Centroid> getCentroids() {
     List<Centroid> centroids = new ArrayList<>();
     try {
       readLock.lock();
@@ -186,16 +212,7 @@ public class WavefrontHistogramImpl {
     } finally {
       readLock.unlock();
     }
-    return centroids.stream().mapToDouble(c -> c.count() * c.mean()).sum();
-  }
-
-  /**
-   * Not supported, hence return Double.NaN
-   *
-   * @return stdDev
-   */
-  public double stdDev() {
-    return Double.NaN;
+    return centroids;
   }
 
   /**

@@ -168,9 +168,9 @@ public class WavefrontHistogramImplTest {
 
   @Test
   public void testStdDev() {
-    assertEquals(NaN, pow10.stdDev(), DELTA);
-    assertEquals(NaN, inc100.stdDev(), DELTA);
-    assertEquals(NaN, inc1000.stdDev(), DELTA);
+    assertEquals(30859.85264838444, pow10.stdDev(), DELTA);
+    assertEquals(28.86607004772212, inc100.stdDev(), DELTA);
+    assertEquals(288.6749902572095, inc1000.stdDev(), DELTA);
   }
 
   @Test

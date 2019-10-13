@@ -1,6 +1,7 @@
 package com.wavefront.sdk.direct.ingestion;
 
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
