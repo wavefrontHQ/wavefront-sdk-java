@@ -30,6 +30,20 @@ public class CompositeSampler implements Sampler {
     }
 
     @Override
+    public boolean sample(double samplingRate, long traceId, long duration) {
+        if (samplers == null || samplers.isEmpty()) {
+            return true;
+        }
+        for (Sampler sampler : samplers) {
+            if (sampler.sample(samplingRate, traceId, duration)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    @Override
     public boolean isEarly() {
         return false;
     }
