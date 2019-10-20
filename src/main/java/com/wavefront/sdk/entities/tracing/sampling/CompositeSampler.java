@@ -10,27 +10,27 @@ import java.util.List;
  */
 public class CompositeSampler implements Sampler {
 
-    private final List<Sampler> samplers;
+  private final List<Sampler> samplers;
 
-    public CompositeSampler(List<Sampler> samplers) {
-        this.samplers = samplers;
-    }
+  public CompositeSampler(List<Sampler> samplers) {
+    this.samplers = samplers;
+  }
 
-    @Override
-    public boolean sample(String operationName, long traceId, long duration) {
-        if (samplers == null || samplers.isEmpty()) {
-            return true;
-        }
-        for (Sampler sampler : samplers) {
-            if (sampler.sample(operationName, traceId, duration)) {
-                return true;
-            }
-        }
-        return false;
+  @Override
+  public boolean sample(String operationName, long traceId, long duration) {
+    if (samplers == null || samplers.isEmpty()) {
+      return true;
     }
+    for (Sampler sampler : samplers) {
+      if (sampler.sample(operationName, traceId, duration)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-    @Override
-    public boolean isEarly() {
-        return false;
-    }
+  @Override
+  public boolean isEarly() {
+    return false;
+  }
 }
