@@ -7,31 +7,21 @@ package com.wavefront.sdk.entities.tracing.sampling;
  */
 public interface Sampler {
 
-    /**
-     * Gets whether a span should be allowed given it's operation and trace id.
-     *
-     * @param operationName The operation name of the span
-     * @param traceId       The traceId of the span
-     * @param duration      The duration of the span in milliseconds
-     * @return true if the span should be allowed, false otherwise
-     */
-    boolean sample(String operationName, long traceId, long duration);
+  /**
+   * Gets whether a span should be allowed given it's operation and trace id.
+   *
+   * @param operationName The operation name of the span
+   * @param traceId The traceId of the span
+   * @param duration The duration of the span in milliseconds
+   * @return true if the span should be allowed, false otherwise
+   */
+  boolean sample(String operationName, long traceId, long duration);
 
-    /**
-     * Gets whether a span should be allowed given it's operation and trace id.
-     *
-     * @param samplingRate The sampling rate between 0.0 and 1.0. of the span
-     * @param traceId      The traceId of the span
-     * @param duration     The duration of the span in milliseconds
-     * @return true if the span should be allowed, false otherwise
-     */
-    boolean sample(double samplingRate, long traceId, long duration);
-
-    /**
-     * Whether this sampler performs early or head based sampling.
-     * Offers a non-binding hint for clients using the sampler.
-     *
-     * @return true for early sampling, false otherwise
-     */
-    boolean isEarly();
+  /**
+   * Whether this sampler performs early or head based sampling.
+   * Offers a non-binding hint for clients using the sampler.
+   *
+   * @return true for early sampling, false otherwise
+   */
+  boolean isEarly();
 }
