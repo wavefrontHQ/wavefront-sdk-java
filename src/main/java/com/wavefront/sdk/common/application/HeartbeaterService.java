@@ -2,6 +2,7 @@ package com.wavefront.sdk.common.application;
 
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
+import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.entities.metrics.WavefrontMetricSender;
 
 import java.io.Closeable;
@@ -95,7 +96,7 @@ public class HeartbeaterService implements Runnable, Closeable {
   @Override
   public void close() {
     try {
-      scheduler.shutdownNow();
+      Utils.shutdownPoolAndWait(scheduler);
     } catch (SecurityException ex) {
       logger.log(Level.FINE, "shutdown error", ex);
     }
