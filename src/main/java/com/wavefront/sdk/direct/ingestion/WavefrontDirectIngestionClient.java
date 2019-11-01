@@ -429,7 +429,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     sdkMetricsRegistry.close();
 
     try {
-      Utils.shutdownPoolAndWait(scheduler);
+      Utils.shutdownExecutorAndWait(scheduler);
     } catch (SecurityException ex) {
       logger.log(Level.WARNING, "shutdown error", ex);
     }

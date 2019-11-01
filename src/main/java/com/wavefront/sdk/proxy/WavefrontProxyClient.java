@@ -464,7 +464,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
 
     try {
-      Utils.shutdownPoolAndWait(scheduler);
+      Utils.shutdownExecutorAndWait(scheduler);
     } catch (SecurityException ex) {
       logger.log(Level.FINE, "shutdown error", ex);
     }

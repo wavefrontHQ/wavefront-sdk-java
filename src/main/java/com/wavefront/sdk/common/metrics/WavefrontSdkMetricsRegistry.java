@@ -154,7 +154,7 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
 
   @Override
   public void close() {
-    Utils.shutdownPoolAndWait(scheduler);
+    Utils.shutdownExecutorAndWait(scheduler);
   }
 
   /**

@@ -289,7 +289,7 @@ public class Utils {
     return toReturn.toString();
   }
 
-  public static void shutdownPoolAndWait(ExecutorService tpe) {
+  public static void shutdownExecutorAndWait(ExecutorService tpe) {
     tpe.shutdown();
     try {
       if (!tpe.awaitTermination(60, TimeUnit.SECONDS)) {
