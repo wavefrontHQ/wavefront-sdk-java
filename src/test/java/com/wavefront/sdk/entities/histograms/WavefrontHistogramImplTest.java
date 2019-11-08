@@ -29,7 +29,7 @@ public class WavefrontHistogramImplTest {
 
   private static AtomicLong clock;
 
-  private static WavefrontHistogramImpl pow10, inc100, inc1000;
+  private static WavefrontHistogramImpl pow10, inc100, inc1000, empty;
 
   private static WavefrontHistogramImpl createPow10Histogram(Supplier<Long> clockMillis) {
     WavefrontHistogramImpl wh = new WavefrontHistogramImpl(clockMillis);
@@ -76,6 +76,9 @@ public class WavefrontHistogramImplTest {
     for (int i = 1; i <= 1000; i++) {
       inc1000.update(i);
     }
+
+    // Empty Wavefront Histogram
+    empty = new WavefrontHistogramImpl(clock::get);
 
     // Simulate that 1 min has passed so that values prior to the current min are ready to be read
     clock.addAndGet(60000L + 1);
@@ -171,6 +174,7 @@ public class WavefrontHistogramImplTest {
     assertEquals(30859.85264838444, pow10.stdDev(), DELTA);
     assertEquals(28.86607004772212, inc100.stdDev(), DELTA);
     assertEquals(288.6749902572095, inc1000.stdDev(), DELTA);
+    assertEquals(0, empty.stdDev());
   }
 
   @Test
