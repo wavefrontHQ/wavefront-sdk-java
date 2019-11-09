@@ -353,17 +353,21 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public void flush() throws IOException {
-    if(closed.get()) {
-      throw new IOException("attempt to flush closed sender");
-    }
-    internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT, "points",
-        pointsDropped, pointReportErrors);
-    internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT, "histograms",
-        histogramsDropped, histogramReportErrors);
-    internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT, "spans",
-        spansDropped, spanReportErrors);
-    internalFlush(spanLogsBuffer, Constants.WAVEFRONT_SPAN_LOG_FORMAT, "span_logs",
-        spanLogsDropped, spanLogReportErrors);
+      if(closed.get()) {
+          throw new IOException("attempt to flush closed sender");
+      }
+      this.flushNoCheck();
+  }
+
+  private void flushNoCheck() throws IOException {
+      internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT, "points",
+              pointsDropped, pointReportErrors);
+      internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT, "histograms",
+              histogramsDropped, histogramReportErrors);
+      internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT, "spans",
+              spansDropped, spanReportErrors);
+      internalFlush(spanLogsBuffer, Constants.WAVEFRONT_SPAN_LOG_FORMAT, "span_logs",
+              spanLogsDropped, spanLogReportErrors);
   }
 
   private void internalFlush(LinkedBlockingQueue<String> buffer, String format, String entityPrefix,
@@ -421,7 +425,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     }
     // Flush before closing
     try {
-      flush();
+      flushNoCheck();
     } catch (IOException e) {
       logger.log(Level.WARNING, "error flushing buffer", e);
     }

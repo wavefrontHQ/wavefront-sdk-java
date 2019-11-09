@@ -1,8 +1,5 @@
 package com.wavefront.sdk.proxy;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import com.wavefront.sdk.common.WavefrontSender;
 import org.junit.jupiter.api.Test;
 
@@ -15,12 +12,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
+import java.util.regex.Pattern;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ProxyTest {
     private final int NUM_THREADS = 10;
     private final int NUM_ITERATIONS = 1000;
 
     private final int THREAD_WAIT_ITERATIONS = 10;
+
+    private final static Pattern linePattern = Pattern.compile("\"dummy\" 1\\.0 [0-9]+ source=\"dummy\"");
 
     private final class MockServer implements Runnable {
         public void run() {
@@ -31,7 +33,7 @@ public class ProxyTest {
                 int n = 0;
                 String line;
                 while ((line = in.readLine()) != null) {
-                    System.out.println(line);
+                    assertTrue(linePattern.matcher(line).matches(), "Unexpected data from sender");
                     n++;
                 }
                 assertEquals(NUM_ITERATIONS * NUM_THREADS, n, "Wrong number of messages received");
@@ -100,7 +102,7 @@ public class ProxyTest {
                     }
                     if(!tMap.containsKey(t.getId()) && !t.isDaemon()) {
                         ++newT;
-                        System.out.println("Non-daemon thread still running: " + t.toString());
+                        System.out.println("Non-daemon thread still running: " + t.toString() + ". Waiting for it to finish");
                     }
                 }
                 if(newT > 0) {

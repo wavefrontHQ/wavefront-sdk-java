@@ -414,11 +414,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
   }
 
-  @Override
-  public void flush() throws IOException {
-    if(closed.get()) {
-      throw new IOException("attempt to flush closed sender");
-    }
+  private void flushNoCheck() throws IOException {
     if (metricsProxyConnectionHandler != null) {
       metricsProxyConnectionHandler.flush();
     }
@@ -430,6 +426,14 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     if (tracingProxyConnectionHandler != null) {
       tracingProxyConnectionHandler.flush();
     }
+  }
+
+  @Override
+  public void flush() throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to flush closed sender");
+    }
+    this.flushNoCheck();
   }
 
   @Override
@@ -458,7 +462,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
 
     // Flush before closing
     try {
-      flush();
+      flushNoCheck();
     } catch (IOException e) {
       logger.log(Level.WARNING, "error flushing buffer", e);
     }
