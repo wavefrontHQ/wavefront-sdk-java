@@ -29,7 +29,7 @@ public class Utils {
   }
 
   public static String sanitizeWithoutQuotes(String s) {
-    return sanitizeInternal(s, true);
+    return sanitizeInternal(s, false);
   }
 
   public static String sanitizeValue(String s) {
@@ -81,7 +81,7 @@ public class Utils {
         }
         if (val == null || val.isEmpty()) {
           throw new IllegalArgumentException("metric point tag value cannot be blank for " +
-                  "tag key: " + key);
+              "tag key: " + key);
         }
         sb.append(' ');
         sb.append(sanitize(key));
@@ -148,7 +148,7 @@ public class Utils {
           }
           if (val == null || val.isEmpty()) {
             throw new IllegalArgumentException("histogram tag value cannot be blank for " +
-                    "tag key: " + key);
+                "tag key: " + key);
           }
           sb.append(' ');
           sb.append(sanitize(tag.getKey()));
@@ -216,7 +216,7 @@ public class Utils {
         }
         if (val == null || val.isEmpty()) {
           throw new IllegalArgumentException("span tag value cannot be blank for " +
-                  "tag key: " + key);
+              "tag key: " + key);
         }
         sb.append(' ');
         sb.append(sanitize(key));
@@ -240,7 +240,7 @@ public class Utils {
   }
 
   public static String spanLogsToLineData(UUID traceId, UUID spanId, @NonNull List<SpanLog> spanLogs)
-          throws JsonProcessingException {
+      throws JsonProcessingException {
     /*
      * Wavefront Span Log Data format
      * Example:
@@ -280,7 +280,7 @@ public class Utils {
       char cur = s.charAt(i);
       boolean isLegal = true;
       if (!(44 <= cur && cur <= 57) && !(65 <= cur && cur <= 90) && !(97 <= cur && cur <= 122) &&
-              cur != 95) {
+          cur != 95) {
         if (!((i == 0 && cur == 0x2206) || (i == 0 && cur == 0x0394) || (i == 0 && cur == 126))) {
           // first character can also be \u2206 (∆ - INCREMENT) or \u0394 (Δ - GREEK CAPITAL LETTER DELTA)
           // or ~ tilda character for internal metrics
