@@ -1,8 +1,8 @@
 package com.wavefront.sdk.entities.tracing.sampling;
 
 /**
- * Sampler that allows a certain probabilistic rate (between 0.0 and 1.0) of spans to be reported.
- * Note: Sampling is performed per trace id. All spans for a sampled trace will be reported.
+ * Sampler that allows a certain probabilistic rate (between 0.0 and 1.0) of spans to be reported. Note: Sampling is
+ * performed per trace id. All spans for a sampled trace will be reported.
  *
  * @author Vikram Raman
  */
@@ -33,10 +33,9 @@ public class RateSampler implements Sampler {
    *
    * @param samplingRate The sampling rate between 0.0 and 1.0. of the span
    * @param traceId      The traceId of the span
-   * @param duration     The duration of the span in milliseconds
    * @return true if the span should be allowed, false otherwise
    */
-  public static boolean sample(double samplingRate, long traceId, long duration) {
+  public static boolean sample(double samplingRate, long traceId) {
     long localBoundary = calculateBoundary(samplingRate);
     return Math.abs(traceId % MOD_FACTOR) <= localBoundary;
   }
