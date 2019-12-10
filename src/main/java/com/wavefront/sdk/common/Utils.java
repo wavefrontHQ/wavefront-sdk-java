@@ -25,26 +25,11 @@ public class Utils {
   private static final ObjectMapper JSON_PARSER = new ObjectMapper();
 
   public static String sanitize(String s) {
-    /*
-     * Sanitize string of metric name, source and key of tags according to the rule of Wavefront proxy.
-     */
-    
-    StringBuilder sb = new StringBuilder();
-    sb.append('"');
-    for (int i = 0; i < s.length(); i++) {
-      char cur = s.charAt(i);
-      boolean isLegal = true;
-      if (!(44 <= cur && cur <= 57) && !(65 <= cur && cur <= 90) && !(97 <= cur && cur <= 122) &&
-              cur != 95) {
-        if (!((i == 0 && cur == 0x2206) || (i == 0 && cur == 0x0394) || (i == 0 && cur == 126))) {
-          // first character can also be \u2206 (∆ - INCREMENT) or \u0394 (Δ - GREEK CAPITAL LETTER DELTA)
-          // or ~ tilda character for internal metrics
-          isLegal = false;
-        }
-      }
-      sb.append(isLegal ? cur : '-');
-    }
-    return sb.append('"').toString();
+    return sanitizeHelper(s, true);
+  }
+
+  public static String sanitizeWithoutQuotes(String s) {
+    return sanitizeHelper(s, false);
   }
 
   public static String sanitizeValue(String s) {
@@ -56,7 +41,7 @@ public class Utils {
       // for single quotes, once we are double-quoted, single quotes can exist happily inside it.
       res = res.replaceAll("\"", "\\\\\"");
     }
-    return "\"" +res.replaceAll("\\n", "\\\\n") + "\"";
+    return "\"" + res.replaceAll("\\n", "\\\\n") + "\"";
   }
 
   public static String metricToLineData(String name, double value, @Nullable Long timestamp,
@@ -96,7 +81,7 @@ public class Utils {
         }
         if (val == null || val.isEmpty()) {
           throw new IllegalArgumentException("metric point tag value cannot be blank for " +
-              "tag key: " + key);
+                  "tag key: " + key);
         }
         sb.append(' ');
         sb.append(sanitize(key));
@@ -163,7 +148,7 @@ public class Utils {
           }
           if (val == null || val.isEmpty()) {
             throw new IllegalArgumentException("histogram tag value cannot be blank for " +
-                "tag key: " + key);
+                    "tag key: " + key);
           }
           sb.append(' ');
           sb.append(sanitize(tag.getKey()));
@@ -231,7 +216,7 @@ public class Utils {
         }
         if (val == null || val.isEmpty()) {
           throw new IllegalArgumentException("span tag value cannot be blank for " +
-              "tag key: " + key);
+                  "tag key: " + key);
         }
         sb.append(' ');
         sb.append(sanitize(key));
@@ -239,7 +224,7 @@ public class Utils {
         sb.append(sanitizeValue(val));
       }
     }
-    if (spanLogs != null  && !spanLogs.isEmpty()) {
+    if (spanLogs != null && !spanLogs.isEmpty()) {
       sb.append(' ');
       sb.append(sanitize(SPAN_LOG_KEY));
       sb.append('=');
@@ -255,7 +240,7 @@ public class Utils {
   }
 
   public static String spanLogsToLineData(UUID traceId, UUID spanId, @NonNull List<SpanLog> spanLogs)
-      throws JsonProcessingException {
+          throws JsonProcessingException {
     /*
      * Wavefront Span Log Data format
      * Example:
@@ -280,5 +265,33 @@ public class Utils {
     toReturn.append(JSON_PARSER.writeValueAsString(new SpanLogsDTO(traceId, spanId, spanLogs)));
     toReturn.append("\n");
     return toReturn.toString();
+  }
+
+  private static String sanitizeHelper(String s, boolean addQuotes) {
+    /*
+     * Sanitize string of metric name, source and key of tags according to the rule of Wavefront proxy.
+     */
+
+    StringBuilder sb = new StringBuilder();
+    if (addQuotes) {
+      sb.append('"');
+    }
+    for (int i = 0; i < s.length(); i++) {
+      char cur = s.charAt(i);
+      boolean isLegal = true;
+      if (!(44 <= cur && cur <= 57) && !(65 <= cur && cur <= 90) && !(97 <= cur && cur <= 122) &&
+              cur != 95) {
+        if (!((i == 0 && cur == 0x2206) || (i == 0 && cur == 0x0394) || (i == 0 && cur == 126))) {
+          // first character can also be \u2206 (∆ - INCREMENT) or \u0394 (Δ - GREEK CAPITAL LETTER DELTA)
+          // or ~ tilda character for internal metrics
+          isLegal = false;
+        }
+      }
+      sb.append(isLegal ? cur : '-');
+    }
+    if (addQuotes) {
+      sb.append('"');
+    }
+    return sb.toString();
   }
 }
