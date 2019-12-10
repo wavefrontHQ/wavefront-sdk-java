@@ -14,7 +14,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.wavefront.sdk.common.Utils.*;
+import static com.wavefront.sdk.common.Utils.metricToLineData;
+import static com.wavefront.sdk.common.Utils.sanitize;
+import static com.wavefront.sdk.common.Utils.sanitizeValue;
+import static com.wavefront.sdk.common.Utils.sanitizeWithoutQuotes;
+import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
+import static com.wavefront.sdk.common.Utils.histogramToLineData;
+import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
