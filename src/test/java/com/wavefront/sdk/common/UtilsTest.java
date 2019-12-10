@@ -15,12 +15,20 @@ import java.util.Set;
 import java.util.UUID;
 
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
+import static com.wavefront.sdk.common.Utils.isValidKey;
+import static com.wavefront.sdk.common.Utils.isValidName;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
+import static com.wavefront.sdk.common.Utils.enquote;
 import static com.wavefront.sdk.common.Utils.sanitize;
+import static com.wavefront.sdk.common.Utils.sanitizeKey;
+import static com.wavefront.sdk.common.Utils.sanitizeName;
+import static com.wavefront.sdk.common.Utils.sanitizeVal;
 import static com.wavefront.sdk.common.Utils.sanitizeValue;
 import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -44,13 +52,82 @@ public class UtilsTest {
   }
 
   @Test
+  public void testSanitizeName() {
+    assertEquals("hello", sanitizeName("hello"));
+    assertEquals("hello-world", sanitizeName("hello world"));
+    assertEquals("hello.world", sanitizeName("hello.world"));
+    assertEquals("hello-world-", sanitizeName("hello\"world\""));
+    assertEquals("hello-world", sanitizeName("hello'world"));
+    assertEquals("~component.heartbeat", sanitizeName("~component.heartbeat"));
+    assertEquals("-component.heartbeat", sanitizeName("!component.heartbeat"));
+    assertEquals("Δcomponent.heartbeat", sanitizeName("Δcomponent.heartbeat"));
+    assertEquals("∆component.heartbeat", sanitizeName("∆component.heartbeat"));
+  }
+
+  @Test
+  public void testSanitizeKey() {
+    assertEquals("hello", sanitizeKey("hello"));
+    assertEquals("hello-world", sanitizeKey("hello world"));
+    assertEquals("hello.world", sanitizeKey("hello.world"));
+    assertEquals("hello-world-", sanitizeKey("hello\"world\""));
+    assertEquals("hello-world", sanitizeKey("hello'world"));
+    assertEquals("-component.heartbeat", sanitizeKey("~component.heartbeat"));
+    assertEquals("-component.heartbeat", sanitizeKey("!component.heartbeat"));
+    assertEquals("-component.heartbeat", sanitizeKey("Δcomponent.heartbeat"));
+    assertEquals("-component.heartbeat", sanitizeKey("∆component.heartbeat"));
+  }
+
+  @Test
+  public void testIsValidName() {
+    assertTrue(isValidName("hello"));
+    assertFalse(isValidName("hello world"));
+    assertTrue(isValidName("hello.world"));
+    assertFalse(isValidName("hello\"world\""));
+    assertFalse(isValidName("hello'world"));
+    assertTrue(isValidName("~component.heartbeat"));
+    assertFalse(isValidName("!component.heartbeat"));
+    assertTrue(isValidName("Δcomponent.heartbeat"));
+    assertTrue(isValidName("∆component.heartbeat"));
+  }
+
+  @Test
+  public void testIsValidKey() {
+    assertTrue(isValidKey("hello"));
+    assertFalse(isValidKey("hello world"));
+    assertTrue(isValidKey("hello.world"));
+    assertFalse(isValidKey("hello\"world\""));
+    assertFalse(isValidKey("hello'world"));
+    assertFalse(isValidKey("~component.heartbeat"));
+    assertFalse(isValidKey("!component.heartbeat"));
+    assertFalse(isValidKey("Δcomponent.heartbeat"));
+    assertFalse(isValidKey("∆component.heartbeat"));
+  }
+
+  @Test
   public void testSanitizeValue() {
-      assertEquals("\"hello\"", sanitizeValue("hello"));
-      assertEquals("\"hello world\"", sanitizeValue("hello world"));
-      assertEquals("\"hello.world\"", sanitizeValue("hello.world"));
-      assertEquals("\"hello\\\"world\\\"\"", sanitizeValue("hello\"world\""));
-      assertEquals("\"hello'world\"", sanitizeValue("hello'world"));
-      assertEquals("\"hello\\nworld\"", sanitizeValue("hello\nworld"));
+    assertEquals("\"hello\"", sanitizeValue("hello"));
+    assertEquals("\"hello world\"", sanitizeValue(" hello world "));
+    assertEquals("\"hello.world\"", sanitizeValue("hello.world"));
+    assertEquals("\"hello\\\"world\\\"\"", sanitizeValue("hello\"world\""));
+    assertEquals("\"hello'world\"", sanitizeValue("hello'world"));
+    assertEquals("\"hello\\nworld\"", sanitizeValue("hello\nworld"));
+  }
+
+  @Test
+  public void testSanitizeVal() {
+    assertEquals("hello", sanitizeVal("hello"));
+    assertEquals("hello world", sanitizeVal(" hello world "));
+    assertEquals("hello.world", sanitizeVal("hello.world"));
+    assertEquals("hello\"world\"", sanitizeVal("hello\"world\""));
+    assertEquals("hello'world", sanitizeVal("hello'world"));
+    assertEquals("hello\nworld", sanitizeVal("hello\nworld"));
+  }
+
+  @Test
+  public void testEnquote() {
+    assertEquals("\"hello\"", enquote("hello"));
+    assertEquals("\"hello\\\"world\\\"\"", enquote("hello\"world\""));
+    assertEquals("\"hello\\nworld\"", enquote("hello\nworld"));
   }
 
   @Test

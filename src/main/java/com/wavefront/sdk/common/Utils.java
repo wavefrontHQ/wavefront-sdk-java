@@ -24,39 +24,86 @@ public class Utils {
 
   private static final ObjectMapper JSON_PARSER = new ObjectMapper();
 
-  public static String sanitize(String s) {
-    /*
-     * Sanitize string of metric name, source and key of tags according to the rule of Wavefront proxy.
-     */
-    
-    StringBuilder sb = new StringBuilder();
-    sb.append('"');
-    for (int i = 0; i < s.length(); i++) {
-      char cur = s.charAt(i);
-      boolean isLegal = true;
-      if (!(44 <= cur && cur <= 57) && !(65 <= cur && cur <= 90) && !(97 <= cur && cur <= 122) &&
-              cur != 95) {
-        if (!((i == 0 && cur == 0x2206) || (i == 0 && cur == 0x0394) || (i == 0 && cur == 126))) {
-          // first character can also be \u2206 (∆ - INCREMENT) or \u0394 (Δ - GREEK CAPITAL LETTER DELTA)
-          // or ~ tilda character for internal metrics
-          isLegal = false;
-        }
-      }
-      sb.append(isLegal ? cur : '-');
+  public static String enquote(String s) {
+    if (s.contains("\"") || s.contains("'")) {
+      // for single quotes, once we are double-quoted, single quotes can exist happily inside it.
+      s = s.replaceAll("\"", "\\\\\"");
     }
-    return sb.append('"').toString();
+    return "\"" + s.replaceAll("\\n", "\\\\n") + "\"";
   }
 
+  /**
+   * @deprecated Use enquote(sanitizeName(s)) for metric name, and enquote(sanitizeKey) for source
+   * and tag keys instead.
+   */
+  @Deprecated
+  public static String sanitize(String s) {
+    /*
+     * Sanitize string of metric name, source and key of tags according to the rule of Wavefront
+     * proxy
+     */
+    return enquote(sanitizeName(s));
+  }
+
+  public static String sanitizeName(String s) {
+    return sanitizeKeyInternal(s, true);
+  }
+
+  public static String sanitizeKey(String s) {
+    return sanitizeKeyInternal(s, false);
+  }
+
+  private static String sanitizeKeyInternal(String s, boolean isMetricName) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < s.length(); i++) {
+      sb.append(characterIsValid(s, i, isMetricName) ? s.charAt(i) : '-');
+    }
+    return sb.toString();
+  }
+
+  public static boolean isValidName(String s) {
+    return isValidKeyInternal(s, true);
+  }
+
+  public static boolean isValidKey(String s) {
+    return isValidKeyInternal(s, false);
+  }
+
+  private static boolean isValidKeyInternal(String s, boolean isMetricName) {
+    for (int i = 0; i < s.length(); i++) {
+      if (!characterIsValid(s, i, isMetricName)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean characterIsValid(String s, int i, boolean isMetricName) {
+    char c = s.charAt(i);
+    if ((44 <= c && c <= 57) || (65 <= c && c <= 90) || (97 <= c && c <= 122) || c == 95) {
+      // Legal characters are 44-57 (,-./ and numbers), 65-90 (upper), 97-122 (lower), 95 (_)
+      return true;
+    } else if (isMetricName && i == 0 && (c == 0x2206 || c == 0x0394 || c == 126)) {
+      // For metric names, first character can also be \u2206 (∆ - INCREMENT) or \u0394 (Δ -
+      // GREEK CAPITAL LETTER DELTA) or ~ tilda character for internal metrics
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * @deprecated Use enquote(sanitizeVal(s)) instead.
+   */
+  @Deprecated
   public static String sanitizeValue(String s) {
     /*
      * Sanitize string of tags value, etc.
      */
-    String res = s.trim();
-    if (s.contains("\"") || s.contains("'")) {
-      // for single quotes, once we are double-quoted, single quotes can exist happily inside it.
-      res = res.replaceAll("\"", "\\\\\"");
-    }
-    return "\"" +res.replaceAll("\\n", "\\\\n") + "\"";
+    return enquote(sanitizeVal(s));
+  }
+
+  public static String sanitizeVal(String s) {
+    return s.trim();
   }
 
   public static String metricToLineData(String name, double value, @Nullable Long timestamp,
@@ -78,7 +125,7 @@ public class Utils {
     }
 
     final StringBuilder sb = new StringBuilder();
-    sb.append(sanitize(name));
+    sb.append(enquote(sanitizeName(name)));
     sb.append(' ');
     sb.append(value);
     if (timestamp != null) {
@@ -86,7 +133,7 @@ public class Utils {
       sb.append(timestamp);
     }
     sb.append(" source=");
-    sb.append(sanitize(source));
+    sb.append(enquote(sanitizeKey(source)));
     if (tags != null) {
       for (final Map.Entry<String, String> tag : tags.entrySet()) {
         String key = tag.getKey();
@@ -99,9 +146,9 @@ public class Utils {
               "tag key: " + key);
         }
         sb.append(' ');
-        sb.append(sanitize(key));
+        sb.append(enquote(sanitizeKey(key)));
         sb.append('=');
-        sb.append(sanitizeValue(val));
+        sb.append(enquote(sanitizeVal(val)));
       }
     }
     sb.append('\n');
@@ -151,9 +198,9 @@ public class Utils {
         sb.append(centroid._1);
       }
       sb.append(' ');
-      sb.append(sanitize(name));
+      sb.append(enquote(sanitizeName(name)));
       sb.append(" source=");
-      sb.append(sanitize(source));
+      sb.append(enquote(sanitizeKey(source)));
       if (tags != null) {
         for (final Map.Entry<String, String> tag : tags.entrySet()) {
           String key = tag.getKey();
@@ -166,9 +213,9 @@ public class Utils {
                 "tag key: " + key);
           }
           sb.append(' ');
-          sb.append(sanitize(tag.getKey()));
+          sb.append(enquote(sanitizeName(tag.getKey())));
           sb.append('=');
-          sb.append(sanitizeValue(tag.getValue()));
+          sb.append(enquote(sanitizeVal(tag.getValue())));
         }
       }
       sb.append('\n');
@@ -203,9 +250,9 @@ public class Utils {
     }
 
     final StringBuilder sb = new StringBuilder();
-    sb.append(sanitizeValue(name));
+    sb.append(enquote(sanitizeVal(name)));
     sb.append(" source=");
-    sb.append(sanitize(source));
+    sb.append(enquote(sanitizeKey(source)));
     sb.append(" traceId=");
     sb.append(traceId);
     sb.append(" spanId=");
@@ -234,22 +281,21 @@ public class Utils {
               "tag key: " + key);
         }
         sb.append(' ');
-        sb.append(sanitize(key));
+        sb.append(enquote(sanitizeKey(key)));
         sb.append('=');
-        sb.append(sanitizeValue(val));
+        sb.append(enquote(sanitizeVal(val)));
       }
     }
     if (spanLogs != null  && !spanLogs.isEmpty()) {
       sb.append(' ');
-      sb.append(sanitize(SPAN_LOG_KEY));
+      sb.append(enquote(sanitizeKey(SPAN_LOG_KEY)));
       sb.append('=');
-      sb.append(sanitize("true"));
+      sb.append(enquote(sanitizeVal("true")));
     }
     sb.append(' ');
     sb.append(startMillis);
     sb.append(' ');
     sb.append(durationMillis);
-    // TODO - Support SpanLogs
     sb.append('\n');
     return sb.toString();
   }
