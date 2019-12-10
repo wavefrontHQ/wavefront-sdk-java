@@ -47,15 +47,7 @@ public class UtilsTest {
 
   @Test
   public void testSanitizeWithoutQuotes() {
-    assertEquals("hello", sanitizeWithoutQuotes("hello"));
     assertEquals("hello-world", sanitizeWithoutQuotes("hello world"));
-    assertEquals("hello.world", sanitizeWithoutQuotes("hello.world"));
-    assertEquals("hello-world-", sanitizeWithoutQuotes("hello\"world\""));
-    assertEquals("hello-world", sanitizeWithoutQuotes("hello'world"));
-    assertEquals("~component.heartbeat", sanitizeWithoutQuotes("~component.heartbeat"));
-    assertEquals("-component.heartbeat", sanitizeWithoutQuotes("!component.heartbeat"));
-    assertEquals("Δcomponent.heartbeat", sanitizeWithoutQuotes("Δcomponent.heartbeat"));
-    assertEquals("∆component.heartbeat", sanitizeWithoutQuotes("∆component.heartbeat"));
   }
 
   @Test
