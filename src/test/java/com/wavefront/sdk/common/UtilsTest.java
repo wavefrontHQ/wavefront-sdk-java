@@ -39,6 +39,7 @@ public class UtilsTest {
     assertEquals("\"hello.world\"", sanitize("hello.world"));
     assertEquals("\"hello-world-\"", sanitize("hello\"world\""));
     assertEquals("\"hello-world\"", sanitize("hello'world"));
+    assertEquals("\"hello-world\"", sanitize("hello/world"));
     assertEquals("\"~component.heartbeat\"", sanitize("~component.heartbeat"));
     assertEquals("\"-component.heartbeat\"", sanitize("!component.heartbeat"));
     assertEquals("\"Δcomponent.heartbeat\"", sanitize("Δcomponent.heartbeat"));

@@ -287,6 +287,9 @@ public class Utils {
           isLegal = false;
         }
       }
+      if (cur == '/') {
+        isLegal = false;
+      }
       sb.append(isLegal ? cur : '-');
     }
     if (addQuotes) {
