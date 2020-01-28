@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -83,6 +84,10 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final WavefrontSdkCounter spanLogsInvalid;
   private final WavefrontSdkCounter spanLogsDropped;
   private final WavefrontSdkCounter spanLogReportErrors;
+
+  private final AtomicBoolean histogramsDisabled;
+  private final AtomicBoolean spansDisabled;
+  private final AtomicBoolean spanLogsDisabled;
 
   public static class Builder {
     // Required parameters
@@ -219,6 +224,11 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     spanLogsInvalid = sdkMetricsRegistry.newCounter("span_logs.invalid");
     spanLogsDropped = sdkMetricsRegistry.newCounter("span_logs.dropped");
     spanLogReportErrors = sdkMetricsRegistry.newCounter("span_logs.report.errors");
+
+    histogramsDisabled = new AtomicBoolean();
+    spansDisabled = new AtomicBoolean();
+    spanLogsDisabled = new AtomicBoolean();
+
     this.clientId = builder.server;
   }
 
@@ -340,36 +350,53 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public void flush() throws IOException {
-    internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT, "points",
-        pointsDropped, pointReportErrors);
+    internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT, "points", "points",
+        pointsDropped, pointReportErrors, null);
     internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT, "histograms",
-        histogramsDropped, histogramReportErrors);
-    internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT, "spans",
-        spansDropped, spanReportErrors);
-    internalFlush(spanLogsBuffer, Constants.WAVEFRONT_SPAN_LOG_FORMAT, "span_logs",
-        spanLogsDropped, spanLogReportErrors);
+        "histograms", histogramsDropped, histogramReportErrors, histogramsDisabled);
+    internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT, "spans", "spans",
+        spansDropped, spanReportErrors, spansDisabled);
+    internalFlush(spanLogsBuffer, Constants.WAVEFRONT_SPAN_LOG_FORMAT, "span_logs", "span logs",
+        spanLogsDropped, spanLogReportErrors, spanLogsDisabled);
   }
 
-  private void internalFlush(LinkedBlockingQueue<String> buffer, String format, String entityPrefix,
-                             WavefrontSdkCounter dropped, WavefrontSdkCounter reportErrors)
+  private void internalFlush(LinkedBlockingQueue<String> buffer, String format,
+                             String entityPrefix, String entityType,
+                             WavefrontSdkCounter dropped, WavefrontSdkCounter reportErrors,
+                             @Nullable AtomicBoolean featureDisabled)
       throws IOException {
     List<List<String>> batch = getBatch(buffer, batchSize, messageSizeBytes, dropped);
     for (int i = 0; i < batch.size(); i++) {
       List<String> items = batch.get(i);
+      if (featureDisabled != null && featureDisabled.get()) {
+        dropped.inc(items.size());
+        continue;
+      }
       try (InputStream is = itemsToStream(items)) {
         int statusCode = directService.report(format, is);
         sdkMetricsRegistry.newCounter(entityPrefix + ".report." + statusCode).inc();
         if (400 <= statusCode && statusCode <= 599) {
-          logger.log(Level.WARNING, "Error reporting points, respStatus=" + statusCode);
-          int numAddedBackToBuffer = 0;
-          for (String item : items) {
-            if (buffer.offer(item)) {
-              numAddedBackToBuffer++;
-            } else {
-              dropped.inc(items.size() - numAddedBackToBuffer);
-              logger.log(Level.WARNING, "Buffer full, dropping attempted points");
+          switch (statusCode) {
+            case 401:
+            case 403:
+              if (featureDisabled == null) {
+                logger.log(Level.WARNING,
+                    "Permission error sending " + entityType + " to Wavefront (HTTP " +
+                        statusCode + ")");
+                requeue(buffer, items, dropped, entityType);
+              } else {
+                logger.log(Level.SEVERE,
+                    "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
+                        "Please verify that " + entityType + " is enabled for your account! All " +
+                        entityType + " will be discarded until the service is restarted.");
+                featureDisabled.set(true);
+                dropped.inc(items.size());
+              }
               break;
-            }
+            default:
+              logger.log(Level.WARNING,
+                  "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + ")");
+              requeue(buffer, items, dropped, entityType);
           }
         }
       } catch (IOException ex) {
@@ -379,6 +406,20 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
           dropped.inc(batch.get(j).size());
         }
         throw ex;
+      }
+    }
+  }
+
+  private void requeue(LinkedBlockingQueue<String> buffer, List<String> items,
+                       WavefrontSdkCounter dropped, String entityType) {
+    int numAddedBackToBuffer = 0;
+    for (String item : items) {
+      if (buffer.offer(item)) {
+        numAddedBackToBuffer++;
+      } else {
+        dropped.inc(items.size() - numAddedBackToBuffer);
+        logger.log(Level.WARNING, "Buffer full, dropping attempted \"" + entityType + "\"");
+        break;
       }
     }
   }
