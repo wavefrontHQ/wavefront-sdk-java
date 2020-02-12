@@ -2,6 +2,7 @@ package com.wavefront.sdk.direct.ingestion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wavefront.sdk.common.Constants;
+import com.wavefront.sdk.common.logging.MessageDedupingLogger;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.WavefrontSender;
@@ -44,6 +45,10 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   private static final Logger logger = Logger.getLogger(
       WavefrontDirectIngestionClient.class.getCanonicalName());
+
+  // Limit certain log messages to at most once every 5 seconds
+  private static final MessageDedupingLogger rateLimitingLogger = new MessageDedupingLogger(logger,
+      5000);
 
   /**
    * Source to use if entity source is null
@@ -369,6 +374,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     for (int i = 0; i < batch.size(); i++) {
       List<String> items = batch.get(i);
       if (featureDisabled != null && featureDisabled.get()) {
+        rateLimitingLogger.log(Level.SEVERE,
+            "Please verify that " + entityType + " is enabled for your account! All " +
+                entityType + " will be discarded until the service is restarted.");
         dropped.inc(items.size());
         continue;
       }
@@ -380,12 +388,12 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
             case 401:
             case 403:
               if (featureDisabled == null) {
-                logger.log(Level.WARNING,
+                rateLimitingLogger.log(Level.WARNING,
                     "Permission error sending " + entityType + " to Wavefront (HTTP " +
                         statusCode + ")");
                 requeue(buffer, items, dropped, entityType);
               } else {
-                logger.log(Level.SEVERE,
+                rateLimitingLogger.log(Level.SEVERE,
                     "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
                         "Please verify that " + entityType + " is enabled for your account! All " +
                         entityType + " will be discarded until the service is restarted.");
@@ -394,7 +402,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
               }
               break;
             default:
-              logger.log(Level.WARNING,
+              rateLimitingLogger.log(Level.WARNING,
                   "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + ")");
               requeue(buffer, items, dropped, entityType);
           }
@@ -417,8 +425,11 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       if (buffer.offer(item)) {
         numAddedBackToBuffer++;
       } else {
-        dropped.inc(items.size() - numAddedBackToBuffer);
-        logger.log(Level.WARNING, "Buffer full, dropping attempted \"" + entityType + "\"");
+        int numDropped = items.size() - numAddedBackToBuffer;
+        dropped.inc(numDropped);
+        rateLimitingLogger.logWithAlternateKey(Level.WARNING,
+            "Buffer full, dropping " + numDropped + " " + entityType,
+            "Buffer full, dropping " + entityType);
         break;
       }
     }
