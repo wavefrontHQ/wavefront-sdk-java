@@ -30,7 +30,7 @@ public class ReconnectingSocket {
       ReconnectingSocket.class.getCanonicalName());
 
   private static final int
-      SERVER_CONNECT_TIMEOUT_MILLIS = 2000,
+      SERVER_CONNECT_TIMEOUT_MILLIS = 5000,
       SERVER_READ_TIMEOUT_MILLIS = 2000,
       SERVER_POLL_INTERVAL_MILLIS = 4000;
 
@@ -49,6 +49,13 @@ public class ReconnectingSocket {
   private WavefrontSdkCounter resetErrors;
 
   /**
+   * Attempts to open a connected socket to the specified host and port.
+   *
+   * @param host                The name of the remote host.
+   * @param port                The remote port.
+   * @param socketFactory       The {@link SocketFactory} used to create the underlying socket.
+   * @param sdkMetricsRegistry  The {@link WavefrontSdkMetricsRegistry} for internal metrics.
+   * @param entityPrefix        A prefix for internal metrics pertaining to this instance.
    * @throws IOException When we cannot open the remote socket.
    */
   public ReconnectingSocket(String host, int port, SocketFactory socketFactory,
@@ -58,6 +65,12 @@ public class ReconnectingSocket {
   }
 
   /**
+   * Attempts to open a connected socket to the specified address.
+   *
+   * @param address             The {@link InetSocketAddress} of the server to connect to.
+   * @param socketFactory       The {@link SocketFactory} used to create the underlying socket.
+   * @param sdkMetricsRegistry  The {@link WavefrontSdkMetricsRegistry} for internal metrics.
+   * @param entityPrefix        A prefix for internal metrics pertaining to this instance.
    * @throws IOException When we cannot open the remote socket.
    */
   public ReconnectingSocket(InetSocketAddress address, SocketFactory socketFactory,
