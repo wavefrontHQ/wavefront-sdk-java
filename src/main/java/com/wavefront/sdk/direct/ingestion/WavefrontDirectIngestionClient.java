@@ -93,6 +93,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final AtomicBoolean histogramsDisabled;
   private final AtomicBoolean spansDisabled;
   private final AtomicBoolean spanLogsDisabled;
+  
+  // Flag to prevent sending after close() has been called
+  private final AtomicBoolean closed = new AtomicBoolean(false);
 
   public static class Builder {
     // Required parameters
@@ -246,6 +249,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
       throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
     String point;
     try {
       point = metricToLineData(name, value, timestamp, source, tags, defaultSource);
@@ -263,6 +269,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public void sendFormattedMetric(String point) throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
     if (point == null || "".equals(point.trim())) {
       pointsInvalid.inc();
       throw new IllegalArgumentException("point must be non-null and in WF data format");
@@ -282,6 +291,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                                @Nullable Long timestamp, @Nullable String source,
                                @Nullable Map<String, String> tags)
       throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
     String histograms;
     try {
       histograms = histogramToLineData(name, centroids, histogramGranularities, timestamp,
@@ -304,6 +316,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                        @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                        @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
       throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
     String span;
     try {
       span = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
@@ -355,6 +370,13 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public void flush() throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to flush closed sender");
+    }
+    this.flushNoCheck();
+  }
+
+  private void flushNoCheck() throws IOException {
     internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT, "points", "points",
         pointsDropped, pointReportErrors, null);
     internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT, "histograms",
@@ -452,9 +474,12 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public synchronized void close() {
+    if(!closed.compareAndSet(false, true)) {
+      logger.log(Level.FINE,"attempt to close already closed sender");
+    }
     // Flush before closing
     try {
-      flush();
+      flushNoCheck();
     } catch (IOException e) {
       logger.log(Level.WARNING, "error flushing buffer", e);
     }
@@ -462,7 +487,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     sdkMetricsRegistry.close();
 
     try {
-      scheduler.shutdownNow();
+      Utils.shutdownExecutorAndWait(scheduler);
     } catch (SecurityException ex) {
       logger.log(Level.WARNING, "shutdown error", ex);
     }

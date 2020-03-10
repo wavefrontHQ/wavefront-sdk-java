@@ -6,7 +6,10 @@ import com.wavefront.sdk.entities.histograms.WavefrontHistogramImpl.Snapshot;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -189,5 +192,116 @@ public class WavefrontHistogramImplTest {
     assertEquals(99.5, snapshot.getValue(.99), DELTA);
 
     assertEquals(999.5, inc1000.getSnapshot().getValue(.999), DELTA);
+  }
+
+  @Disabled("Single Thread Update Benchmark")
+  @Test
+  public void singleThreadUpdateBenchmark() {
+    int duration = 1; // Benchmark for 1 Minute
+    WavefrontHistogramImpl wh = new WavefrontHistogramImpl(System::currentTimeMillis);
+    Pair<Long, Long> result = this.singleThreadUpdateBenchmark(duration, wh, true);
+    System.out.println("single thread: update() " + result._1 + " times in " +
+            duration + " minutes");
+  }
+
+  private Pair<Long, Long> singleThreadUpdateBenchmark(int duration, WavefrontHistogramImpl wh, boolean enableFlush) {
+    long updateCount = 0L;
+    long flushCount = 0L;
+    for (int min = 0; min < duration; min++) {
+      long start = System.currentTimeMillis();
+      while (System.currentTimeMillis() - start < 60001) {
+        wh.update(Math.random() * 1000);
+        updateCount++;
+      }
+      if (enableFlush) {
+        wh.flushDistributions();
+        flushCount++;
+      }
+    }
+    return new Pair<>(updateCount, flushCount);
+  }
+
+  @Disabled("Single Thread Update & Flush Benchmark")
+  @Test
+  public void singleThreadFlushBenchmark() {
+    int duration = 1; // Benchmark for 1 Minute
+    WavefrontHistogramImpl wh = new WavefrontHistogramImpl(clock::get);
+    Pair<Long, Long> result = this.singleThreadFlushBenchmark(duration, wh, true);
+    System.out.println("single thread: update() " + result._1 + " times and " +
+            "flush() " + result._2 + " times in " + duration + " minutes");
+  }
+
+  private Pair<Long, Long> singleThreadFlushBenchmark(int duration, WavefrontHistogramImpl wh, boolean enableFlush) {
+    long updateCount = 0L;
+    long flushCount = 0L;
+    for (int min = 0; min < duration; min++) {
+      long start = System.currentTimeMillis();
+      while (System.currentTimeMillis() - start < 60000) {
+        for (int sec = 0; sec < 60; sec++) {
+          wh.update(Math.random() * 1000);
+          if (enableFlush) clock.addAndGet(1000L);
+          updateCount++;
+        }
+        if (enableFlush) {
+          clock.addAndGet(1L);
+          wh.flushDistributions();
+          flushCount++;
+        }
+      }
+    }
+    return new Pair<>(updateCount, flushCount);
+  }
+
+  @Disabled("Multi-Thread Update Benchmark")
+  @Test
+  public void multiThreadUpdateBenchmark() {
+    int threadNum = 4;
+    int duration = 1; // Benchmark for 1 Minute
+    WavefrontHistogramImpl wh = new WavefrontHistogramImpl(System::currentTimeMillis);
+    Supplier<Pair<Long, Long>> flushAndUpdateBenchmark =
+            () -> this.singleThreadUpdateBenchmark(duration, wh, true);
+    Supplier<Pair<Long, Long>> updateBenchmark =
+            () -> this.singleThreadUpdateBenchmark(duration, wh, false);
+    Pair<Long, Long> result = multiThreadBenchmark(threadNum, flushAndUpdateBenchmark, updateBenchmark);
+    System.out.println(threadNum + " threads: update() " + result._1 + " times in " +
+            duration + " minutes");
+  }
+
+  @Disabled("Multi-Thread Update & Flush Benchmark")
+  @Test
+  public void multiThreadFlushBenchmark() {
+    int threadNum = 4;
+    int duration = 1; // Benchmark for 1 Minute
+    WavefrontHistogramImpl wh = new WavefrontHistogramImpl(clock::get);
+    Supplier<Pair<Long, Long>> flushAndUpdateBenchmark =
+            () -> this.singleThreadFlushBenchmark(duration, wh, true);
+    Supplier<Pair<Long, Long>> updateBenchmark =
+            () -> this.singleThreadFlushBenchmark(duration, wh, false);
+    Pair<Long, Long> result = multiThreadBenchmark(threadNum, flushAndUpdateBenchmark, updateBenchmark);
+    System.out.println(threadNum + " threads: update() " + result._1 + " times and " +
+            "flush() " + result._2 + " times in " + duration + " minutes");
+  }
+
+  private Pair<Long, Long> multiThreadBenchmark(int threadNum, Supplier<Pair<Long, Long>> flushAndUpdateBenchmark,
+                                                Supplier<Pair<Long, Long>> updateBenchmark) {
+    ExecutorService pool = Executors.newFixedThreadPool(threadNum);
+    List<Future<Pair<Long, Long>>> results = new ArrayList<>(threadNum);
+    Callable<Pair<Long, Long>> flushAndUpdateWorker = flushAndUpdateBenchmark::get;
+    Callable<Pair<Long, Long>> updateWorker = updateBenchmark::get;
+    results.add(pool.submit(flushAndUpdateWorker));
+    for (int i = 0; i < threadNum - 1; i++) {
+      results.add(pool.submit(updateWorker));
+    }
+    long updateCount = 0L;
+    long flushCount = 0L;
+    for (Future<Pair<Long, Long>> result : results) {
+      try {
+        updateCount += result.get()._1;
+        flushCount += result.get()._2;
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
+    }
+    return new Pair<>(updateCount, flushCount);
   }
 }

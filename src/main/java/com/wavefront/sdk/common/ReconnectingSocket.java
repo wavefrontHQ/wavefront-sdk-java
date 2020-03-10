@@ -5,9 +5,8 @@ import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,11 +30,11 @@ public class ReconnectingSocket {
       ReconnectingSocket.class.getCanonicalName());
 
   private static final int
+      SERVER_CONNECT_TIMEOUT_MILLIS = 5000,
       SERVER_READ_TIMEOUT_MILLIS = 2000,
       SERVER_POLL_INTERVAL_MILLIS = 4000;
 
-  private final String host;
-  private final int port;
+  private final InetSocketAddress address;
   private final SocketFactory socketFactory;
   private volatile boolean serverTerminated;
   private final Timer pollingTimer;
@@ -50,18 +49,38 @@ public class ReconnectingSocket {
   private WavefrontSdkCounter resetErrors;
 
   /**
+   * Attempts to open a connected socket to the specified host and port.
+   *
+   * @param host                The name of the remote host.
+   * @param port                The remote port.
+   * @param socketFactory       The {@link SocketFactory} used to create the underlying socket.
+   * @param sdkMetricsRegistry  The {@link WavefrontSdkMetricsRegistry} for internal metrics.
+   * @param entityPrefix        A prefix for internal metrics pertaining to this instance.
    * @throws IOException When we cannot open the remote socket.
    */
   public ReconnectingSocket(String host, int port, SocketFactory socketFactory,
                             WavefrontSdkMetricsRegistry sdkMetricsRegistry, String entityPrefix)
       throws IOException {
-    this.host = host;
-    this.port = port;
+    this(new InetSocketAddress(host, port), socketFactory, sdkMetricsRegistry, entityPrefix);
+  }
+
+  /**
+   * Attempts to open a connected socket to the specified address.
+   *
+   * @param address             The {@link InetSocketAddress} of the server to connect to.
+   * @param socketFactory       The {@link SocketFactory} used to create the underlying socket.
+   * @param sdkMetricsRegistry  The {@link WavefrontSdkMetricsRegistry} for internal metrics.
+   * @param entityPrefix        A prefix for internal metrics pertaining to this instance.
+   * @throws IOException When we cannot open the remote socket.
+   */
+  public ReconnectingSocket(InetSocketAddress address, SocketFactory socketFactory,
+                            WavefrontSdkMetricsRegistry sdkMetricsRegistry, String entityPrefix)
+      throws IOException {
+    this.address = address;
     this.serverTerminated = false;
     this.socketFactory = socketFactory;
 
-    this.underlyingSocket = new AtomicReference<>(socketFactory.createSocket(host, port));
-    this.underlyingSocket.get().setSoTimeout(SERVER_READ_TIMEOUT_MILLIS);
+    this.underlyingSocket = new AtomicReference<>(createAndConnectSocket());
     this.socketOutputStream = new AtomicReference<>(new BufferedOutputStream(
         underlyingSocket.get().getOutputStream()));
 
@@ -81,6 +100,22 @@ public class ReconnectingSocket {
     flushErrors = sdkMetricsRegistry.newCounter(entityPrefix + "flush.errors");
     resetSuccesses = sdkMetricsRegistry.newCounter(entityPrefix + "reset.success");
     resetErrors = sdkMetricsRegistry.newCounter(entityPrefix + "reset.errors");
+  }
+
+  private Socket createAndConnectSocket() throws IOException {
+    Socket socket = socketFactory.createSocket();
+    try {
+      socket.connect(address, SERVER_CONNECT_TIMEOUT_MILLIS);
+      socket.setSoTimeout(SERVER_READ_TIMEOUT_MILLIS);
+    } catch (IOException e) {
+      try {
+        socket.close();
+      } catch (IOException ce) {
+        e.addSuppressed(ce);
+      }
+      throw e;
+    }
+    return socket;
   }
 
   private void maybeReconnect() {
@@ -104,27 +139,27 @@ public class ReconnectingSocket {
   /**
    * Closes the outputStream best-effort. Tries to re-instantiate the outputStream.
    *
-   * @throws IOException          If we cannot close a outputStream we had opened before.
-   * @throws UnknownHostException When {@link #host} and {@link #port} are bad.
+   * @throws IOException If we cannot close a outputStream we had opened before.
    */
   private synchronized void resetSocket() throws IOException {
     try {
       try {
         BufferedOutputStream old = socketOutputStream.get();
         if (old != null) old.close();
-      } catch (SocketException e) {
+      } catch (IOException e) {
         logger.log(Level.INFO, "Could not flush to socket.", e);
       } finally {
         serverTerminated = false;
+        Socket newSocket = createAndConnectSocket();
         try {
-          underlyingSocket.getAndSet(socketFactory.createSocket(host, port)).close();
-        } catch (SocketException e) {
+          underlyingSocket.getAndSet(newSocket).close();
+        } catch (IOException e) {
           logger.log(Level.WARNING, "Could not close old socket.", e);
         }
-        underlyingSocket.get().setSoTimeout(SERVER_READ_TIMEOUT_MILLIS);
         socketOutputStream.set(new BufferedOutputStream(underlyingSocket.get().getOutputStream()));
         resetSuccesses.inc();
-        logger.log(Level.INFO, String.format("Successfully reset connection to %s:%d", host, port));
+        logger.log(Level.INFO, String.format("Successfully reset connection to %s:%d",
+            address.getHostName(), address.getPort()));
       }
     } catch (Exception e) {
       resetErrors.inc();
@@ -149,7 +184,8 @@ public class ReconnectingSocket {
       writeSuccesses.inc();
     } catch (Exception e) {
       try {
-        String warningMsg = "Unable to write data to " + host + ":" + port +
+        String warningMsg =
+            "Unable to write data to " + address.getHostName() + ":" + address.getPort() +
             " (" + e.getMessage() +  "), reconnecting ...";
         if (logger.isLoggable(Level.FINE)) {
           logger.log(Level.WARNING, warningMsg, e);
@@ -175,7 +211,8 @@ public class ReconnectingSocket {
       flushSuccesses.inc();
     } catch (Exception e) {
       flushErrors.inc();
-      String warningMsg = "Unable to flush data to " + host + ":" + port +
+      String warningMsg =
+          "Unable to flush data to " + address.getHostName() + ":" + address.getPort() +
           " (" + e.getMessage() +  "), reconnecting ...";
       if (logger.isLoggable(Level.FINE)) {
         logger.log(Level.WARNING, warningMsg, e);

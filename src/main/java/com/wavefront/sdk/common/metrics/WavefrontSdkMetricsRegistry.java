@@ -1,6 +1,7 @@
 package com.wavefront.sdk.common.metrics;
 
 import com.wavefront.sdk.common.NamedThreadFactory;
+import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.entities.metrics.WavefrontMetricSender;
 
 import java.io.Closeable;
@@ -153,11 +154,7 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
 
   @Override
   public void close() {
-    try {
-      scheduler.shutdownNow();
-    } catch (SecurityException ex) {
-      logger.log(Level.FINE, "shutdown error", ex);
-    }
+    Utils.shutdownExecutorAndWait(scheduler);
   }
 
   /**

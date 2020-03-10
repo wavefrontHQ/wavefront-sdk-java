@@ -1,10 +1,7 @@
 package com.wavefront.sdk.proxy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.wavefront.sdk.common.Constants;
-import com.wavefront.sdk.common.NamedThreadFactory;
-import com.wavefront.sdk.common.Pair;
-import com.wavefront.sdk.common.WavefrontSender;
+import com.wavefront.sdk.common.*;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
@@ -23,6 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,6 +83,9 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   private final WavefrontSdkCounter spanLogsValid;
   private final WavefrontSdkCounter spanLogsInvalid;
   private final WavefrontSdkCounter spanLogsDropped;
+
+  // Flag to prevent sending after close() has been called
+  private final AtomicBoolean closed = new AtomicBoolean(false);
 
   public static class Builder {
     // Required parameters
@@ -252,6 +253,9 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
       throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
     if (metricsProxyConnectionHandler == null) {
       pointsDiscarded.inc();
       logger.warning("Can't send data to Wavefront. " +
@@ -279,6 +283,9 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
 
   @Override
   public void sendFormattedMetric(String point) throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
     if (metricsProxyConnectionHandler == null) {
       pointsDiscarded.inc();
       logger.warning("Can't send data to Wavefront. " +
@@ -308,6 +315,9 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
                                @Nullable Long timestamp, @Nullable String source,
                                @Nullable Map<String, String> tags)
       throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
     if (histogramProxyConnectionHandler == null) {
       histogramsDiscarded.inc();
       logger.warning("Can't send data to Wavefront. " +
@@ -340,6 +350,9 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
                        @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                        @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
       throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
     if (tracingProxyConnectionHandler == null) {
       spansDiscarded.inc();
       if (spanLogs != null && !spanLogs.isEmpty()) {
@@ -401,8 +414,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
   }
 
-  @Override
-  public void flush() throws IOException {
+  private void flushNoCheck() throws IOException {
     if (metricsProxyConnectionHandler != null) {
       metricsProxyConnectionHandler.flush();
     }
@@ -414,6 +426,14 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     if (tracingProxyConnectionHandler != null) {
       tracingProxyConnectionHandler.flush();
     }
+  }
+
+  @Override
+  public void flush() throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to flush closed sender");
+    }
+    this.flushNoCheck();
   }
 
   @Override
@@ -435,17 +455,20 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
 
   @Override
   public void close() {
+    if(!closed.compareAndSet(false, true)) {
+     logger.log(Level.FINE,"attempt to close already closed sender");
+    }
     sdkMetricsRegistry.close();
 
     // Flush before closing
     try {
-      flush();
+      flushNoCheck();
     } catch (IOException e) {
       logger.log(Level.WARNING, "error flushing buffer", e);
     }
 
     try {
-      scheduler.shutdownNow();
+      Utils.shutdownExecutorAndWait(scheduler);
     } catch (SecurityException ex) {
       logger.log(Level.FINE, "shutdown error", ex);
     }
