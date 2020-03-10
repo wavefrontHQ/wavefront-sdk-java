@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.wavefront.sdk.common.Constants.SPAN_LOG_KEY;
 
@@ -21,6 +25,9 @@ import static com.wavefront.sdk.common.Constants.SPAN_LOG_KEY;
  * @author Sushant Dewan (sushant@wavefront.com).
  */
 public class Utils {
+
+  private static final Logger logger = Logger.getLogger(
+          Utils.class.getCanonicalName());
 
   private static final ObjectMapper JSON_PARSER = new ObjectMapper();
 
@@ -267,6 +274,20 @@ public class Utils {
     return toReturn.toString();
   }
 
+  public static void shutdownExecutorAndWait(ExecutorService tpe) {
+    tpe.shutdown();
+    try {
+      if (!tpe.awaitTermination(60, TimeUnit.SECONDS)) {
+        tpe.shutdownNow();
+        if (!tpe.awaitTermination(60, TimeUnit.SECONDS))
+          logger.log(Level.FINE, "pool did not terminate");
+      }
+    } catch (InterruptedException ie) {
+      tpe.shutdownNow();
+      Thread.currentThread().interrupt();
+    }
+  }
+  
   private static String sanitizeInternal(String s, boolean addQuotes) {
     /*
      * Sanitize string of metric name, source and key of tags according to the rule of Wavefront proxy.

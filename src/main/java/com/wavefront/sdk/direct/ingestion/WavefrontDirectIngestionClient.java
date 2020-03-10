@@ -1,10 +1,7 @@
 package com.wavefront.sdk.direct.ingestion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.wavefront.sdk.common.Constants;
-import com.wavefront.sdk.common.NamedThreadFactory;
-import com.wavefront.sdk.common.Pair;
-import com.wavefront.sdk.common.WavefrontSender;
+import com.wavefront.sdk.common.*;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
@@ -26,6 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -83,6 +81,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final WavefrontSdkCounter spanLogsInvalid;
   private final WavefrontSdkCounter spanLogsDropped;
   private final WavefrontSdkCounter spanLogReportErrors;
+
+  // Flag to prevent sending after close() has been called
+  private final AtomicBoolean closed = new AtomicBoolean(false);
 
   public static class Builder {
     // Required parameters
@@ -231,6 +232,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
       throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
     String point;
     try {
       point = metricToLineData(name, value, timestamp, source, tags, defaultSource);
@@ -248,6 +252,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public void sendFormattedMetric(String point) throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
     if (point == null || "".equals(point.trim())) {
       pointsInvalid.inc();
       throw new IllegalArgumentException("point must be non-null and in WF data format");
@@ -267,6 +274,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                                @Nullable Long timestamp, @Nullable String source,
                                @Nullable Map<String, String> tags)
       throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
     String histograms;
     try {
       histograms = histogramToLineData(name, centroids, histogramGranularities, timestamp,
@@ -289,6 +299,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                        @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                        @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
       throws IOException {
+    if(closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
     String span;
     try {
       span = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
@@ -340,14 +353,21 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public void flush() throws IOException {
-    internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT, "points",
-        pointsDropped, pointReportErrors);
-    internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT, "histograms",
-        histogramsDropped, histogramReportErrors);
-    internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT, "spans",
-        spansDropped, spanReportErrors);
-    internalFlush(spanLogsBuffer, Constants.WAVEFRONT_SPAN_LOG_FORMAT, "span_logs",
-        spanLogsDropped, spanLogReportErrors);
+      if(closed.get()) {
+          throw new IOException("attempt to flush closed sender");
+      }
+      this.flushNoCheck();
+  }
+
+  private void flushNoCheck() throws IOException {
+      internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT, "points",
+              pointsDropped, pointReportErrors);
+      internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT, "histograms",
+              histogramsDropped, histogramReportErrors);
+      internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT, "spans",
+              spansDropped, spanReportErrors);
+      internalFlush(spanLogsBuffer, Constants.WAVEFRONT_SPAN_LOG_FORMAT, "span_logs",
+              spanLogsDropped, spanLogReportErrors);
   }
 
   private void internalFlush(LinkedBlockingQueue<String> buffer, String format, String entityPrefix,
@@ -400,9 +420,12 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public synchronized void close() {
+    if(!closed.compareAndSet(false, true)) {
+      logger.log(Level.FINE,"attempt to close already closed sender");
+    }
     // Flush before closing
     try {
-      flush();
+      flushNoCheck();
     } catch (IOException e) {
       logger.log(Level.WARNING, "error flushing buffer", e);
     }
@@ -410,7 +433,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     sdkMetricsRegistry.close();
 
     try {
-      scheduler.shutdownNow();
+      Utils.shutdownExecutorAndWait(scheduler);
     } catch (SecurityException ex) {
       logger.log(Level.WARNING, "shutdown error", ex);
     }
