@@ -45,8 +45,8 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
       throw new IllegalStateException("Already connected");
     }
     try {
-      reconnectingSocket = new ReconnectingSocket(address.getHostName(), address.getPort(),
-          socketFactory, sdkMetricsRegistry, entityPrefix + "socket");
+      reconnectingSocket = new ReconnectingSocket(address, socketFactory, sdkMetricsRegistry,
+          entityPrefix + "socket");
     } catch (Exception e) {
       connectErrors.inc();
       throw new IOException(e);
