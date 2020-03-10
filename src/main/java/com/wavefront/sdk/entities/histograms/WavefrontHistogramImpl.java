@@ -193,7 +193,7 @@ public class WavefrontHistogramImpl {
       return diff * diff * c.count();
     }).sum();
     double count = centroids.stream().mapToDouble(Centroid::count).sum();
-    double variance = varianceSum / count;
+    double variance = count == 0 ? 0 : varianceSum / count;
     return Math.sqrt(variance);
   }
 

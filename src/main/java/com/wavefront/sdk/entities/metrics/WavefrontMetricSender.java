@@ -62,6 +62,8 @@ public interface WavefrontMetricSender {
     if (!name.startsWith(DELTA_PREFIX) && !name.startsWith(DELTA_PREFIX_2)) {
       name = DELTA_PREFIX + name;
     }
-    sendMetric(name, value, null, source, tags);
+    if (value > 0) {
+      sendMetric(name, value, null, source, tags);
+    }
   }
 }

@@ -18,8 +18,10 @@ import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.sanitize;
 import static com.wavefront.sdk.common.Utils.sanitizeValue;
-import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
+import static com.wavefront.sdk.common.Utils.sanitizeWithoutQuotes;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
+import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -37,6 +39,7 @@ public class UtilsTest {
     assertEquals("\"hello.world\"", sanitize("hello.world"));
     assertEquals("\"hello-world-\"", sanitize("hello\"world\""));
     assertEquals("\"hello-world\"", sanitize("hello'world"));
+    assertEquals("\"hello-world\"", sanitize("hello/world"));
     assertEquals("\"~component.heartbeat\"", sanitize("~component.heartbeat"));
     assertEquals("\"-component.heartbeat\"", sanitize("!component.heartbeat"));
     assertEquals("\"Δcomponent.heartbeat\"", sanitize("Δcomponent.heartbeat"));
@@ -44,13 +47,18 @@ public class UtilsTest {
   }
 
   @Test
+  public void testSanitizeWithoutQuotes() {
+    assertEquals("hello-world", sanitizeWithoutQuotes("hello world"));
+  }
+
+  @Test
   public void testSanitizeValue() {
-      assertEquals("\"hello\"", sanitizeValue("hello"));
-      assertEquals("\"hello world\"", sanitizeValue("hello world"));
-      assertEquals("\"hello.world\"", sanitizeValue("hello.world"));
-      assertEquals("\"hello\\\"world\\\"\"", sanitizeValue("hello\"world\""));
-      assertEquals("\"hello'world\"", sanitizeValue("hello'world"));
-      assertEquals("\"hello\\nworld\"", sanitizeValue("hello\nworld"));
+    assertEquals("\"hello\"", sanitizeValue("hello"));
+    assertEquals("\"hello world\"", sanitizeValue("hello world"));
+    assertEquals("\"hello.world\"", sanitizeValue("hello.world"));
+    assertEquals("\"hello\\\"world\\\"\"", sanitizeValue("hello\"world\""));
+    assertEquals("\"hello'world\"", sanitizeValue("hello'world"));
+    assertEquals("\"hello\\nworld\"", sanitizeValue("hello\nworld"));
   }
 
   @Test
@@ -68,7 +76,7 @@ public class UtilsTest {
     // null tags
     assertEquals("\"new-york.power.usage\" 42422.0 1493773500 source=\"localhost\"\n",
         metricToLineData("new-york.power.usage", 42422, 1493773500L,
-        "localhost", null, "defaultSource"));
+            "localhost", null, "defaultSource"));
     // null tags and null timestamp
     assertEquals("\"new-york.power.usage\" 42422.0 source=\"localhost\"\n",
         metricToLineData("new-york.power.usage", 42422, null, "localhost", null,
@@ -77,9 +85,9 @@ public class UtilsTest {
     tags.put(" key name~1", " val name 1 ");
     // Invalid char in source and metrics
     assertEquals("\"new-york.power.usage\" 42422.0 1493773500 source=\"local-host\" " +
-                    "\"-key-name-1\"=\"val name 1\" " + "\"datacenter\"=\"dc1\"\n",
-            metricToLineData("new~york.power.usage", 42422, 1493773500L, "local~host", tags,
-                    "defaultSource"));
+            "\"-key-name-1\"=\"val name 1\" " + "\"datacenter\"=\"dc1\"\n",
+        metricToLineData("new~york.power.usage", 42422, 1493773500L, "local~host", tags,
+            "defaultSource"));
   }
 
   @Test
@@ -93,7 +101,7 @@ public class UtilsTest {
             "\"region\"=\"us-west\"\n",
         histogramToLineData("request.latency", Arrays.asList(new Pair<>(30.0, 20),
             new Pair<>(5.1, 10)), minGranularity,
-        1493773500L, "appServer1", tags, "defaultSource"));
+            1493773500L, "appServer1", tags, "defaultSource"));
 
     // null timestamp
     assertEquals("!M #20 30.0 #10 5.1 \"request.latency\" source=\"appServer1\" " +
@@ -113,7 +121,8 @@ public class UtilsTest {
           histogramToLineData("request.latency", new ArrayList<>(),
               minGranularity, 1493773500L, "appServer1", null, "defaultSource"));
       fail();
-    } catch(IllegalArgumentException ignored) {}
+    } catch (IllegalArgumentException ignored) {
+    }
 
     // no histogram granularity specified
     try {
@@ -122,7 +131,8 @@ public class UtilsTest {
               new Pair<>(5.1, 10)), new HashSet<>(),
               1493773500L, "appServer1", null, "defaultSource"));
       fail();
-    } catch(IllegalArgumentException ignored) {}
+    } catch (IllegalArgumentException ignored) {
+    }
 
     Set<HistogramGranularity> allGranularity = new HashSet<>();
     allGranularity.add(HistogramGranularity.MINUTE);
@@ -165,15 +175,15 @@ public class UtilsTest {
 
     // null followsFrom
     assertEquals("\"getAllUsers\" source=\"localhost\" " +
-        "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
-        "parent=2f64e538-9457-11e8-9eb6-529269fb1459 \"application\"=\"Wavefront\" " +
-        "\"http.method\"=\"GET\" 1493773500 343500\n",
+            "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
+            "parent=2f64e538-9457-11e8-9eb6-529269fb1459 \"application\"=\"Wavefront\" " +
+            "\"http.method\"=\"GET\" 1493773500 343500\n",
         tracingSpanToLineData("getAllUsers", 1493773500L, 343500L, "localhost",
-        UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
+            UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
             UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
             Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")), null,
-        Arrays.asList(new Pair<>("application", "Wavefront"),
-            new Pair<>("http.method", "GET")), null, "defaultSource"));
+            Arrays.asList(new Pair<>("application", "Wavefront"),
+                new Pair<>("http.method", "GET")), null, "defaultSource"));
 
     // root span
     assertEquals("\"getAllUsers\" source=\"localhost\" " +
@@ -194,18 +204,20 @@ public class UtilsTest {
         tracingSpanToLineData("getAllUsers", 1493773500L, 343500L, "localhost",
             UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"), UUID.fromString(
                 "0313bafe-9457-11e8-9eb6-529269fb1459"), null, null, null, new ArrayList<SpanLog>() {{
-                  add(new SpanLog(System.currentTimeMillis(), new HashMap<>()));
-                }}, "defaultSource"));
+              add(new SpanLog(System.currentTimeMillis(), new HashMap<>()));
+            }}, "defaultSource"));
   }
 
   @Test
   public void testSpanLogsToLineData() throws IOException {
     assertEquals("{\"traceId\":\"7b3bf470-9456-11e8-9eb6-529269fb1459\"," +
-        "\"spanId\":\"0313bafe-9457-11e8-9eb6-529269fb1459\"," +
-        "\"logs\":[{\"timestamp\":91616745187,\"fields\":{\"key1\":\"val1\"}}]}\n",
+            "\"spanId\":\"0313bafe-9457-11e8-9eb6-529269fb1459\"," +
+            "\"logs\":[{\"timestamp\":91616745187,\"fields\":{\"key1\":\"val1\"}}]}\n",
         spanLogsToLineData(UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
             UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
             Arrays.asList(new SpanLog(91616745187L,
-                new HashMap<String, String>() {{ put("key1", "val1"); }}))));
+                new HashMap<String, String>() {{
+                  put("key1", "val1");
+                }}))));
   }
 }
