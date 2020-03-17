@@ -33,12 +33,15 @@ public abstract class DelegatingLogger extends Logger {
   @Override
   public void log(LogRecord logRecord) {
     logRecord.setLoggerName(delegate.getName());
+    // Infer caller so that the log message contains the right '[source class] [source method]'
+    // instead of 'DelegatingLogger log'
     inferCaller(logRecord);
     delegate.log(logRecord);
   }
 
   /**
-   * This is a JDK8-specific implementation. TODO: switch to StackWalker after migrating to JDK9+
+   * This is a JDK8-specific implementation that is quite expensive because it fetches the
+   * current stack trace. TODO: switch to StackWalker after migrating to JDK9+
    */
   private void inferCaller(LogRecord logRecord) {
     StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();

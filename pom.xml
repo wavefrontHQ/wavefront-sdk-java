@@ -65,12 +65,17 @@
                         <artifactSet>
                             <includes>
                                 <include>com.tdunning:t-digest</include>
+                                <include>com.google.guava</include>
                             </includes>
                         </artifactSet>
                         <relocations>
                             <relocation>
                                 <pattern>com.tdunning.math</pattern>
-                                <shadedPattern>com.wavefront.java-sdk.com.tdunning.math</shadedPattern>
+                                <shadedPattern>com.wavefront.java_sdk.com.tdunning.math</shadedPattern>
+                            </relocation>
+                            <relocation>
+                                <pattern>com.google</pattern>
+                                <shadedPattern>com.wavefront.java_sdk.com.google</shadedPattern>
                             </relocation>
                         </relocations>
                         <filters>
@@ -116,6 +121,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.9.10.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>28.2-jre</version>
         </dependency>
 
         <!-- Test Dependencies -->
