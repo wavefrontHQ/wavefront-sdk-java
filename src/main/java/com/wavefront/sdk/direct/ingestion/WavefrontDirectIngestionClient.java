@@ -30,6 +30,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -90,10 +91,12 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final WavefrontSdkCounter spanLogsDropped;
   private final WavefrontSdkCounter spanLogReportErrors;
 
-  private final AtomicBoolean histogramsDisabled;
-  private final AtomicBoolean spansDisabled;
-  private final AtomicBoolean spanLogsDisabled;
-  
+  // Consider the feature to be enabled when value is 0, and disabled otherwise
+  private final AtomicInteger metricsDisabledStatusCode;
+  private final AtomicInteger histogramsDisabledStatusCode;
+  private final AtomicInteger spansDisabledStatusCode;
+  private final AtomicInteger spanLogsDisabledStatusCode;
+
   // Flag to prevent sending after close() has been called
   private final AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -233,9 +236,10 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     spanLogsDropped = sdkMetricsRegistry.newCounter("span_logs.dropped");
     spanLogReportErrors = sdkMetricsRegistry.newCounter("span_logs.report.errors");
 
-    histogramsDisabled = new AtomicBoolean();
-    spansDisabled = new AtomicBoolean();
-    spanLogsDisabled = new AtomicBoolean();
+    metricsDisabledStatusCode = new AtomicInteger();
+    histogramsDisabledStatusCode = new AtomicInteger();
+    spansDisabledStatusCode = new AtomicInteger();
+    spanLogsDisabledStatusCode = new AtomicInteger();
 
     this.clientId = builder.server;
   }
@@ -390,24 +394,26 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   private void flushNoCheck() throws IOException {
     internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT, "points", "points",
-        pointsDropped, pointReportErrors, null, LogMessageType.SEND_METRICS_ERROR,
-        LogMessageType.SEND_METRICS_PERMISSIONS, LogMessageType.METRICS_BUFFER_FULL);
+        pointsDropped, pointReportErrors, metricsDisabledStatusCode,
+        LogMessageType.SEND_METRICS_ERROR, LogMessageType.SEND_METRICS_PERMISSIONS,
+        LogMessageType.METRICS_BUFFER_FULL);
     internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT, "histograms",
-        "histograms", histogramsDropped, histogramReportErrors, histogramsDisabled,
+        "histograms", histogramsDropped, histogramReportErrors, histogramsDisabledStatusCode,
         LogMessageType.SEND_HISTOGRAMS_ERROR, LogMessageType.SEND_HISTOGRAMS_PERMISSIONS,
         LogMessageType.HISTOGRAMS_BUFFER_FULL);
     internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT, "spans", "spans",
-        spansDropped, spanReportErrors, spansDisabled, LogMessageType.SEND_SPANS_ERROR,
+        spansDropped, spanReportErrors, spansDisabledStatusCode, LogMessageType.SEND_SPANS_ERROR,
         LogMessageType.SEND_SPANS_PERMISSIONS, LogMessageType.SPANS_BUFFER_FULL);
     internalFlush(spanLogsBuffer, Constants.WAVEFRONT_SPAN_LOG_FORMAT, "span_logs", "span logs",
-        spanLogsDropped, spanLogReportErrors, spanLogsDisabled, LogMessageType.SEND_SPANLOGS_ERROR,
-        LogMessageType.SEND_SPANLOGS_PERMISSIONS, LogMessageType.SPANLOGS_BUFFER_FULL);
+        spanLogsDropped, spanLogReportErrors, spanLogsDisabledStatusCode,
+        LogMessageType.SEND_SPANLOGS_ERROR, LogMessageType.SEND_SPANLOGS_PERMISSIONS,
+        LogMessageType.SPANLOGS_BUFFER_FULL);
   }
 
   private void internalFlush(LinkedBlockingQueue<String> buffer, String format,
                              String entityPrefix, String entityType,
                              WavefrontSdkCounter dropped, WavefrontSdkCounter reportErrors,
-                             @Nullable AtomicBoolean featureDisabled,
+                             AtomicInteger featureDisabledStatusCode,
                              LogMessageType errorMessageType,
                              LogMessageType permissionsMessageType,
                              LogMessageType bufferFullMessageType)
@@ -415,11 +421,26 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     List<List<String>> batch = getBatch(buffer, batchSize, messageSizeBytes, dropped);
     for (int i = 0; i < batch.size(); i++) {
       List<String> items = batch.get(i);
-      if (featureDisabled != null && featureDisabled.get()) {
-        logger.log(permissionsMessageType.toString(), Level.SEVERE,
-            "Please verify that " + entityType + " is enabled for your account! All " +
-                entityType + " will be discarded until the service is restarted.");
-        dropped.inc(items.size());
+      int featureDisabledReason = featureDisabledStatusCode.get();
+      if (featureDisabledReason != 0) {
+        switch (featureDisabledReason) {
+          case 401:
+            logger.log(permissionsMessageType.toString(), Level.SEVERE,
+                "Please verify that your API Token is correct! All " + entityType + " will be " +
+                    "discarded until the service is restarted.");
+            break;
+          case 403:
+            if (format.equals(Constants.WAVEFRONT_METRIC_FORMAT)) {
+              logger.log(permissionsMessageType.toString(), Level.SEVERE,
+                  "Please verify that Direct Data Ingestion is enabled for your account! All "
+                      + entityType + " will be discarded until the service is restarted.");
+            } else {
+              logger.log(permissionsMessageType.toString(), Level.SEVERE,
+                      "Please verify that Direct Data Ingestion and " + entityType + " are " +
+                          "enabled for your account! All " + entityType + " will be discarded " +
+                          "until the service is restarted.");
+            }
+        }
         continue;
       }
       try (InputStream is = itemsToStream(items)) {
@@ -428,20 +449,28 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
         if (400 <= statusCode && statusCode <= 599) {
           switch (statusCode) {
             case 401:
+              logger.log(permissionsMessageType.toString(), Level.SEVERE,
+                  "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
+                      "Please verify that your API Token is correct! All " + entityType + " will " +
+                      "be discarded until the service is restarted.");
+              featureDisabledStatusCode.set(statusCode);
+              dropped.inc(items.size());
+              break;
             case 403:
-              if (featureDisabled == null) {
-                logger.log(permissionsMessageType.toString(), Level.WARNING,
-                    "Permission error sending " + entityType + " to Wavefront (HTTP " +
-                        statusCode + "). Data will be requeued and resent.");
-                requeue(buffer, items, dropped, entityType, bufferFullMessageType);
+              if (format.equals(Constants.WAVEFRONT_METRIC_FORMAT)) {
+                logger.log(permissionsMessageType.toString(), Level.SEVERE,
+                    "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
+                        "Please verify that Direct Data Ingestion is enabled for your account! " +
+                        "All " + entityType + " will be discarded until the service is restarted.");
               } else {
                 logger.log(permissionsMessageType.toString(), Level.SEVERE,
                     "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
-                        "Please verify that " + entityType + " is enabled for your account! All " +
-                        entityType + " will be discarded until the service is restarted.");
-                featureDisabled.set(true);
-                dropped.inc(items.size());
+                        "Please verify that Direct Data Ingestion and " + entityType + " are " +
+                        "enabled for your account! All " + entityType + " will be discarded until" +
+                        " the service is restarted.");
               }
+              featureDisabledStatusCode.set(statusCode);
+              dropped.inc(items.size());
               break;
             default:
               logger.log(errorMessageType.toString(), Level.WARNING,
