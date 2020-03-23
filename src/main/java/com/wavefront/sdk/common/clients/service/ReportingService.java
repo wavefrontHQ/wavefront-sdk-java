@@ -1,6 +1,6 @@
-package com.wavefront.sdk.direct.ingestion;
+package com.wavefront.sdk.common.clients.service;
 
-import com.wavefront.sdk.common.clients.WavefrontClientFactory;
+import com.wavefront.sdk.common.annotation.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,48 +10,43 @@ import java.net.URL;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * DataIngester service that reports entities to Wavefront
+ * ReportingService that reports entities to Proxy or Wavefront services.
  *
- * This class will be removed in future versions in favor of
- *  {@link WavefrontClientFactory} to construct Proxy and DirectDataIngestion senders.
- *
- * @author Sushant Dewan (sushant@wavefront.com).
+ * @author Mike McMahon (mike.mcmahon@wavefront.com)
  */
-@Deprecated
-public class DataIngesterService implements DataIngesterAPI {
+public class ReportingService implements ReportAPI {
+
   private final String token;
   private final URI uri;
-  private static final String BAD_REQUEST = "Bad client request";
+
   private static final int CONNECT_TIMEOUT_MILLIS = 30000;
   private static final int READ_TIMEOUT_MILLIS = 10000;
+  private static final int BUFFER_SIZE = 4096;
 
-  DataIngesterService(String server, String token) {
-      this.token = token;
-      this.uri = URI.create(server);
+  public ReportingService(String server, @Nullable String token) {
+    this.uri = URI.create(server);
+    this.token = token;
   }
 
   @Override
-  public int report(String format, InputStream stream) throws IOException {
-    /*
-     * Refer https://docs.oracle.com/javase/8/docs/technotes/guides/net/http-keepalive.html
-     * for details around why this code is written as it is.
-     */
-    int statusCode = 400;
+  public int send(String format, InputStream stream) throws IOException {
     HttpURLConnection urlConn = null;
+    int statusCode = 400;
     try {
       String originalPath = uri.getPath() != null ? uri.getPath() : "";
-      URL url = new URL(uri.getScheme(), uri.getHost(), uri.getPort(), originalPath + "/report?f=" + format);
+      URL url = new URL(uri.getScheme(), uri.getHost(), uri.getPort(), originalPath + "?/f=" + format);
       urlConn = (HttpURLConnection) url.openConnection();
       urlConn.setDoOutput(true);
       urlConn.addRequestProperty("Content-Type", "application/octet-stream");
       urlConn.addRequestProperty("Content-Encoding", "gzip");
-      urlConn.addRequestProperty("Authorization", "Bearer " + token);
-
+      if (token != null && !token.equals("")) {
+        urlConn.addRequestProperty("Authorization", "Bearer " + token);
+      }
       urlConn.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
       urlConn.setReadTimeout(READ_TIMEOUT_MILLIS);
 
       try (GZIPOutputStream gzipOS = new GZIPOutputStream(urlConn.getOutputStream())) {
-        byte[] buffer = new byte[4096];
+        byte[] buffer = new byte[BUFFER_SIZE];
         while (stream.available() > 0) {
           gzipOS.write(buffer, 0, stream.read(buffer));
         }
@@ -61,8 +56,8 @@ public class DataIngesterService implements DataIngesterAPI {
       readAndClose(urlConn.getInputStream());
     } catch (IOException ex) {
       if (urlConn != null) {
-        statusCode = urlConn.getResponseCode();
-        readAndClose(urlConn.getErrorStream());
+          statusCode = urlConn.getResponseCode();
+          readAndClose(urlConn.getErrorStream());
       }
     }
     return statusCode;
@@ -71,7 +66,7 @@ public class DataIngesterService implements DataIngesterAPI {
   private void readAndClose(InputStream stream) throws IOException {
     if (stream != null) {
       try (InputStream is = stream) {
-        byte[] buffer = new byte[4096];
+        byte[] buffer = new byte[BUFFER_SIZE];
         // read entire stream before closing
         while (is.read(buffer) > 0) {}
       }

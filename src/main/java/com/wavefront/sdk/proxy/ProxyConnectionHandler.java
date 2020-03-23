@@ -17,6 +17,7 @@ import javax.net.SocketFactory;
  * @author Clement Pang (clement@wavefront.com).
  * @author Vikram Raman (vikram@wavefront.com).
  */
+@Deprecated
 public class ProxyConnectionHandler implements BufferFlusher, Closeable {
 
   private final InetSocketAddress address;

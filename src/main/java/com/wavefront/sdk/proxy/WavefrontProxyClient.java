@@ -1,13 +1,19 @@
 package com.wavefront.sdk.proxy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.wavefront.sdk.common.*;
+import com.wavefront.sdk.common.Constants;
+import com.wavefront.sdk.common.NamedThreadFactory;
+import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.common.Utils;
+import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.Nullable;
+import com.wavefront.sdk.common.clients.WavefrontClientFactory;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
 
+import javax.net.SocketFactory;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
@@ -24,8 +30,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.net.SocketFactory;
-
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
@@ -35,8 +39,12 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
  * WavefrontProxyClient that sends data directly via TCP to the Wavefront Proxy Agent.
  * User should probably attempt to reconnect when exceptions are thrown from any methods.
  *
+ * @deprecated This class will be removed in future versions in favor of
+ * {@link WavefrontClientFactory} to construct Proxy and DirectDataIngestion senders.
+ *
  * @author Sushant Dewan (sushant@wavefront.com).
  */
+@Deprecated
 public class WavefrontProxyClient implements WavefrontSender, Runnable {
 
   private static final Logger logger = Logger.getLogger(

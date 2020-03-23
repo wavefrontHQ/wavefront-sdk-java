@@ -2,6 +2,7 @@ package com.wavefront.sdk;
 
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.WavefrontSender;
+import com.wavefront.sdk.common.clients.WavefrontClientFactory;
 import com.wavefront.sdk.common.clients.WavefrontMultiClient;
 import com.wavefront.sdk.direct.ingestion.WavefrontDirectIngestionClient;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
@@ -103,13 +104,18 @@ public class Main {
   }
 
   public static void main(String[] args) throws InterruptedException, IOException {
+
+
     String wavefrontServer = args[0];
     String token = args[1];
     String proxyHost = args.length < 3 ? null : args[2];
     String metricsPort = args.length < 4 ? null : args[3];
     String distributionPort = args.length < 5 ? null : args[4];
     String tracingPort = args.length < 6 ? null : args[5];
+    String wavefrontServerWithToken = args.length < 7 ? null : args[6];
+    String wavefrontProxyWithPort = args.length < 8 ? null : args[7];
 
+    // Proxy based ingestion
     WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHost);
     if (metricsPort != null) {
       builder.metricsPort(Integer.parseInt(metricsPort));
@@ -122,14 +128,25 @@ public class Main {
     }
     WavefrontProxyClient wavefrontProxyClient = builder.build();
 
+    // Direct Data Ingestion
     WavefrontDirectIngestionClient wavefrontDirectIngestionClient =
         new WavefrontDirectIngestionClient.Builder(wavefrontServer, token).build();
 
-    WavefrontMultiClient.Builder<WavefrontProxyClient> mcBuilder = new WavefrontMultiClient.Builder<>();
-    mcBuilder.withWavefrontSender(wavefrontProxyClient);
-    WavefrontMultiClient<WavefrontProxyClient> wavefrontMultiClient = mcBuilder.build();
+    // Auto Client Negotiation
+    WavefrontClientFactory wavefrontClientFactory = new WavefrontClientFactory();
+    if (wavefrontServerWithToken != null) {
+      wavefrontClientFactory.addClient(wavefrontServerWithToken);
+    }
+    if (wavefrontProxyWithPort != null) {
+      wavefrontClientFactory.addClient(wavefrontProxyWithPort);
+    }
 
-    WavefrontProxyClient matched = wavefrontMultiClient.getClient(proxyHost);
+    // Add existing senders
+    wavefrontClientFactory.addClient(wavefrontProxyClient);
+    wavefrontClientFactory.addClient(wavefrontDirectIngestionClient);
+
+    // Get back a multi client sneder
+    WavefrontSender wavefrontClient = wavefrontClientFactory.getClient();
 
     while (true) {
       // Send entities via Proxy
@@ -146,11 +163,11 @@ public class Main {
       sendTracingSpan(wavefrontDirectIngestionClient);
 
       // Send entities via the Multi Proxy Client
-      sendMetric(wavefrontMultiClient);
-      sendDeltaCounter(wavefrontMultiClient);
-      sendHistogram(wavefrontMultiClient);
-      sendTracingSpan(wavefrontMultiClient);
-      wavefrontMultiClient.flush();
+      sendMetric(wavefrontClient);
+      sendDeltaCounter(wavefrontClient);
+      sendHistogram(wavefrontClient);
+      sendTracingSpan(wavefrontClient);
+      wavefrontClient.flush();
 
       Thread.sleep(5000);
     }

@@ -7,6 +7,10 @@
     <version>1.17-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <properties>
+        <sdk.version>1.8</sdk.version>
+    </properties>
+
     <name>Wavefront by VMware SDK for Java</name>
     <description>Core library for sending telemetry data to Wavefront from Java applications.</description>
     <url>https://github.com/wavefrontHQ/wavefront-sdk-java</url>
@@ -46,8 +50,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.7.0</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${sdk.version}</source>
+                    <target>${sdk.version}</target>
                 </configuration>
             </plugin>
             <plugin>
