@@ -132,12 +132,12 @@ This SDK is also referred to as the Wavefront Sender SDK for Java. Although this
     ```
     Replace `$releaseVersion` with the latest version available on [maven].
 
-    * Gradle
-      If you are using Gradle, add the following to dependencies:
-      ```
-      compile group: 'com.wavefront', name: 'wavefront-sdk-java', version: '$releaseVersion'
-      ```
-      Replace `$releaseVersion` with the latest version available on [maven].
+  * Gradle
+    If you are using Gradle, add the following to dependencies:
+    ```
+    compile group: 'com.wavefront', name: 'wavefront-sdk-java', version: '$releaseVersion'
+    ```
+    Replace `$releaseVersion` with the latest version available on [maven].
 
 ## Set Up a WavefrontSender
 
