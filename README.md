@@ -2,10 +2,10 @@
 
 ## Table of Content
 * [Prerequisites](#Prerequisites)
-* [Set Up a WavefrontSender](Set-Up-a-WavefrontSender)
-* [Send Data to Wavefront](Send-Data-to-Wavefront)
-* [Close the WavefrontSender](Close-the-WavefrontSender)
-* [Monitor the SDK](Monitor-the-SDK)
+* [Set Up a WavefrontSender](#set-up-a-wavefrontsender)
+* [Send Data to Wavefront](#send-data-to-wavefront)
+* [Close the WavefrontSender](#close-the-wavefrontsender)
+* [Monitor the SDK](#monitor-the-sdk)
 * [License](#License)
 * [How to Contribute](#How-to-Contribute)
 
@@ -121,7 +121,7 @@ This SDK is also referred to as the Wavefront Sender SDK for Java. Although this
 
 * Java 8 or above.
 * Add dependencies:
-  * Maven
+  * **Maven** <br/>
     If you are using Maven, add the following maven dependency to your pom.xml:
     ```
     <dependency>
@@ -132,7 +132,7 @@ This SDK is also referred to as the Wavefront Sender SDK for Java. Although this
     ```
     Replace `$releaseVersion` with the latest version available on [maven].
 
-  * Gradle
+  * **Gradle** <br/>
     If you are using Gradle, add the following to dependencies:
     ```
     compile group: 'com.wavefront', name: 'wavefront-sdk-java', version: '$releaseVersion'
@@ -154,7 +154,7 @@ The `WavefrontSender` interface has two implementations:
 
 ### Option 1: Sending Data via the Wavefront Proxy
 
->**Prerequisite**
+>**Prerequisite** <br/>
 >Before your application can use a `WavefrontProxyClient`, you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).
 
 When sending data via the Wavefront proxy, you need to create a `WavefrontProxyClient`. Include the following information.
@@ -200,7 +200,7 @@ WavefrontSender wavefrontSender = wfProxyClientBuilder.build();
 
 When sending data via direct ingestion, you need to create a `WavefrontDirectIngestionClient`, and build it with the Wavefront URL and API token to send data directly to Wavefront.
 
->**Prerequisite**
+>**Prerequisites**
 > * Verify that you have the Direct Data Ingestion permission. For details, see [Examine Groups, Roles, and Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
 > * The URL of your Wavefront instance. This is the URL you connect to when you log in to Wavefront, typically something like `https://<domain>.wavefront.com`.
 > * [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
@@ -248,7 +248,7 @@ WavefrontSender wavefrontSender = wfDirectIngestionClientBuilder.build();
  * [Distributions (Histograms)](Distributions-(Histograms))
  * [Tracing Spans](Tracing-Spans)
 
-### Metrics and Delta Counters
+#### Metrics and Delta Counters
 
  ```java
 // Wavefront Metrics Data format
@@ -265,7 +265,7 @@ wavefrontSender.sendDeltaCounter("lambda.thumbnail.generate", 10,
     ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
 ```
 
-### Distributions (Histograms)
+#### Distributions (Histograms)
 
 ```java
 // Wavefront Histogram Data format
@@ -285,7 +285,7 @@ wavefrontSender.sendDistribution("request.latency",
     ImmutableMap.<String, String>builder().put("region", "us-west").build());
 ```
 
-### Tracing Spans
+#### Tracing Spans
 
 ```java
  // Wavefront Tracing Span Data format
