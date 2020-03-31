@@ -11,10 +11,9 @@
 
 # Welcome to Wavefront's Java SDK
 
-The Wavefront by VMware Java SDK is the core library that sends raw data from your Java application to Wavefront using a `WavefrontSender` interface. The data that is then stored as metrics, histograms, and trace data.
+Wavefront by VMware Java SDK lets you send raw data from your Java application to Wavefront using a `WavefrontSender` interface. The data is then stored as metrics, histograms, and trace data. This SDK is also referred to as the Wavefront Sender SDK for Java. 
 
-This SDK is also referred to as the Wavefront Sender SDK for Java. Although this is mostly used by the other Wavefront Java SDKs to send data to Wavefront, you can directly use this SDK too. For example, to send data directly from a data store or CSV file to Wavefront.
-
+Although this library is mostly used by the other Wavefront Java SDKs to send data to Wavefront, you can also use this SDK directly. For example, you can send data directly from a data store or CSV file to Wavefront.
 
 **Before you start implementing, let us make sure you are using the correct SDK!**
 
@@ -23,7 +22,7 @@ This SDK is also referred to as the Wavefront Sender SDK for Java. Although this
 > ***Note***:
 > </br>
 >   * **This is the Wavefront by VMware SDK for Java (Wavefront Sender SDK for Java)!**
->   If this SDK is not what you were looking for, see the [table](#wavefront-sdks) given below.
+>   If this SDK is not what you were looking for, see the [table](#wavefront-sdks) below.
 
 #### Wavefront SDKs
 <table id="SDKlevels" style="width: 100%">
@@ -91,7 +90,7 @@ This SDK is also referred to as the Wavefront Sender SDK for Java. Although this
 
 <tr>
   <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-for-sending-raw-data-to-wavefront">Sender SDK</a></td>
-  <td align="justify">Lets you send raw values to Wavefront for storage as metrics, histograms, or traces, e.g., to import CSV data into Wavefront.
+  <td align="justify">Lets you send raw data to Wavefront for storage as metrics, histograms, or traces, e.g., to import CSV data into Wavefront.
   </td>
   <td>
     <ul>
@@ -133,7 +132,7 @@ This SDK is also referred to as the Wavefront Sender SDK for Java. Although this
     Replace `$releaseVersion` with the latest version available on [maven].
 
   * **Gradle** <br/>
-    If you are using Gradle, add the following to dependencies:
+    If you are using Gradle, add the following dependency:
     ```
     compile group: 'com.wavefront', name: 'wavefront-sdk-java', version: '$releaseVersion'
     ```
@@ -206,7 +205,7 @@ When sending data via direct ingestion, you need to create a `WavefrontDirectIng
 > * [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
 
 #### Initialize the WavefrontDirectIngestionClient
-You initialize a `WavefrontDirectIngestionClient` by building it with the access information you obtained obtained in the Prerequisite section.
+You initialize a `WavefrontDirectIngestionClient` by building it with the access information you obtained in the Prerequisites section.
 
 Optionally, you can call builder methods to tune the following ingestion properties:
 
@@ -243,7 +242,7 @@ WavefrontSender wavefrontSender = wfDirectIngestionClientBuilder.build();
 
 ## Send Data to Wavefront
 
- Wavefront supports different metrics types, such as gauge, counters, delta counter, histograms, traces, and spans. See [Metrics](https://docs.wavefront.com/metric_types.html) for details. To send data to Wavefront using the `WavefrontSender` you need to instantiate the following:
+ Wavefront supports different metric types, such as gauges, counters, delta counters, histograms, traces, and spans. See [Metrics](https://docs.wavefront.com/metric_types.html) for details. To send data to Wavefront using the `WavefrontSender` you need to instantiate the following:
  * [Metrics and Delta Counters](#Metrics-and-Delta-Counters)
  * [Distributions (Histograms)](#Distributions-(Histograms))
  * [Tracing Spans](#Tracing-Spans)
