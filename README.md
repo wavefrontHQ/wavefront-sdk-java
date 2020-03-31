@@ -11,9 +11,9 @@
 
 # Welcome to Wavefront's Java SDK
 
-The Wavefront by VMware Java SDK is the core library that sends raw data from your Java application to Wavefront using a `WavefrontSender` interface. The data that is sent is then stored as metrics, histograms, and trace data.
+The Wavefront by VMware Java SDK is the core library that sends raw data from your Java application to Wavefront using a `WavefrontSender` interface. The data that is then stored as metrics, histograms, and trace data.
 
-This SDK is also referred to as the Wavefront Sender SDK for Java. Although this SDK is mostly used by the other Wavefront Java SDKs to send data to Wavefront you can directly use this SDK too. For example, to send data directly from a data store or CSV file to Wavefront.
+This SDK is also referred to as the Wavefront Sender SDK for Java. Although this is mostly used by the other Wavefront Java SDKs to send data to Wavefront, you can directly use this SDK too. For example, to send data directly from a data store or CSV file to Wavefront.
 
 
 **Before you start implementing, let us make sure you are using the correct SDK!**
@@ -245,8 +245,8 @@ WavefrontSender wavefrontSender = wfDirectIngestionClientBuilder.build();
 
  Wavefront supports different metrics types, such as gauge, counters, delta counter, histograms, traces, and spans. See [Metrics](https://docs.wavefront.com/metric_types.html) for details. To send data to Wavefront using the `WavefrontSender` you need to instantiate the following:
  * [Metrics and Delta Counters](#Metrics-and-Delta-Counters)
- * [Distributions (Histograms)](Distributions-(Histograms))
- * [Tracing Spans](Tracing-Spans)
+ * [Distributions (Histograms)](#Distributions-(Histograms))
+ * [Tracing Spans](#Tracing-Spans)
 
 #### Metrics and Delta Counters
 
