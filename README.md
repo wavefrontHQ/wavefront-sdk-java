@@ -1,53 +1,219 @@
 # wavefront-sdk-java [![build status][ci-img]][ci] [![Released Version][maven-img]][maven]
 
-Wavefront by VMware SDK for Java is the core library for sending metrics, histograms and trace data from your Java application to Wavefront using a `WavefrontSender` interface.
+## Table of Content
+* [Prerequisites](#Prerequisites)
+* [Set Up a WavefrontSender](#set-up-a-wavefrontsender)
+* [Send Data to Wavefront](#send-data-to-wavefront)
+* [Close the WavefrontSender](#close-the-wavefrontsender)
+* [Monitor the SDK](#monitor-the-sdk)
+* [License](#License)
+* [How to Contribute](#How-to-Contribute)
 
-## Maven
-If you are using Maven, add the following maven dependency to your pom.xml:
-```
-<dependency>
-    <groupId>com.wavefront</groupId>
-    <artifactId>wavefront-sdk-java</artifactId>
-    <version>$releaseVersion</version>
-</dependency>
-```
-Replace `$releaseVersion` with the latest version available on [maven].
+# Welcome to Wavefront's Java SDK
 
-## Gradle
-If you are using Gradle, add the following to dependencies:
-```
-compile group: 'com.wavefront', name: 'wavefront-sdk-java', version: '$releaseVersion'
-```
-Replace `$releaseVersion` with the latest version available on [maven].
+Wavefront by VMware Java SDK lets you send raw data from your Java application to Wavefront using a `WavefrontSender` interface. The data is then stored as metrics, histograms, and trace data. This SDK is also referred to as the Wavefront Sender SDK for Java. 
+
+Although this library is mostly used by the other Wavefront Java SDKs to send data to Wavefront, you can also use this SDK directly. For example, you can send data directly from a data store or CSV file to Wavefront.
+
+**Before you start implementing, let us make sure you are using the correct SDK!**
+
+![Java Sender SDK Decision Tree](docs/java_sender_sdk.png)
+
+> ***Note***:
+> </br>
+>   * **This is the Wavefront by VMware SDK for Java (Wavefront Sender SDK for Java)!**
+>   If this SDK is not what you were looking for, see the [table](#wavefront-sdks) below.
+
+#### Wavefront SDKs
+<table id="SDKlevels" style="width: 100%">
+<tr>
+  <th width="10%">SDK Type</th>
+  <th width="45%">SDK Description</th>
+  <th width="45%">Supported Languages</th>
+</tr>
+
+<tr>
+  <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-for-collecting-trace-data">OpenTracing SDK</a></td>
+  <td align="justify">Implements the OpenTracing specification. Lets you define, collect, and report custom trace data from any part of your application code. <br>Automatically derives Rate Errors Duration (RED) metrics from the reported spans. </td>
+  <td>
+    <ul>
+    <li>
+      <b>Java</b>: <a href ="https://github.com/wavefrontHQ/wavefront-opentracing-sdk-java">OpenTracing SDK</a> <b>|</b> <a href ="https://github.com/wavefrontHQ/wavefront-opentracing-bundle-java">Tracing Agent</a>
+    </li>
+    <li>
+      <b>Python</b>: <a href ="https://github.com/wavefrontHQ/wavefront-opentracing-sdk-python">OpenTracing SDK</a>
+    </li>
+    <li>
+      <b>Go</b>: <a href ="https://github.com/wavefrontHQ/wavefront-opentracing-sdk-go">OpenTracing SDK</a>
+    </li>
+    <li>
+      <b>.Net/C#</b>: <a href ="https://github.com/wavefrontHQ/wavefront-opentracing-sdk-csharp">OpenTracing SDK</a>
+    </li>
+    </ul>
+  </td>
+</tr>
+
+<tr>
+  <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-for-collecting-metrics-and-histograms">Metrics SDK</a></td>
+  <td align="justify">Implements a standard metrics library. Lets you define, collect, and report custom business metrics and histograms from any part of your application code.   </td>
+  <td>
+    <ul>
+    <li>
+    <b>Java</b>: <a href ="https://github.com/wavefrontHQ/wavefront-dropwizard-metrics-sdk-java">Dropwizard</a> <b>|</b> <a href ="https://github.com/wavefrontHQ/wavefront-runtime-sdk-jvm">JVM</a>
+    </li>
+    <li>
+    <b>Python</b>: <a href ="https://github.com/wavefrontHQ/wavefront-pyformance">Pyformance SDK</a>
+    </li>
+    <li>
+      <b>Go</b>: <a href ="https://github.com/wavefrontHQ/go-metrics-wavefront">Go Metrics SDK</a>
+      </li>
+    <li>
+    <b>.Net/C#</b>: <a href ="https://github.com/wavefrontHQ/wavefront-appmetrics-sdk-csharp">App Metrics SDK</a>
+    </li>
+    </ul>
+  </td>
+</tr>
+
+<tr>
+  <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-that-instrument-frameworks">Framework SDK</a></td>
+  <td align="justify">Reports predefined traces, metrics, and histograms from the APIs of a supported app framework. Lets you get started quickly with minimal code changes.</td>
+  <td>
+    <ul>
+    <li><b>Java</b>:
+    <a href="https://github.com/wavefrontHQ/wavefront-dropwizard-sdk-java">Dropwizard</a> <b>|</b> <a href="https://github.com/wavefrontHQ/wavefront-gRPC-sdk-java">gRPC</a> <b>|</b> <a href="https://github.com/wavefrontHQ/wavefront-jaxrs-sdk-java">JAX-RS</a> <b>|</b> <a href="https://github.com/wavefrontHQ/wavefront-jersey-sdk-java">Jersey</a></li>
+    <li><b>.Net/C#</b>:
+    <a href="https://github.com/wavefrontHQ/wavefront-aspnetcore-sdk-csharp">ASP.Net core</a> </li>
+    <!--- [Python](wavefront_sdks_python.html#python-sdks-that-instrument-frameworks) --->
+    </ul>
+  </td>
+</tr>
+
+<tr>
+  <td><a href="https://docs.wavefront.com/wavefront_sdks.html#sdks-for-sending-raw-data-to-wavefront">Sender SDK</a></td>
+  <td align="justify">Lets you send raw data to Wavefront for storage as metrics, histograms, or traces, e.g., to import CSV data into Wavefront.
+  </td>
+  <td>
+    <ul>
+    <li>
+    <b>Java</b>: <a href ="https://github.com/wavefrontHQ/wavefront-sdk-java">Sender SDK</a>
+    </li>
+    <li>
+    <b>Python</b>: <a href ="https://github.com/wavefrontHQ/wavefront-sdk-python">Sender SDK</a>
+    </li>
+    <li>
+    <b>Go</b>: <a href ="https://github.com/wavefrontHQ/wavefront-sdk-go">Sender SDK</a>
+    </li>
+    <li>
+    <b>.Net/C#</b>: <a href ="https://github.com/wavefrontHQ/wavefront-sdk-csharp">Sender SDK</a>
+    </li>
+    <li>
+    <b>C++</b>: <a href ="https://github.com/wavefrontHQ/wavefront-sdk-cpp">Sender SDK</a>
+    </li>
+    </ul>
+  </td>
+</tr>
+
+</tbody>
+</table>
+
+## Prerequisites
+
+* Java 8 or above.
+* Add dependencies:
+  * **Maven** <br/>
+    If you are using Maven, add the following maven dependency to your pom.xml:
+    ```
+    <dependency>
+        <groupId>com.wavefront</groupId>
+        <artifactId>wavefront-sdk-java</artifactId>
+        <version>$releaseVersion</version>
+    </dependency>
+    ```
+    Replace `$releaseVersion` with the latest version available on [maven].
+
+  * **Gradle** <br/>
+    If you are using Gradle, add the following dependency:
+    ```
+    compile group: 'com.wavefront', name: 'wavefront-sdk-java', version: '$releaseVersion'
+    ```
+    Replace `$releaseVersion` with the latest version available on [maven].
 
 ## Set Up a WavefrontSender
-You can choose to send metrics, histograms, or trace data from your application to the Wavefront service using one of the following techniques:
-* Use [direct ingestion](https://docs.wavefront.com/direct_ingestion.html) to send the data directly to the Wavefront service. This is the simplest way to get up and running quickly.
-* Use a [Wavefront proxy](https://docs.wavefront.com/proxies.html), which then forwards the data to the Wavefront service. This is the recommended choice for a large-scale deployment that needs resilience to internet outages, control over data queuing and filtering, and more.
 
-The `WavefrontSender` interface has two implementations. Instantiate the implementation that corresponds to your choice:
-* Option 1: [Create a `WavefrontDirectIngestionClient`](#option-1-create-a-wavefrontdirectingestionclient) to send data directly to a Wavefront service.
-* Option 2: [Create a `WavefrontProxyClient`](#option-2-create-a-wavefrontproxyclient) to send data to a Wavefront proxy.
+You can send metrics, histograms, or trace data from your application to the Wavefront service using a Wavefront proxy or direct ingestions.
 
-### Option 1. Create a WavefrontDirectIngestionClient
-To create a `WavefrontDirectIngestionClient`, you build it with the information it needs to send data directly to Wavefront.
+* Use a [**Wavefront proxy**](https://docs.wavefront.com/proxies.html), which then forwards the data to the Wavefront service. This is the recommended choice for a large-scale deployment that needs resilience to internet outages, control over data queuing and filtering, and more.
+* Use [**direct ingestion**](https://docs.wavefront.com/direct_ingestion.html) to send the data directly to the Wavefront service. This is the simplest way to get up and running quickly. 
 
-#### Step 1. Obtain Wavefront Access Information
-Gather the following access information:
+The `WavefrontSender` interface has two implementations:
 
-* Identify the URL of your Wavefront instance. This is the URL you connect to when you log in to Wavefront, typically something like `https://<domain>.wavefront.com`.
-* In Wavefront, verify that you have Direct Data Ingestion permission, and [obtain an API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
+* Option 1: [Create a `WavefrontProxyClient`](#Option-1-Sending-Data-via-the-Wavefront-Proxy) to send data to a Wavefront proxy.
+* Option 2: [Create a `WavefrontDirectIngestionClient`](#Option-2-Sending-Data-via-Direct-ingestion) to send data directly to a Wavefront service.
 
-#### Step 2. Initialize the WavefrontDirectIngestionClient
-You initialize a `WavefrontDirectIngestionClient` by building it with the access information you obtained in Step 1.
 
-You can optionally call builder methods to tune the following ingestion properties:
+### Option 1: Sending Data via the Wavefront Proxy
+
+>**Prerequisite** <br/>
+>Before your application can use a `WavefrontProxyClient`, you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).
+
+When sending data via the Wavefront proxy, you need to create a `WavefrontProxyClient`. Include the following information.
+
+* The name of the host that will run the Wavefront proxy.
+* One or more proxy listening ports to send data to. The ports you specify depend on the kinds of data you want to send (metrics, histograms, and/or trace data). You must specify at least one listener port. 
+* Optional settings for tuning communication with the proxy.
+
+> **Note**: See [Advanced Proxy Configuration and Installation](https://docs.wavefront.com/proxies_configuring.html) for details.
+
+```java
+// Create the builder with the proxy hostname or address
+WavefrontProxyClient.Builder wfProxyClientBuilder = new WavefrontProxyClient.Builder(proxyHostName);
+
+// Set the proxy port to send metrics to. Default: 2878
+wfProxyClientBuilder.metricsPort(2878);
+
+// Set a proxy port to send histograms to.  Recommended: 2878
+wfProxyClientBuilder.distributionPort(2878);
+
+// Set a proxy port to send trace data to. Recommended: 30000
+wfProxyClientBuilder.tracingPort(30_000);
+
+// Optional: Set a custom socketFactory to override the default SocketFactory
+wfProxyClientBuilder.socketFactory(<SocketFactory>);
+
+// Optional: Set a nondefault interval (in seconds) for flushing data from the sender to the proxy. Default: 5 seconds
+wfProxyClientBuilder.flushIntervalSeconds(2);
+
+// Create the WavefrontProxyClient
+WavefrontSender wavefrontSender = wfProxyClientBuilder.build();
+```
+
+> **Note:** When you set up a Wavefront proxy on the specified proxy host, you specify the port it will listen to for each type of data to be sent. The `WavefrontProxyClient` must send data to the same ports that the Wavefront proxy listens to. Consequently, the port-related builder methods must specify the same port numbers as the corresponding proxy configuration properties. See the following table: 
+
+| `WavefrontProxyClient` builder method | Corresponding property in `wavefront.conf` |
+| ----- | -------- |
+| `metricsPort()` | `pushListenerPorts=` |
+| `distributionPort()` | `histogramDistListenerPorts=` |
+| `tracingPort()` | `traceListenerPorts=` |
+
+### Option 2: Sending Data via Direct Ingestion
+
+When sending data via direct ingestion, you need to create a `WavefrontDirectIngestionClient`, and build it with the Wavefront URL and API token to send data directly to Wavefront.
+
+>**Prerequisites**
+> * Verify that you have the Direct Data Ingestion permission. For details, see [Examine Groups, Roles, and Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
+> * The URL of your Wavefront instance. This is the URL you connect to when you log in to Wavefront, typically something like `https://<domain>.wavefront.com`.
+> * [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
+
+#### Initialize the WavefrontDirectIngestionClient
+You initialize a `WavefrontDirectIngestionClient` by building it with the access information you obtained in the Prerequisites section.
+
+Optionally, you can call builder methods to tune the following ingestion properties:
 
 * Max queue size - Internal buffer capacity of the `WavefrontSender`. Any data in excess of this size is dropped.
 * Flush interval - Interval for flushing data from the `WavefrontSender` directly to Wavefront.
 * Batch size - Amount of data to send to Wavefront in each flush interval.
 
-Together, the batch size and flush interval control the maximum theoretical throughput of the `WavefrontSender`. You should override the defaults _only_ to set higher values.
+Together, the batch size and flush interval control the maximum theoretical throughput of the `WavefrontSender`. Override the defaults _only_ to set higher values.
 
 ```java
 // Create a builder with the URL of the form "https://DOMAIN.wavefront.com"
@@ -74,54 +240,14 @@ wfDirectIngestionClientBuilder.flushIntervalSeconds(2);
 WavefrontSender wavefrontSender = wfDirectIngestionClientBuilder.build();
  ```
 
-
-### Option 2. Create a WavefrontProxyClient
-
-**Note:** Before your application can use a `WavefrontProxyClient`, you must [set up and start a Wavefront proxy](https://github.com/wavefrontHQ/java/tree/master/proxy#set-up-a-wavefront-proxy).
-
-To create a `WavefrontProxyClient`, you build it with the information it needs to send data to the Wavefront proxy, including:
-
-* The name of the host that will run the Wavefront proxy.
-* One or more proxy listening ports to send data to. The ports you specify depend on the kinds of data you want to send (metrics, histograms, and/or trace data). You must specify at least one listener port.
-* Optional settings for tuning communication with the proxy.
-
-
-```java
-// Create the builder with the proxy hostname or address
-WavefrontProxyClient.Builder wfProxyClientBuilder = new WavefrontProxyClient.Builder(proxyHostName);
-
-// Set the proxy port to send metrics to. Default: 2878
-wfProxyClientBuilder.metricsPort(2878);
-
-// Set a proxy port to send histograms to.  Recommended: 2878
-wfProxyClientBuilder.distributionPort(2878);
-
-// Set a proxy port to send trace data to. Recommended: 30000
-wfProxyClientBuilder.tracingPort(30_000);
-
-// Optional: Set a custom socketFactory to override the default SocketFactory
-wfProxyClientBuilder.socketFactory(<SocketFactory>);
-
-// Optional: Set a nondefault interval (in seconds) for flushing data from the sender to the proxy. Default: 5 seconds
-wfProxyClientBuilder.flushIntervalSeconds(2);
-
-// Create the WavefrontProxyClient
-WavefrontSender wavefrontSender = wfProxyClientBuilder.build();
- ```
-
- **Note:** When you [set up a Wavefront proxy](https://github.com/wavefrontHQ/java/tree/master/proxy#set-up-a-wavefront-proxy) on the specified proxy host, you specify the port it will listen to for each type of data to be sent. The `WavefrontProxyClient` must send data to the same ports that the Wavefront proxy listens to. Consequently, the port-related builder methods must specify the same port numbers as the corresponding proxy configuration properties:
-
- | `WavefrontProxyClient` builder method | Corresponding property in `wavefront.conf` |
- | ----- | -------- |
- | `metricsPort()` | `pushListenerPorts=` |
- | `distributionPort()` | `histogramDistListenerPorts=` |
- | `tracingPort()` | `traceListenerPorts=` |
-
 ## Send Data to Wavefront
 
- To send data to Wavefront using the `WavefrontSender` you instantiated:
+ Wavefront supports different metric types, such as gauges, counters, delta counters, histograms, traces, and spans. See [Metrics](https://docs.wavefront.com/metric_types.html) for details. To send data to Wavefront using the `WavefrontSender` you need to instantiate the following:
+ * [Metrics and Delta Counters](#Metrics-and-Delta-Counters)
+ * [Distributions (Histograms)](#Distributions-(Histograms))
+ * [Tracing Spans](#Tracing-Spans)
 
-### Metrics and Delta Counters
+#### Metrics and Delta Counters
 
  ```java
 // Wavefront Metrics Data format
@@ -138,7 +264,7 @@ wavefrontSender.sendDeltaCounter("lambda.thumbnail.generate", 10,
     ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
 ```
 
-### Distributions (Histograms)
+#### Distributions (Histograms)
 
 ```java
 // Wavefront Histogram Data format
@@ -158,7 +284,7 @@ wavefrontSender.sendDistribution("request.latency",
     ImmutableMap.<String, String>builder().put("region", "us-west").build());
 ```
 
-### Tracing Spans
+#### Tracing Spans
 
 ```java
  // Wavefront Tracing Span Data format
@@ -194,8 +320,16 @@ wavefrontSender.flush();
 wavefrontSender.close();
 ```
 
-## Monitoring the SDK
-See the [diagnostic metrics documentation](https://github.com/wavefrontHQ/wavefront-sdk-java/tree/master/docs/internal_metrics.md) for details on the internal metrics that the SDK collects and reports to Wavefront.
+## Monitor the SDK
+See the [diagnostic metrics documentation](https://github.com/wavefrontHQ/wavefront-sdk-doc-sources/blob/master/java/internalmetrics.md#internal-diagnostic-metrics) for details on the internal metrics that the SDK collects and reports to Wavefront.
+
+## License
+[Apache 2.0 License](LICENSE).
+
+## How to Contribute
+
+* Reach out to us on our public [Slack channel](https://www.wavefront.com/join-public-slack).
+* If you run into any issues, let us know by creating a GitHub issue.
 
 [ci-img]: https://travis-ci.com/wavefrontHQ/wavefront-sdk-java.svg?branch=master
 [ci]: https://travis-ci.com/wavefrontHQ/wavefront-sdk-java
