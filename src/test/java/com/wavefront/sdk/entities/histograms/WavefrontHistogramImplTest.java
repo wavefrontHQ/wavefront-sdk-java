@@ -226,8 +226,9 @@ public class WavefrontHistogramImplTest {
     clock.addAndGet(60000L + 1);
 
     List<Distribution> distributions = wh.flushDistributions();
-    Map<Double, Integer> map = distributionToMap(distributions);
+    assertEquals(1, distributions.size());
 
+    Map<Double, Integer> map = distributionToMap(distributions);
     assertEquals(7, map.size());
     assertTrue(map.containsKey(1.0) && map.get(1.0) == 574);
     assertTrue(map.containsKey(5.0) && map.get(5.0) == 138);

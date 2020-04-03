@@ -242,6 +242,7 @@ public class WavefrontHistogramImpl {
     final List<Distribution> distributions = new ArrayList<>();
     Iterator<WeakReference<ConcurrentLinkedDeque<MinuteBin>>> globalBinsIter =
         globalHistogramBinsList.iterator();
+    Map<Long, List<Pair<Double, Integer>>> minuteBinToCentroidsMap = new HashMap<>();
     while (globalBinsIter.hasNext()) {
       WeakReference<ConcurrentLinkedDeque<MinuteBin>> weakRef = globalBinsIter.next();
       ConcurrentLinkedDeque<MinuteBin> sharedBinsInstance = weakRef.get();
@@ -251,7 +252,7 @@ public class WavefrontHistogramImpl {
         continue;
       }
 
-      Map<Long, List<Pair<Double, Integer>>> minuteBinToCentroidsMap = new HashMap<>();
+
       Iterator<MinuteBin> binsIter = sharedBinsInstance.iterator();
       while (binsIter.hasNext()) {
         MinuteBin minuteBin = binsIter.next();
@@ -263,9 +264,8 @@ public class WavefrontHistogramImpl {
           binsIter.remove();
         }
       }
-      minuteBinToCentroidsMap.entrySet().
-              forEach(entry -> distributions.add(new Distribution(entry.getKey(), entry.getValue())));
     }
+    minuteBinToCentroidsMap.forEach((key, value) -> distributions.add(new Distribution(key, value)));
     return distributions;
   }
 
