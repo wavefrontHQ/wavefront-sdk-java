@@ -1,8 +1,14 @@
 package com.wavefront.sdk.direct.ingestion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.wavefront.sdk.common.*;
+import com.google.common.base.Throwables;
+import com.wavefront.sdk.common.Constants;
+import com.wavefront.sdk.common.NamedThreadFactory;
+import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.common.Utils;
+import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.Nullable;
+import com.wavefront.sdk.common.logging.MessageDedupingLogger;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
@@ -24,6 +30,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,8 +46,10 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
  */
 public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable {
 
-  private static final Logger logger = Logger.getLogger(
-      WavefrontDirectIngestionClient.class.getCanonicalName());
+  // Limit identical log messages to at most once every 5 seconds
+  private static final MessageDedupingLogger logger = new MessageDedupingLogger(Logger.getLogger(
+      WavefrontDirectIngestionClient.class.getCanonicalName()), LogMessageType.values().length,
+      0.2);
 
   /**
    * Source to use if entity source is null
@@ -81,6 +90,12 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final WavefrontSdkCounter spanLogsInvalid;
   private final WavefrontSdkCounter spanLogsDropped;
   private final WavefrontSdkCounter spanLogReportErrors;
+
+  // Consider the feature to be enabled when value is 0, and disabled otherwise
+  private final AtomicInteger metricsDisabledStatusCode;
+  private final AtomicInteger histogramsDisabledStatusCode;
+  private final AtomicInteger spansDisabledStatusCode;
+  private final AtomicInteger spanLogsDisabledStatusCode;
 
   // Flag to prevent sending after close() has been called
   private final AtomicBoolean closed = new AtomicBoolean(false);
@@ -168,8 +183,8 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     try {
       tempSource = InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException ex) {
-      logger.log(Level.WARNING,
-          "Unable to resolve local host name. Source will default to 'unknown'", ex);
+      logger.log(LogMessageType.UNKNOWN_HOST.toString(), Level.WARNING,
+          "Unable to resolve local host name. Source will default to 'unknown'");
     }
     defaultSource = tempSource;
 
@@ -220,6 +235,12 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     spanLogsInvalid = sdkMetricsRegistry.newCounter("span_logs.invalid");
     spanLogsDropped = sdkMetricsRegistry.newCounter("span_logs.dropped");
     spanLogReportErrors = sdkMetricsRegistry.newCounter("span_logs.report.errors");
+
+    metricsDisabledStatusCode = new AtomicInteger();
+    histogramsDisabledStatusCode = new AtomicInteger();
+    spansDisabledStatusCode = new AtomicInteger();
+    spanLogsDisabledStatusCode = new AtomicInteger();
+
     this.clientId = builder.server;
   }
 
@@ -246,7 +267,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
     if (!metricsBuffer.offer(point)) {
       pointsDropped.inc();
-      logger.log(Level.WARNING, "Buffer full, dropping metric point: " + point);
+      logger.log(LogMessageType.METRICS_BUFFER_FULL.toString(), Level.WARNING,
+          "Buffer full, dropping metric point: " + point + ". Consider increasing the batch size " +
+              "of your sender to increase throughput.");
     }
   }
 
@@ -264,7 +287,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
     if (!metricsBuffer.offer(finalPoint)) {
       pointsDropped.inc();
-      logger.log(Level.WARNING, "Buffer full, dropping metric point: " + finalPoint);
+      logger.log(LogMessageType.METRICS_BUFFER_FULL.toString(), Level.WARNING,
+          "Buffer full, dropping metric point: " + finalPoint + ". Consider increasing the batch " +
+              "size of your sender to increase throughput.");
     }
   }
 
@@ -289,7 +314,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
     if (!histogramsBuffer.offer(histograms)) {
       histogramsDropped.inc();
-      logger.log(Level.WARNING, "Buffer full, dropping histograms: " + histograms);
+      logger.log(LogMessageType.HISTOGRAMS_BUFFER_FULL.toString(), Level.WARNING,
+          "Buffer full, dropping histograms: " + histograms + ". Consider increasing the batch " +
+              "size of your sender to increase throughput.");
     }
   }
 
@@ -322,7 +349,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       if (spanLogs != null && !spanLogs.isEmpty()) {
         spanLogsDropped.inc();
       }
-      logger.log(Level.WARNING, "Buffer full, dropping span: " + span);
+      logger.log(LogMessageType.SPANS_BUFFER_FULL.toString(), Level.WARNING,
+          "Buffer full, dropping span: " + span + ". Consider increasing the batch size of your " +
+              "sender to increase throughput.");
     }
   }
 
@@ -333,12 +362,15 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       spanLogsValid.inc();
       if (!spanLogsBuffer.offer(spanLogsJson)) {
         spanLogsDropped.inc();
-        logger.log(Level.WARNING, "Buffer full, dropping spanLogs: " + spanLogsJson);
+        logger.log(LogMessageType.SPANLOGS_BUFFER_FULL.toString(), Level.WARNING,
+            "Buffer full, dropping spanLogs: " + spanLogsJson + ". Consider increasing the batch " +
+                "size of your sender to increase throughput.");
       }
     } catch (JsonProcessingException e) {
       spanLogsInvalid.inc();
-      logger.log(Level.WARNING, "unable to serialize span logs to json: traceId:" + traceId +
-          " spanId:" + spanId + " spanLogs:" + spanLogs);
+      logger.log(LogMessageType.SPANLOGS_PROCESSING_ERROR.toString(), Level.WARNING,
+          "Unable to serialize span logs to JSON: traceId=" + traceId + " spanId=" + spanId +
+              " spanLogs=" + spanLogs);
     }
   }
 
@@ -347,49 +379,104 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     try {
       this.flush();
     } catch (Throwable ex) {
-      logger.log(Level.WARNING, "Unable to report to Wavefront cluster", ex);
+      logger.log(LogMessageType.FLUSH_ERROR.toString(), Level.WARNING,
+          "Unable to report to Wavefront cluster: " + Throwables.getRootCause(ex));
     }
   }
 
   @Override
   public void flush() throws IOException {
-      if(closed.get()) {
-          throw new IOException("attempt to flush closed sender");
-      }
-      this.flushNoCheck();
+    if(closed.get()) {
+      throw new IOException("attempt to flush closed sender");
+    }
+    this.flushNoCheck();
   }
 
   private void flushNoCheck() throws IOException {
-      internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT, "points",
-              pointsDropped, pointReportErrors);
-      internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT, "histograms",
-              histogramsDropped, histogramReportErrors);
-      internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT, "spans",
-              spansDropped, spanReportErrors);
-      internalFlush(spanLogsBuffer, Constants.WAVEFRONT_SPAN_LOG_FORMAT, "span_logs",
-              spanLogsDropped, spanLogReportErrors);
+    internalFlush(metricsBuffer, Constants.WAVEFRONT_METRIC_FORMAT, "points", "points",
+        pointsDropped, pointReportErrors, metricsDisabledStatusCode,
+        LogMessageType.SEND_METRICS_ERROR, LogMessageType.SEND_METRICS_PERMISSIONS,
+        LogMessageType.METRICS_BUFFER_FULL);
+    internalFlush(histogramsBuffer, Constants.WAVEFRONT_HISTOGRAM_FORMAT, "histograms",
+        "histograms", histogramsDropped, histogramReportErrors, histogramsDisabledStatusCode,
+        LogMessageType.SEND_HISTOGRAMS_ERROR, LogMessageType.SEND_HISTOGRAMS_PERMISSIONS,
+        LogMessageType.HISTOGRAMS_BUFFER_FULL);
+    internalFlush(tracingSpansBuffer, Constants.WAVEFRONT_TRACING_SPAN_FORMAT, "spans", "spans",
+        spansDropped, spanReportErrors, spansDisabledStatusCode, LogMessageType.SEND_SPANS_ERROR,
+        LogMessageType.SEND_SPANS_PERMISSIONS, LogMessageType.SPANS_BUFFER_FULL);
+    internalFlush(spanLogsBuffer, Constants.WAVEFRONT_SPAN_LOG_FORMAT, "span_logs", "span logs",
+        spanLogsDropped, spanLogReportErrors, spanLogsDisabledStatusCode,
+        LogMessageType.SEND_SPANLOGS_ERROR, LogMessageType.SEND_SPANLOGS_PERMISSIONS,
+        LogMessageType.SPANLOGS_BUFFER_FULL);
   }
 
-  private void internalFlush(LinkedBlockingQueue<String> buffer, String format, String entityPrefix,
-                             WavefrontSdkCounter dropped, WavefrontSdkCounter reportErrors)
+  private void internalFlush(LinkedBlockingQueue<String> buffer, String format,
+                             String entityPrefix, String entityType,
+                             WavefrontSdkCounter dropped, WavefrontSdkCounter reportErrors,
+                             AtomicInteger featureDisabledStatusCode,
+                             LogMessageType errorMessageType,
+                             LogMessageType permissionsMessageType,
+                             LogMessageType bufferFullMessageType)
       throws IOException {
     List<List<String>> batch = getBatch(buffer, batchSize, messageSizeBytes, dropped);
     for (int i = 0; i < batch.size(); i++) {
       List<String> items = batch.get(i);
+      int featureDisabledReason = featureDisabledStatusCode.get();
+      if (featureDisabledReason != 0) {
+        switch (featureDisabledReason) {
+          case 401:
+            logger.log(permissionsMessageType.toString(), Level.SEVERE,
+                "Please verify that your API Token is correct! All " + entityType + " will be " +
+                    "discarded until the service is restarted.");
+            break;
+          case 403:
+            if (format.equals(Constants.WAVEFRONT_METRIC_FORMAT)) {
+              logger.log(permissionsMessageType.toString(), Level.SEVERE,
+                  "Please verify that Direct Data Ingestion is enabled for your account! All "
+                      + entityType + " will be discarded until the service is restarted.");
+            } else {
+              logger.log(permissionsMessageType.toString(), Level.SEVERE,
+                      "Please verify that Direct Data Ingestion and " + entityType + " are " +
+                          "enabled for your account! All " + entityType + " will be discarded " +
+                          "until the service is restarted.");
+            }
+        }
+        continue;
+      }
       try (InputStream is = itemsToStream(items)) {
         int statusCode = directService.report(format, is);
         sdkMetricsRegistry.newCounter(entityPrefix + ".report." + statusCode).inc();
         if (400 <= statusCode && statusCode <= 599) {
-          logger.log(Level.WARNING, "Error reporting points, respStatus=" + statusCode);
-          int numAddedBackToBuffer = 0;
-          for (String item : items) {
-            if (buffer.offer(item)) {
-              numAddedBackToBuffer++;
-            } else {
-              dropped.inc(items.size() - numAddedBackToBuffer);
-              logger.log(Level.WARNING, "Buffer full, dropping attempted points");
+          switch (statusCode) {
+            case 401:
+              logger.log(permissionsMessageType.toString(), Level.SEVERE,
+                  "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
+                      "Please verify that your API Token is correct! All " + entityType + " will " +
+                      "be discarded until the service is restarted.");
+              featureDisabledStatusCode.set(statusCode);
+              dropped.inc(items.size());
               break;
-            }
+            case 403:
+              if (format.equals(Constants.WAVEFRONT_METRIC_FORMAT)) {
+                logger.log(permissionsMessageType.toString(), Level.SEVERE,
+                    "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
+                        "Please verify that Direct Data Ingestion is enabled for your account! " +
+                        "All " + entityType + " will be discarded until the service is restarted.");
+              } else {
+                logger.log(permissionsMessageType.toString(), Level.SEVERE,
+                    "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
+                        "Please verify that Direct Data Ingestion and " + entityType + " are " +
+                        "enabled for your account! All " + entityType + " will be discarded until" +
+                        " the service is restarted.");
+              }
+              featureDisabledStatusCode.set(statusCode);
+              dropped.inc(items.size());
+              break;
+            default:
+              logger.log(errorMessageType.toString(), Level.WARNING,
+                  "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). Data " +
+                      "will be requeued and resent.");
+              requeue(buffer, items, dropped, entityType, bufferFullMessageType);
           }
         }
       } catch (IOException ex) {
@@ -399,6 +486,24 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
           dropped.inc(batch.get(j).size());
         }
         throw ex;
+      }
+    }
+  }
+
+  private void requeue(LinkedBlockingQueue<String> buffer, List<String> items,
+                       WavefrontSdkCounter dropped, String entityType,
+                       LogMessageType bufferFullMessageType) {
+    int numAddedBackToBuffer = 0;
+    for (String item : items) {
+      if (buffer.offer(item)) {
+        numAddedBackToBuffer++;
+      } else {
+        int numDropped = items.size() - numAddedBackToBuffer;
+        dropped.inc(numDropped);
+        logger.log(bufferFullMessageType.toString(), Level.WARNING,
+            "Buffer full, dropping " + numDropped + " " + entityType + ". Consider increasing " +
+                "the batch size of your sender to increase throughput.");
+        break;
       }
     }
   }
@@ -421,13 +526,15 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   @Override
   public synchronized void close() {
     if(!closed.compareAndSet(false, true)) {
-      logger.log(Level.FINE,"attempt to close already closed sender");
+      logger.log(LogMessageType.CLOSE_WHILE_CLOSED.toString(), Level.FINE,
+          "attempt to close already closed sender");
     }
     // Flush before closing
     try {
       flushNoCheck();
     } catch (IOException e) {
-      logger.log(Level.WARNING, "error flushing buffer", e);
+      logger.log(LogMessageType.FLUSH_ERROR.toString(), Level.WARNING,
+          "error flushing buffer: " + Throwables.getRootCause(e));
     }
 
     sdkMetricsRegistry.close();
@@ -435,7 +542,8 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     try {
       Utils.shutdownExecutorAndWait(scheduler);
     } catch (SecurityException ex) {
-      logger.log(Level.WARNING, "shutdown error", ex);
+      logger.log(LogMessageType.SHUTDOWN_ERROR.toString(), Level.WARNING,
+          "shutdown error: " + Throwables.getRootCause(ex));
     }
   }
 
@@ -466,8 +574,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       }
       int numBytes = item.getBytes().length;
       if (numBytes > messageSizeBytes) {
-        logger.log(Level.WARNING,
-            "Dropping data larger than " + messageSizeBytes + " bytes: " + item);
+        logger.log(LogMessageType.MESSAGE_SIZE_LIMIT_EXCEEDED.toString(), Level.WARNING,
+            "Dropping data larger than " + messageSizeBytes + " bytes: " + item + ". Consider " +
+                "increasing the message size limit of your sender.");
         dropped.inc();
         continue;
       }
@@ -487,5 +596,26 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     }
 
     return batch;
+  }
+
+  private enum LogMessageType {
+    UNKNOWN_HOST,
+    METRICS_BUFFER_FULL,
+    HISTOGRAMS_BUFFER_FULL,
+    SPANS_BUFFER_FULL,
+    SPANLOGS_BUFFER_FULL,
+    SPANLOGS_PROCESSING_ERROR,
+    FLUSH_ERROR,
+    CLOSE_WHILE_CLOSED,
+    SEND_METRICS_ERROR,
+    SEND_HISTOGRAMS_ERROR,
+    SEND_SPANS_ERROR,
+    SEND_SPANLOGS_ERROR,
+    SEND_METRICS_PERMISSIONS,
+    SEND_HISTOGRAMS_PERMISSIONS,
+    SEND_SPANS_PERMISSIONS,
+    SEND_SPANLOGS_PERMISSIONS,
+    SHUTDOWN_ERROR,
+    MESSAGE_SIZE_LIMIT_EXCEEDED
   }
 }
