@@ -194,6 +194,50 @@ public class WavefrontHistogramImplTest {
     assertEquals(999.5, inc1000.getSnapshot().getValue(.999), DELTA);
   }
 
+  @Test
+  public void testWavefrontHistogramThreaded() {
+    AtomicLong clock = new AtomicLong(System.currentTimeMillis());
+    WavefrontHistogramImpl wh = new WavefrontHistogramImpl(clock::get);
+
+    ThreadPoolExecutor e = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+    e.execute(() -> {
+      for (int i = 0; i < 500; i++) {
+        int[] samples = {100, 66, 37, 8, 7, 5, 1};
+        for (int sample : samples) {
+          if (i % sample == 0) {
+            wh.update(sample);
+            break;
+          }
+        }
+      }
+    });
+    for (int i = 0; i < 500; i++) {
+      int[] samples = {100, 66, 37, 8, 7, 5, 1};
+      for (int sample : samples) {
+        if (i % sample == 0) {
+          wh.update(sample);
+          break;
+        }
+      }
+    }
+    while (e.getActiveCount() > 0) {}
+
+    // Advance the clock by 1 min ...
+    clock.addAndGet(60000L + 1);
+
+    List<Distribution> distributions = wh.flushDistributions();
+    Map<Double, Integer> map = distributionToMap(distributions);
+
+    assertEquals(7, map.size());
+    assertTrue(map.containsKey(1.0) && map.get(1.0) == 574);
+    assertTrue(map.containsKey(5.0) && map.get(5.0) == 138);
+    assertTrue(map.containsKey(7.0) && map.get(7.0) == 122);
+    assertTrue(map.containsKey(8.0) && map.get(8.0) == 116);
+    assertTrue(map.containsKey(37.0) && map.get(37.0) == 26);
+    assertTrue(map.containsKey(66.0) && map.get(66.0) == 14);
+    assertTrue(map.containsKey(100.0) && map.get(100.0) == 10);
+  }
+
   @Disabled("Single Thread Update Benchmark")
   @Test
   public void singleThreadUpdateBenchmark() {
