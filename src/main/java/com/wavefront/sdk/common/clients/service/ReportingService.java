@@ -34,7 +34,7 @@ public class ReportingService implements ReportAPI {
     int statusCode = 400;
     try {
       String originalPath = uri.getPath() != null ? uri.getPath() : "";
-      URL url = new URL(uri.getScheme(), uri.getHost(), uri.getPort(), originalPath + "?/f=" + format);
+      URL url = new URL(uri.getScheme(), uri.getHost(), uri.getPort(), originalPath + "/?f=" + format);
       urlConn = (HttpURLConnection) url.openConnection();
       urlConn.setDoOutput(true);
       urlConn.addRequestProperty("Content-Type", "application/octet-stream");

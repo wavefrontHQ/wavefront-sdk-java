@@ -261,7 +261,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
       throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
     }
     if (metricsProxyConnectionHandler == null) {
@@ -291,7 +291,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
 
   @Override
   public void sendFormattedMetric(String point) throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
     }
     if (metricsProxyConnectionHandler == null) {
@@ -323,7 +323,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
                                @Nullable Long timestamp, @Nullable String source,
                                @Nullable Map<String, String> tags)
       throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
     }
     if (histogramProxyConnectionHandler == null) {
@@ -358,7 +358,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
                        @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                        @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
       throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
     }
     if (tracingProxyConnectionHandler == null) {
@@ -438,7 +438,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
 
   @Override
   public void flush() throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to flush closed sender");
     }
     this.flushNoCheck();
@@ -463,7 +463,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
 
   @Override
   public void close() {
-    if(!closed.compareAndSet(false, true)) {
+    if (!closed.compareAndSet(false, true)) {
      logger.log(Level.FINE,"attempt to close already closed sender");
     }
     sdkMetricsRegistry.close();

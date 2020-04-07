@@ -3,7 +3,6 @@ package com.wavefront.sdk;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.clients.WavefrontClientFactory;
-import com.wavefront.sdk.common.clients.WavefrontMultiClient;
 import com.wavefront.sdk.direct.ingestion.WavefrontDirectIngestionClient;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.proxy.WavefrontProxyClient;

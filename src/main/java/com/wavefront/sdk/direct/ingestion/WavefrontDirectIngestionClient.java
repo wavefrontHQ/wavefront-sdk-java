@@ -258,7 +258,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
       throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
     }
     String point;
@@ -280,7 +280,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public void sendFormattedMetric(String point) throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
     }
     if (point == null || "".equals(point.trim())) {
@@ -304,7 +304,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                                @Nullable Long timestamp, @Nullable String source,
                                @Nullable Map<String, String> tags)
       throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
     }
     String histograms;
@@ -331,7 +331,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                        @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                        @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
       throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
     }
     String span;
@@ -391,7 +391,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public void flush() throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to flush closed sender");
     }
     this.flushNoCheck();
@@ -530,7 +530,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public synchronized void close() {
-    if(!closed.compareAndSet(false, true)) {
+    if (!closed.compareAndSet(false, true)) {
       logger.log(LogMessageType.CLOSE_WHILE_CLOSED.toString(), Level.FINE,
           "attempt to close already closed sender");
     }

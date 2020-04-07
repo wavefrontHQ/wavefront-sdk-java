@@ -41,7 +41,7 @@ import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 
 /**
- * Wavefront client that sends data to Wavefront via Proxy or Directly to the cluster cluster
+ * Wavefront client that sends data to Wavefront via Proxy or Directly to a Wavefront service
  * via the direct ingestion API.
  *
  * @author Vikram Raman (vikram@wavefront.com)
@@ -113,12 +113,12 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private int messageSizeBytes = Integer.MAX_VALUE;
 
     /**
-     * Create a new WavefrontDirectIngestionClient.Builder
+     * Create a new WavefrontClient.Builder
      *
      * @param server A server URL of the form "https://clusterName.wavefront.com" or "http://internal.proxy.com:port"
      * @param token  A valid API token with direct ingestion permissions
      */
-    public Builder(String server, @Nullable String token) {
+    protected Builder(String server, @Nullable String token) {
       this.server = server;
       this.token = token;
     }
@@ -254,7 +254,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
       throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
     }
     String point;
@@ -277,7 +277,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
 
   @Override
   public void sendFormattedMetric(String point) throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
     }
     if (point == null || "".equals(point.trim())) {
@@ -301,7 +301,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
                                @Nullable Long timestamp, @Nullable String source,
                                @Nullable Map<String, String> tags)
       throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
     }
     String histograms;
@@ -329,7 +329,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
                        @Nullable List<UUID> parents, @Nullable List<UUID> followsFrom,
                        @Nullable List<Pair<String, String>> tags, @Nullable List<SpanLog> spanLogs)
       throws IOException {
-    if(closed.get()) {
+    if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
     }
     String span;
@@ -389,7 +389,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
 
   @Override
   public void flush() throws IOException {
-      if(closed.get()) {
+      if (closed.get()) {
           throw new IOException("attempt to flush closed sender");
       }
       this.flushNoCheck();
@@ -529,7 +529,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
 
   @Override
   public synchronized void close() {
-    if(!closed.compareAndSet(false, true)) {
+    if (!closed.compareAndSet(false, true)) {
       logger.log(LogMessageType.CLOSE_WHILE_CLOSED.toString(), Level.FINE,
           "attempt to close already closed sender");
     }

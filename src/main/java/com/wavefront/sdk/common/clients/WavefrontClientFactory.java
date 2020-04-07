@@ -19,7 +19,8 @@ public class WavefrontClientFactory {
 
 
   /**
-   * Adds an existing WavefrontSender that is configured to forward points to a proxy or directly to a Wavefront service.
+   * Adds an existing WavefrontSender that is configured to
+   * forward points to a proxy or directly to a Wavefront service.
    *
    * @param sender the sender to add to this factory
    *
