@@ -103,8 +103,6 @@ public class Main {
   }
 
   public static void main(String[] args) throws InterruptedException, IOException {
-
-
     String wavefrontServer = args[0];
     String token = args[1];
     String proxyHost = args.length < 3 ? null : args[2];
