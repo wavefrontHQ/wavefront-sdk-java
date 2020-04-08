@@ -66,11 +66,11 @@ public class Utils {
     }
     if (name == null || name.isEmpty()) {
       throw new IllegalArgumentException("metrics name cannot be blank " +
-          getContextInfo(name, source, getEntrySet(tags)));
+          getContextInfo(name, source, tags));
     }
     if (source == null || source.isEmpty()) {
       throw new IllegalArgumentException("source cannot be blank " +
-          getContextInfo(name, source, getEntrySet(tags)));
+          getContextInfo(name, source, tags));
     }
 
     final StringBuilder sb = new StringBuilder();
@@ -89,11 +89,11 @@ public class Utils {
         String val = tag.getValue();
         if (key == null || key.isEmpty()) {
           throw new IllegalArgumentException("metric point tag key cannot be blank " +
-              getContextInfo(name, source, getEntrySet(tags)));
+              getContextInfo(name, source, tags));
         }
         if (val == null || val.isEmpty()) {
           throw new IllegalArgumentException("metric point tag value cannot be blank for " +
-              "tag key: " + key + " " + getContextInfo(name, source, getEntrySet(tags)));
+              "tag key: " + key + " " + getContextInfo(name, source, tags));
         }
         sb.append(' ');
         sb.append(sanitize(key));
@@ -123,19 +123,19 @@ public class Utils {
     }
     if (name == null || name.isEmpty()) {
       throw new IllegalArgumentException("histogram name cannot be blank " +
-          getContextInfo(name, source, getEntrySet(tags)));
+          getContextInfo(name, source, tags));
     }
     if (source == null || source.isEmpty()) {
       throw new IllegalArgumentException("histogram source cannot be blank " +
-          getContextInfo(name, source, getEntrySet(tags)));
+          getContextInfo(name, source, tags));
     }
     if (histogramGranularities == null || histogramGranularities.isEmpty()) {
       throw new IllegalArgumentException("Histogram granularities cannot be null or empty " +
-          getContextInfo(name, source, getEntrySet(tags)));
+          getContextInfo(name, source, tags));
     }
     if (centroids == null || centroids.isEmpty()) {
       throw new IllegalArgumentException("A distribution should have at least one centroid " +
-          getContextInfo(name, source, getEntrySet(tags)));
+          getContextInfo(name, source, tags));
     }
     final StringBuilder sb = new StringBuilder();
     for (HistogramGranularity histogramGranularity : histogramGranularities) {
@@ -160,11 +160,11 @@ public class Utils {
           String val = tag.getValue();
           if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException("histogram tag key cannot be blank " +
-                getContextInfo(name, source, getEntrySet(tags)));
+                getContextInfo(name, source, tags));
           }
           if (val == null || val.isEmpty()) {
             throw new IllegalArgumentException("histogram tag value cannot be blank for " +
-                "tag key: " + key + " " + getContextInfo(name, source, getEntrySet(tags)));
+                "tag key: " + key + " " + getContextInfo(name, source, tags));
           }
           sb.append(' ');
           sb.append(sanitize(tag.getKey()));
@@ -340,24 +340,24 @@ public class Utils {
    *
    * @param name   Entity name
    * @param source Source name
-   * @param tags   A collection of tags, either as {@code Pair<String, String>} or
-   *               {@code Map.Entry<String, String>}.
+   * @param tags   A collection of tags, either as {@code List<Pair<String, String>>} or
+   *               {@code Map<String, String>}.
    * @return best-effort string representation or an empty string if it's not possible
    */
   @SuppressWarnings("unchecked")
   private static String getContextInfo(@Nullable String name, @Nullable String source,
-                                       @Nullable Iterable<?> tags) {
+                                       @Nullable Object tags) {
     try {
       StringBuilder sb = new StringBuilder("(");
       if (name != null) sb.append(name);
       if (source != null) sb.append(" source=").append(source);
       if (tags != null) {
-        for (Object tag : tags) {
-          if (tag instanceof Map.Entry) {
-            Map.Entry<String, String> entry = (Map.Entry<String, String>) tag;
+        if (tags instanceof Map) {
+          for (Map.Entry<String, String> entry : ((Map<String, String>) tags).entrySet()) {
             sb.append(' ').append(entry.getKey()).append("=[").append(entry.getValue()).append(']');
-          } else if (tag instanceof Pair) {
-            Pair<String, String> entry = (Pair<String, String>) tag;
+          }
+        } else if (tags instanceof List) {
+          for (Pair<String, String> entry : (List<Pair<String, String>>) tags) {
             sb.append(' ').append(entry._1).append("=[").append(entry._2).append(']');
           }
         }
@@ -367,10 +367,5 @@ public class Utils {
     } catch (Exception ex) {
       return "";
     }
-  }
-
-  @Nullable
-  private static Set<Map.Entry<String, String>> getEntrySet(@Nullable Map<String, String> map) {
-    return map == null ? null : map.entrySet();
   }
 }
