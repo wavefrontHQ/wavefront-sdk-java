@@ -46,9 +46,9 @@ public class Utils {
     String res = s.trim();
     if (s.contains("\"") || s.contains("'")) {
       // for single quotes, once we are double-quoted, single quotes can exist happily inside it.
-      res = res.replaceAll("\"", "\\\\\"");
+      res = res.replace("\"", "\\\"");
     }
-    return "\"" + res.replaceAll("\\n", "\\\\n") + "\"";
+    return "\"" + res.replace("\n", "\\n") + "\"";
   }
 
   public static String metricToLineData(String name, double value, @Nullable Long timestamp,
@@ -61,12 +61,16 @@ public class Utils {
      * Example: "new-york.power.usage 42422 1533531013 source=localhost datacenter=dc1"
      */
 
-    if (name == null || name.isEmpty()) {
-      throw new IllegalArgumentException("metrics name cannot be blank");
-    }
-
     if (source == null || source.isEmpty()) {
       source = defaultSource;
+    }
+    if (name == null || name.isEmpty()) {
+      throw new IllegalArgumentException("metrics name cannot be blank " +
+          getContextInfo(name, source, getEntrySet(tags)));
+    }
+    if (source == null || source.isEmpty()) {
+      throw new IllegalArgumentException("source cannot be blank " +
+          getContextInfo(name, source, getEntrySet(tags)));
     }
 
     final StringBuilder sb = new StringBuilder();
@@ -84,11 +88,12 @@ public class Utils {
         String key = tag.getKey();
         String val = tag.getValue();
         if (key == null || key.isEmpty()) {
-          throw new IllegalArgumentException("metric point tag key cannot be blank");
+          throw new IllegalArgumentException("metric point tag key cannot be blank " +
+              getContextInfo(name, source, getEntrySet(tags)));
         }
         if (val == null || val.isEmpty()) {
           throw new IllegalArgumentException("metric point tag value cannot be blank for " +
-              "tag key: " + key);
+              "tag key: " + key + " " + getContextInfo(name, source, getEntrySet(tags)));
         }
         sb.append(' ');
         sb.append(sanitize(key));
@@ -113,22 +118,25 @@ public class Utils {
      * Example: "!M 1533531013 #20 30.0 #10 5.1 request.latency source=appServer1 region=us-west"
      */
 
-    if (name == null || name.isEmpty()) {
-      throw new IllegalArgumentException("histogram name cannot be blank");
-    }
-
-    if (histogramGranularities == null || histogramGranularities.isEmpty()) {
-      throw new IllegalArgumentException("Histogram granularities cannot be null or empty");
-    }
-
-    if (centroids == null || centroids.isEmpty()) {
-      throw new IllegalArgumentException("A distribution should have at least one centroid");
-    }
-
     if (source == null || source.isEmpty()) {
       source = defaultSource;
     }
-
+    if (name == null || name.isEmpty()) {
+      throw new IllegalArgumentException("histogram name cannot be blank " +
+          getContextInfo(name, source, getEntrySet(tags)));
+    }
+    if (source == null || source.isEmpty()) {
+      throw new IllegalArgumentException("histogram source cannot be blank " +
+          getContextInfo(name, source, getEntrySet(tags)));
+    }
+    if (histogramGranularities == null || histogramGranularities.isEmpty()) {
+      throw new IllegalArgumentException("Histogram granularities cannot be null or empty " +
+          getContextInfo(name, source, getEntrySet(tags)));
+    }
+    if (centroids == null || centroids.isEmpty()) {
+      throw new IllegalArgumentException("A distribution should have at least one centroid " +
+          getContextInfo(name, source, getEntrySet(tags)));
+    }
     final StringBuilder sb = new StringBuilder();
     for (HistogramGranularity histogramGranularity : histogramGranularities) {
       sb.append(histogramGranularity.identifier);
@@ -151,11 +159,12 @@ public class Utils {
           String key = tag.getKey();
           String val = tag.getValue();
           if (key == null || key.isEmpty()) {
-            throw new IllegalArgumentException("histogram tag key cannot be blank");
+            throw new IllegalArgumentException("histogram tag key cannot be blank " +
+                getContextInfo(name, source, getEntrySet(tags)));
           }
           if (val == null || val.isEmpty()) {
             throw new IllegalArgumentException("histogram tag value cannot be blank for " +
-                "tag key: " + key);
+                "tag key: " + key + " " + getContextInfo(name, source, getEntrySet(tags)));
           }
           sb.append(' ');
           sb.append(sanitize(tag.getKey()));
@@ -186,14 +195,17 @@ public class Utils {
      *           1533531013 343500"
      */
 
-    if (name == null || name.isEmpty()) {
-      throw new IllegalArgumentException("span name cannot be blank");
-    }
-
     if (source == null || source.isEmpty()) {
       source = defaultSource;
     }
-
+    if (name == null || name.isEmpty()) {
+      throw new IllegalArgumentException("span name cannot be blank " +
+          getContextInfo(name, source, tags));
+    }
+    if (source == null || source.isEmpty()) {
+      throw new IllegalArgumentException("span source cannot be blank " +
+          getContextInfo(name, source, tags));
+    }
     final StringBuilder sb = new StringBuilder();
     sb.append(sanitizeValue(name));
     sb.append(" source=");
@@ -219,11 +231,12 @@ public class Utils {
         String key = tag._1;
         String val = tag._2;
         if (key == null || key.isEmpty()) {
-          throw new IllegalArgumentException("span tag key cannot be blank");
+          throw new IllegalArgumentException("span tag key cannot be blank " +
+              getContextInfo(name, source, tags));
         }
         if (val == null || val.isEmpty()) {
           throw new IllegalArgumentException("span tag value cannot be blank for " +
-              "tag key: " + key);
+              "tag key: " + key + " " + getContextInfo(name, source, tags));
         }
         sb.append(' ');
         sb.append(sanitize(key));
@@ -317,5 +330,47 @@ public class Utils {
       sb.append('"');
     }
     return sb.toString();
+  }
+
+  /**
+   * Builds a best-effort string representation of a metric/histogram/span to provide additional
+   * context to error messages. This implementation doesn't have to be as strict about escaping
+   * values, since this is for internal use only. This method swallows all exceptions so it's
+   * safe to use in critical blocks.
+   *
+   * @param name   Entity name
+   * @param source Source name
+   * @param tags   A collection of tags, either as {@code Pair<String, String>} or
+   *               {@code Map.Entry<String, String>}.
+   * @return best-effort string representation or an empty string if it's not possible
+   */
+  @SuppressWarnings("unchecked")
+  private static String getContextInfo(@Nullable String name, @Nullable String source,
+                                       @Nullable Iterable<?> tags) {
+    try {
+      StringBuilder sb = new StringBuilder("(");
+      if (name != null) sb.append(name);
+      if (source != null) sb.append(" source=").append(source);
+      if (tags != null) {
+        for (Object tag : tags) {
+          if (tag instanceof Map.Entry) {
+            Map.Entry<String, String> entry = (Map.Entry<String, String>) tag;
+            sb.append(' ').append(entry.getKey()).append("=[").append(entry.getValue()).append(']');
+          } else if (tag instanceof Pair) {
+            Pair<String, String> entry = (Pair<String, String>) tag;
+            sb.append(' ').append(entry._1).append("=[").append(entry._2).append(']');
+          }
+        }
+      }
+      sb.append(")");
+      return sb.toString();
+    } catch (Exception ex) {
+      return "";
+    }
+  }
+
+  @Nullable
+  private static Set<Map.Entry<String, String>> getEntrySet(@Nullable Map<String, String> map) {
+    return map == null ? null : map.entrySet();
   }
 }
