@@ -23,6 +23,7 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -81,6 +82,9 @@ public class UtilsTest {
     assertEquals("\"new-york.power.usage\" 42422.0 source=\"localhost\"\n",
         metricToLineData("new-york.power.usage", 42422, null, "localhost", null,
             "defaultSource"));
+    // default source
+    assertEquals("\"new-york.power.usage\" 42422.0 source=\"defaultSource\"\n",
+        metricToLineData("new-york.power.usage", 42422, null, null, null, "defaultSource"));
     // Add tag key with invalid char, val with empty space
     tags.put(" key name~1", " val name 1 ");
     // Invalid char in source and metrics
@@ -88,6 +92,70 @@ public class UtilsTest {
             "\"-key-name-1\"=\"val name 1\" " + "\"datacenter\"=\"dc1\"\n",
         metricToLineData("new~york.power.usage", 42422, 1493773500L, "local~host", tags,
             "defaultSource"));
+  }
+
+  @Test
+  public void testInvalidMetricToLineDataThrows() {
+    Map<String, String> tags = new HashMap<String, String>() {{
+      put("datacenter", "dc1");
+    }};
+    try {
+      metricToLineData(null, 42422, 1493773500L, "localhost", tags, "defaultSource");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("metrics name cannot be blank"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("datacenter=[dc1]"));
+    }
+    try {
+      metricToLineData("", 42422, 1493773500L, "localhost", tags, "defaultSource");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("metrics name cannot be blank"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("datacenter=[dc1]"));
+    }
+    try {
+      metricToLineData("new-york.power.usage", 42422, 1493773500L, null, tags, null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("source cannot be blank"));
+      assertTrue(e.getMessage().contains("new-york.power.usage"));
+      assertTrue(e.getMessage().contains("datacenter=[dc1]"));
+    }
+    tags.put("", "value");
+    try {
+      metricToLineData("new-york.power.usage", 42422, 1493773500L, "localhost", tags, null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("metric point tag key cannot be blank"));
+      assertTrue(e.getMessage().contains("new-york.power.usage"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("datacenter=[dc1]"));
+    }
+    tags.remove("");
+    tags.put("emptyValue", null);
+    try {
+      metricToLineData("new-york.power.usage", 42422, 1493773500L, "localhost", tags, null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("metric point tag value cannot be blank for"));
+      assertTrue(e.getMessage().contains("emptyValue=[null]"));
+      assertTrue(e.getMessage().contains("new-york.power.usage"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("datacenter=[dc1]"));
+    }
+    tags.put("emptyValue", "");
+    try {
+      metricToLineData("new-york.power.usage", 42422, 1493773500L, "localhost", tags, null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("metric point tag value cannot be blank for"));
+      assertTrue(e.getMessage().contains("emptyValue=[]"));
+      assertTrue(e.getMessage().contains("new-york.power.usage"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("datacenter=[dc1]"));
+    }
   }
 
   @Test
@@ -158,6 +226,79 @@ public class UtilsTest {
   }
 
   @Test
+  public void testInvalidHistogramToLineDataThrows() {
+    Map<String, String> tags = new HashMap<String, String>() {{
+      put("region", "us-west");
+    }};
+    Set<HistogramGranularity> minGranularity = new HashSet<HistogramGranularity>() {{
+      add(HistogramGranularity.MINUTE);
+    }};
+    try {
+      histogramToLineData(null, Arrays.asList(new Pair<>(30.0, 20), new Pair<>(5.1, 10)),
+          minGranularity, 1493773500L, "appServer1", tags, "defaultSource");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("histogram name cannot be blank"));
+      assertTrue(e.getMessage().contains("source=appServer1"));
+      assertTrue(e.getMessage().contains("region=[us-west]"));
+    }
+    try {
+      histogramToLineData("", Arrays.asList(new Pair<>(30.0, 20), new Pair<>(5.1, 10)),
+          minGranularity, 1493773500L, "appServer1", tags, "defaultSource");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("histogram name cannot be blank"));
+      assertTrue(e.getMessage().contains("source=appServer1"));
+      assertTrue(e.getMessage().contains("region=[us-west]"));
+    }
+    try {
+      histogramToLineData("requests.latency", Arrays.asList(new Pair<>(3.0, 2), new Pair<>(5.0, 1)),
+          minGranularity, 1493773500L, null, tags, null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("histogram source cannot be blank"));
+      assertTrue(e.getMessage().contains("requests.latency"));
+      assertTrue(e.getMessage().contains("region=[us-west]"));
+    }
+    tags.put("", "value");
+    try {
+      histogramToLineData("requests.latency", Arrays.asList(new Pair<>(3.0, 2), new Pair<>(5.0, 1)),
+          minGranularity, 1493773500L, "appServer1", tags, null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("histogram tag key cannot be blank"));
+      assertTrue(e.getMessage().contains("requests.latency"));
+      assertTrue(e.getMessage().contains("source=appServer1"));
+      assertTrue(e.getMessage().contains("region=[us-west]"));
+    }
+    tags.remove("");
+    tags.put("emptyValue", null);
+    try {
+      histogramToLineData("requests.latency", Arrays.asList(new Pair<>(3.0, 2), new Pair<>(5.0, 1)),
+          minGranularity, 1493773500L, "appServer1", tags, null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("histogram tag value cannot be blank for"));
+      assertTrue(e.getMessage().contains("emptyValue=[null]"));
+      assertTrue(e.getMessage().contains("requests.latency"));
+      assertTrue(e.getMessage().contains("source=appServer1"));
+      assertTrue(e.getMessage().contains("region=[us-west]"));
+    }
+    tags.put("emptyValue", "");
+    try {
+      histogramToLineData("requests.latency", Arrays.asList(new Pair<>(3.0, 2), new Pair<>(5.0, 1)),
+          minGranularity, 1493773500L, "appServer1", tags, null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("histogram tag value cannot be blank for"));
+      assertTrue(e.getMessage().contains("emptyValue=[]"));
+      assertTrue(e.getMessage().contains("requests.latency"));
+      assertTrue(e.getMessage().contains("source=appServer1"));
+      assertTrue(e.getMessage().contains("region=[us-west]"));
+    }
+  }
+
+  @Test
   public void testTracingSpanToLineData() {
     assertEquals("\"getAllUsers\" source=\"localhost\" " +
             "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
@@ -206,6 +347,117 @@ public class UtilsTest {
                 "0313bafe-9457-11e8-9eb6-529269fb1459"), null, null, null, new ArrayList<SpanLog>() {{
               add(new SpanLog(System.currentTimeMillis(), new HashMap<>()));
             }}, "defaultSource"));
+  }
+
+  @Test
+  public void testInvalidTracingSpanToLineDataThrows() {
+    try {
+      tracingSpanToLineData(null, 1493773500L, 343500L, "localhost",
+          UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"), UUID.fromString(
+              "0313bafe-9457-11e8-9eb6-529269fb1459"),
+          Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(UUID.fromString("5f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(new Pair<>("application", "Wavefront"),
+              new Pair<>("http.method", "GET")), null, "defaultSource");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("span name cannot be blank"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("application=[Wavefront]"));
+      assertTrue(e.getMessage().contains("http.method=[GET]"));
+    }
+    try {
+      tracingSpanToLineData("", 1493773500L, 343500L, "localhost",
+          UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"), UUID.fromString(
+              "0313bafe-9457-11e8-9eb6-529269fb1459"),
+          Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(UUID.fromString("5f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(new Pair<>("application", "Wavefront"),
+              new Pair<>("http.method", "GET")), null, "defaultSource");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("span name cannot be blank"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("application=[Wavefront]"));
+      assertTrue(e.getMessage().contains("http.method=[GET]"));
+    }
+    try {
+      tracingSpanToLineData("getAllUsers", 1493773500L, 343500L, null,
+          UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"), UUID.fromString(
+              "0313bafe-9457-11e8-9eb6-529269fb1459"),
+          Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(UUID.fromString("5f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(new Pair<>("application", "Wavefront"),
+              new Pair<>("http.method", "GET")), null, "");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("span source cannot be blank"));
+      assertTrue(e.getMessage().contains("getAllUsers"));
+      assertTrue(e.getMessage().contains("application=[Wavefront]"));
+      assertTrue(e.getMessage().contains("http.method=[GET]"));
+    }
+    try {
+      tracingSpanToLineData("getAllUsers", 1493773500L, 343500L, "localhost",
+          UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"), UUID.fromString(
+              "0313bafe-9457-11e8-9eb6-529269fb1459"),
+          Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(UUID.fromString("5f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(new Pair<>(null, "Wavefront"),
+              new Pair<>("http.method", "GET")), null, "defaultSource");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("span tag key cannot be blank"));
+      assertTrue(e.getMessage().contains("getAllUsers"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("http.method=[GET]"));
+    }
+    try {
+      tracingSpanToLineData("getAllUsers", 1493773500L, 343500L, "localhost",
+          UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"), UUID.fromString(
+              "0313bafe-9457-11e8-9eb6-529269fb1459"),
+          Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(UUID.fromString("5f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(new Pair<>("", "Wavefront"),
+              new Pair<>("http.method", "GET")), null, "defaultSource");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("span tag key cannot be blank"));
+      assertTrue(e.getMessage().contains("getAllUsers"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("http.method=[GET]"));
+    }
+    try {
+      tracingSpanToLineData("getAllUsers", 1493773500L, 343500L, "localhost",
+          UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"), UUID.fromString(
+              "0313bafe-9457-11e8-9eb6-529269fb1459"),
+          Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(UUID.fromString("5f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(new Pair<>("application", "Wavefront"),
+              new Pair<>("http.method", null)), null, "defaultSource");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("span tag value cannot be blank"));
+      assertTrue(e.getMessage().contains("getAllUsers"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("application=[Wavefront]"));
+      assertTrue(e.getMessage().contains("http.method=[null]"));
+    }
+    try {
+      tracingSpanToLineData("getAllUsers", 1493773500L, 343500L, "localhost",
+          UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"), UUID.fromString(
+              "0313bafe-9457-11e8-9eb6-529269fb1459"),
+          Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(UUID.fromString("5f64e538-9457-11e8-9eb6-529269fb1459")),
+          Arrays.asList(new Pair<>("application", "Wavefront"),
+              new Pair<>("http.method", "")), null, "defaultSource");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("span tag value cannot be blank"));
+      assertTrue(e.getMessage().contains("getAllUsers"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("application=[Wavefront]"));
+      assertTrue(e.getMessage().contains("http.method=[]"));
+    }
   }
 
   @Test
