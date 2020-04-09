@@ -152,7 +152,7 @@ The `WavefrontSender` interface has the following implementations:
 
 * **Option 2**: [Create a `WavefrontProxyClient`](#Option-2-Sending-Data-via-the-Wavefront-Proxy) to send data to a Wavefront proxy.
 
-> **Note** : *`WavefrontDirectIngestionClient` is deprecated. But, if you have configured your application to use the `WavefrontDirectIngestionClient`, it still sends data to Wavefront. We recommend all new applications to use the `WavefrontClient`.*
+> **Deprecated implementations** : *`WavefrontDirectIngestionClient` is deprecated. But, if you have configured your application to use the `WavefrontDirectIngestionClient`, it still sends data to Wavefront. We recommend all new applications to use the `WavefrontClient`.*
 
 ### Option 1: Sending Data via the WavefrontClient
 
@@ -160,12 +160,12 @@ Use `WavefrontClientFactory` to create a `WavefrontClient` instance, which can s
 
 The `WavefrontClientFactory` supports multiple client bindings. If more than one client configuration is specified, you can create a `WavefrontMultiClient` to send multiple Wavefront services.
 
->**Prerequisites**  
-> * Sending data via the Wavefront Proxy? Before your application can use a WavefrontClient you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).  
-> * Sending data via direct ingestion? 
-    > * Verify that you have the Direct Data Ingestion permission. For details, see [Examine Groups, Roles, and Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
-    > * The URL of your Wavefront instance. This is the URL you connect to when you log in to Wavefront, typically something like `https://<domain>.wavefront.com`.
-    > * [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
+#### Prerequisites  
+* Sending data via the Wavefront Proxy? Before your application can use a WavefrontClient you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).  
+* Sending data via direct ingestion? 
+  * Verify that you have the Direct Data Ingestion permission. For details, see [Examine Groups, Roles, and Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
+  * The URL of your Wavefront instance. This is the URL you connect to when you log in to Wavefront, typically something like `https://<domain>.wavefront.com`.
+  * [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
 
 #### Initialize the WavefrontClient
 
@@ -221,8 +221,8 @@ WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 
 ### Option 2: Sending Data via the Wavefront Proxy
 
->**Prerequisite** <br/>
->Before your application can use a `WavefrontProxyClient`, you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).
+**Prerequisite** 
+Before your application can use a `WavefrontProxyClient`, you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).
 
 When sending data via the Wavefront proxy, you need to create a `WavefrontProxyClient`. Include the following information.
 
