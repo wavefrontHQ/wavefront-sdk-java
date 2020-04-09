@@ -124,6 +124,16 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
 
     /**
+     * Create a new WavefrontClient.Builder
+     *
+     * @param proxyServer A server URL of the the form "http://internal.proxy.com:port"
+     */
+    public Builder(String proxyServer) {
+      this.server = proxyServer;
+      this.token = null;
+    }
+
+    /**
      * Set max queue size of in-memory buffer. Needs to be flushed if full.
      *
      * @param maxQueueSize Max queue size of in-memory buffer
