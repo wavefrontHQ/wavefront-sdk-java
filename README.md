@@ -273,9 +273,10 @@ WavefrontClientFactory wavefrontClientFactory = new WavefrontClientFactory();
 
 // add a new client that will send directly to Wavefront services 
 wavefrontClientFactory.addClient(wavefrontURL,
-  20_000,   // This is the max batch of data sent per flush interval
-  100_000,  // This is the size of internal buffer beyond which data is dropped
-  2,        // Together with the batch size controls the max theoretical throughput of the sender
+  20_000,           // This is the max batch of data sent per flush interval
+  100_000,          // This is the size of internal buffer beyond which data is dropped
+  2,                // Together with the batch size controls the max theoretical throughput of the sender
+  Integer.MAX_VALUE // The maximum message size in bytes we will push with on each flush interval 
 );
 
 WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
