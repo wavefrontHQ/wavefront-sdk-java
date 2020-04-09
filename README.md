@@ -300,6 +300,46 @@ wavefrontClientFactory.addClient("proxy://our.proxy.lb.com:2878");
 WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 ```
 
+```java
+// Using the WavefrontClient.Builder directly with a url in the form of "https://DOMAIN.wavefront.com"
+// and a Wavefront API token with direct ingestion permission
+WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(wavefrontURL, token)
+
+// This is the size of internal buffer beyond which data is dropped
+// Optional: Set this to override the default max queue size of 50,000
+wfClientBuilder.maxQueueSize(100_000);
+
+// This is the max batch of data sent per flush interval
+// Optional: Set this to override the default batch size of 10,000
+wfClientBuilder.batchSize(20_000);
+
+// Together with batch size controls the max theoretical throughput of the sender
+// Optional: Set this to override the default flush interval value of 1 second
+wfClientBuilder.flushIntervalSeconds(2);
+
+WavefrontSender wavefrontSender = wfClientBuilder.build();
+``` 
+
+```java
+// Using the WavefrontClient.Builder directly with a url in the form of "http://your.proxy.load.blanacer:port"
+// to send data to proxies.
+WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(proxyURL)
+
+// This is the size of internal buffer beyond which data is dropped
+// Optional: Set this to override the default max queue size of 50,000
+wfClientBuilder.maxQueueSize(100_000);
+
+// This is the max batch of data sent per flush interval
+// Optional: Set this to override the default batch size of 10,000
+wfClientBuilder.batchSize(20_000);
+
+// Together with batch size controls the max theoretical throughput of the sender
+// Optional: Set this to override the default flush interval value of 1 second
+wfClientBuilder.flushIntervalSeconds(2);
+
+WavefrontSender wavefrontSender = wfClientBuilder.build();
+``` 
+
 ## Send Data to Wavefront
 
  Wavefront supports different metric types, such as gauges, counters, delta counters, histograms, traces, and spans. See [Metrics](https://docs.wavefront.com/metric_types.html) for details. To send data to Wavefront using the `WavefrontSender` you need to instantiate the following:
