@@ -148,11 +148,11 @@ You can send metrics, histograms, or trace data from your application to the Wav
 The `WavefrontSender` interface has the following implementations:
 
 * **Option 1**: [Create a `WavefrontClient`](#Option-1-Sending-Data-via-the-WavefrontClient) to send data to Wavefront either via Wavefront proxy or directly over HTTP.
-    > **Note** : *If you are sending data via the Wavefront Proxy, currently, this option only supports distributions, and scalar values over HTTP. All metrics will be supported after proxy version 7.0.*
+    > **Note**: *If you are sending data via the Wavefront Proxy, currently, this option only supports distributions, and scalar values over HTTP. All metrics will be supported after proxy version 7.0.*
 
 * **Option 2**: [Create a `WavefrontProxyClient`](#Option-2-Sending-Data-via-the-Wavefront-Proxy) to send data to a Wavefront proxy.
 
-> **Deprecated implementations** : *`WavefrontDirectIngestionClient` is deprecated. But, if you have configured your application to use the `WavefrontDirectIngestionClient`, it still sends data to Wavefront. We recommend all new applications to use the `WavefrontClient`.*
+> **Deprecated implementations**: *`WavefrontDirectIngestionClient` is deprecated. But, if you have configured your application to use the `WavefrontDirectIngestionClient`, it still sends data to Wavefront. We recommend all new applications to use the `WavefrontClient`.*
 
 ### Option 1: Sending Data via the WavefrontClient
 
@@ -161,7 +161,8 @@ Use `WavefrontClientFactory` to create a `WavefrontClient` instance, which can s
 The `WavefrontClientFactory` supports multiple client bindings. If more than one client configuration is specified, you can create a `WavefrontMultiClient` to send multiple Wavefront services.
 
 #### Prerequisites  
-* Sending data via the Wavefront Proxy? Before your application can use a WavefrontClient you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).  
+* Sending data via the Wavefront Proxy? 
+  Before your application can use a `WavefrontClient` you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).  
 * Sending data via direct ingestion? 
   * Verify that you have the Direct Data Ingestion permission. For details, see [Examine Groups, Roles, and Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
   * The URL of your Wavefront instance. This is the URL you connect to when you log in to Wavefront, typically something like `https://<domain>.wavefront.com`.
@@ -206,7 +207,7 @@ WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 ```
 #### Sending data to multiple Wavefront services
 
-Use `WavefrontMultiClient` to send data to multiple wavefront services so you handle the data traffic.
+Use `WavefrontMultiClient` to send data to multiple Wavefront services so you handle the data traffic.
 The `addClient()` supports null for batch size, queue size, and push interval. The defaults values are used if nothing is specified.
 
 **Example**: Creating a `WavefrontMultiClient` to send data to multiple Wavefront services.
