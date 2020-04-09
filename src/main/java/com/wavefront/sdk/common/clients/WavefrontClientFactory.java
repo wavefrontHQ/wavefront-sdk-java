@@ -48,7 +48,7 @@ public class WavefrontClientFactory {
    * Returns {@link WavefrontClientFactory} so that more clients may be initialized
    */
   public WavefrontClientFactory addClient(String url) {
-    return addClient(url, null, null, null);
+    return addClient(url, null, null, null, null);
   }
 
   /**
@@ -66,7 +66,7 @@ public class WavefrontClientFactory {
    * Returns {@link WavefrontClientFactory} so that more clients may be initialized
    */
   public WavefrontClientFactory addClient(String url, @Nullable Integer batchSize, @Nullable Integer maxQueueSize,
-                                          @Nullable Integer flushIntervalSeconds) {
+                                          @Nullable Integer flushIntervalSeconds, @Nullable Integer messageSizeInBytes) {
     ParsedHostString parsedHostString = getServerAndTokenFromEndpoint(url);
     if (existingClient(parsedHostString.server)) {
       throw new UnsupportedOperationException("client with id " + url + " already exists.");
@@ -81,6 +81,9 @@ public class WavefrontClientFactory {
     }
     if (flushIntervalSeconds != null) {
       builder.flushIntervalSeconds(flushIntervalSeconds);
+    }
+    if (messageSizeInBytes != null) {
+      builder.messageSizeBytes(messageSizeInBytes);
     }
 
     clients.add(builder.build());
