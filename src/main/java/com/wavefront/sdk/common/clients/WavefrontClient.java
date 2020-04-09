@@ -1,4 +1,4 @@
-package com.wavefront.sdk.direct.ingestion;
+package com.wavefront.sdk.common.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Throwables;
@@ -8,7 +8,7 @@ import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.Nullable;
-import com.wavefront.sdk.common.clients.WavefrontClientFactory;
+import com.wavefront.sdk.common.clients.service.ReportingService;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
@@ -41,20 +41,16 @@ import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 
 /**
- * Wavefront direct ingestion client that sends data directly to Wavefront cluster via the direct ingestion API.
- *
- * @deprecated This class will be removed in future versions in favor of
- * {@link WavefrontClientFactory} to construct Proxy and DirectDataIngestion senders.
+ * Wavefront client that sends data to Wavefront via Proxy or Directly to a Wavefront service
+ * via the direct ingestion API.
  *
  * @author Vikram Raman (vikram@wavefront.com)
+ * @author Mike McMahon (mike.mcmahon@wavefront.com)
  */
-@Deprecated
-public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable {
+public class WavefrontClient implements WavefrontSender, Runnable {
 
-  // Limit identical log messages to at most once every 5 seconds
   private static final MessageDedupingLogger logger = new MessageDedupingLogger(Logger.getLogger(
-      WavefrontDirectIngestionClient.class.getCanonicalName()), LogMessageType.values().length,
-      0.2);
+      WavefrontClient.class.getCanonicalName()), LogMessageType.values().length, 0.02);
 
   /**
    * Source to use if entity source is null
@@ -68,7 +64,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final LinkedBlockingQueue<String> histogramsBuffer;
   private final LinkedBlockingQueue<String> tracingSpansBuffer;
   private final LinkedBlockingQueue<String> spanLogsBuffer;
-  private final DataIngesterAPI directService;
+  private final ReportingService reportingService;
   private final ScheduledExecutorService scheduler;
   private final WavefrontSdkMetricsRegistry sdkMetricsRegistry;
 
@@ -117,12 +113,12 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     private int messageSizeBytes = Integer.MAX_VALUE;
 
     /**
-     * Create a new WavefrontDirectIngestionClient.Builder
+     * Create a new WavefrontClient.Builder
      *
-     * @param server A Wavefront server URL of the form "https://clusterName.wavefront.com"
+     * @param server A server URL of the form "https://clusterName.wavefront.com" or "http://internal.proxy.com:port"
      * @param token  A valid API token with direct ingestion permissions
      */
-    public Builder(String server, String token) {
+    protected Builder(String server, @Nullable String token) {
       this.server = server;
       this.token = token;
     }
@@ -174,16 +170,16 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     }
 
     /**
-     * Creates a new client that connects directly to a given Wavefront service.
+     * Creates a new client that flushes directly to a Proxy or Wavefront service.
      *
-     * return {@link WavefrontDirectIngestionClient}
+     * return {@link WavefrontClient}
      */
-    public WavefrontDirectIngestionClient build() {
-      return new WavefrontDirectIngestionClient(this);
+    public WavefrontClient build() {
+      return new WavefrontClient(this);
     }
   }
 
-  private WavefrontDirectIngestionClient(Builder builder) {
+  private WavefrontClient(Builder builder) {
     String tempSource = "unknown";
     try {
       tempSource = InetAddress.getLocalHost().getHostName();
@@ -199,13 +195,13 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     histogramsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     tracingSpansBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     spanLogsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
-    directService = new DataIngesterService(builder.server, builder.token);
-    scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory("wavefrontDirectSender"));
+    reportingService = new ReportingService(builder.server, builder.token);
+    scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory("wavefrontClientSender"));
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
 
     String processId = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
     sdkMetricsRegistry = new WavefrontSdkMetricsRegistry.Builder(this).
-        prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.direct").
+        prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.wfclient").
         tag(Constants.PROCESS_TAG_KEY, processId).
         build();
 
@@ -273,8 +269,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     if (!metricsBuffer.offer(point)) {
       pointsDropped.inc();
       logger.log(LogMessageType.METRICS_BUFFER_FULL.toString(), Level.WARNING,
-          "Buffer full, dropping metric point: " + point + ". Consider increasing the batch size " +
-              "of your sender to increase throughput.");
+          "Buffer full, dropping metric point: " + point + ". Consider increasing the batch " +
+              "size of your sender to increase throughput.");
+
     }
   }
 
@@ -322,6 +319,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       logger.log(LogMessageType.HISTOGRAMS_BUFFER_FULL.toString(), Level.WARNING,
           "Buffer full, dropping histograms: " + histograms + ". Consider increasing the batch " +
               "size of your sender to increase throughput.");
+
     }
   }
 
@@ -391,10 +389,10 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   @Override
   public void flush() throws IOException {
-    if (closed.get()) {
-      throw new IOException("attempt to flush closed sender");
-    }
-    this.flushNoCheck();
+      if (closed.get()) {
+          throw new IOException("attempt to flush closed sender");
+      }
+      this.flushNoCheck();
   }
 
   private void flushNoCheck() throws IOException {
@@ -441,15 +439,15 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                       + entityType + " will be discarded until the service is restarted.");
             } else {
               logger.log(permissionsMessageType.toString(), Level.SEVERE,
-                      "Please verify that Direct Data Ingestion and " + entityType + " are " +
-                          "enabled for your account! All " + entityType + " will be discarded " +
-                          "until the service is restarted.");
+                  "Please verify that Direct Data Ingestion and " + entityType + " are " +
+                      "enabled for your account! All " + entityType + " will be discarded " +
+                      "until the service is restarted.");
             }
         }
         continue;
       }
       try (InputStream is = itemsToStream(items)) {
-        int statusCode = directService.report(format, is);
+        int statusCode = reportingService.send(format, is);
         sdkMetricsRegistry.newCounter(entityPrefix + ".report." + statusCode).inc();
         if (400 <= statusCode && statusCode <= 599) {
           switch (statusCode) {
@@ -482,8 +480,8 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                   "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). Data " +
                       "will be requeued and resent.");
               requeue(buffer, items, dropped, entityType, bufferFullMessageType);
+            }
           }
-        }
       } catch (IOException ex) {
         dropped.inc(items.size());
         reportErrors.inc();
@@ -512,6 +510,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       }
     }
   }
+
 
   private InputStream itemsToStream(List<String> items) {
     StringBuilder sb = new StringBuilder();

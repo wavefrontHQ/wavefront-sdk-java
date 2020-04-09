@@ -63,7 +63,7 @@ public class ProxyTest {
             Thread[] threads = getAllThreads();
             Map<Long, Thread> tMap = new HashMap<>();
             for(Thread t : threads) {
-                if(t == null) {
+                if (t == null) {
                     continue;
                 }
                 tMap.put(t.getId(), t);
@@ -97,17 +97,17 @@ public class ProxyTest {
                 threads = getAllThreads();
                 int newT = 0;
                 for(Thread t : threads) {
-                    if(t == null) {
+                    if (t == null) {
                         break;
                     }
-                    if(!tMap.containsKey(t.getId()) && !t.isDaemon()) {
+                    if (!tMap.containsKey(t.getId()) && !t.isDaemon()) {
                         ++newT;
                         System.out.println("Non-daemon thread still running: " + t.toString() + ". Waiting for it to finish");
                     }
                 }
-                if(newT > 0) {
+                if (newT > 0) {
                     n++;
-                    if(n >= THREAD_WAIT_ITERATIONS) {
+                    if (n >= THREAD_WAIT_ITERATIONS) {
                         fail("Gave up waiting for threads to exit");
                     }
                     Thread.sleep(1000);

@@ -3,6 +3,7 @@ package com.wavefront.sdk.common;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 
+import javax.net.SocketFactory;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,8 +13,6 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.net.SocketFactory;
 
 /**
  * Creates a TCP client suitable for the WF proxy. That is: a client which is long-lived and

@@ -9,8 +9,10 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.locks.Lock;
@@ -240,6 +242,7 @@ public class WavefrontHistogramImpl {
     final List<Distribution> distributions = new ArrayList<>();
     Iterator<WeakReference<ConcurrentLinkedDeque<MinuteBin>>> globalBinsIter =
         globalHistogramBinsList.iterator();
+    Map<Long, List<Pair<Double, Integer>>> minuteBinToCentroidsMap = new HashMap<>();
     while (globalBinsIter.hasNext()) {
       WeakReference<ConcurrentLinkedDeque<MinuteBin>> weakRef = globalBinsIter.next();
       ConcurrentLinkedDeque<MinuteBin> sharedBinsInstance = weakRef.get();
@@ -249,17 +252,20 @@ public class WavefrontHistogramImpl {
         continue;
       }
 
+
       Iterator<MinuteBin> binsIter = sharedBinsInstance.iterator();
       while (binsIter.hasNext()) {
         MinuteBin minuteBin = binsIter.next();
         if (minuteBin.minuteMillis < cutoffMillis) {
-          List<Pair<Double, Integer>> centroids = minuteBin.distribution.centroids().stream().
-              map(c -> new Pair<>(c.mean(), c.count())).collect(Collectors.toList());
-          distributions.add(new Distribution(minuteBin.minuteMillis, centroids));
+          minuteBinToCentroidsMap.putIfAbsent(minuteBin.minuteMillis, new ArrayList<>());
+          minuteBinToCentroidsMap.get(minuteBin.minuteMillis).addAll(
+                  minuteBin.distribution.centroids().stream().
+                          map(c -> new Pair<>(c.mean(), c.count())).collect(Collectors.toList()));
           binsIter.remove();
         }
       }
     }
+    minuteBinToCentroidsMap.forEach((key, value) -> distributions.add(new Distribution(key, value)));
     return distributions;
   }
 

@@ -5,11 +5,10 @@ import com.wavefront.sdk.common.ReconnectingSocket;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 
+import javax.net.SocketFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-
-import javax.net.SocketFactory;
 
 /**
  * Connection Handler class for sending data to a Wavefront proxy listening on a given port.
@@ -17,6 +16,7 @@ import javax.net.SocketFactory;
  * @author Clement Pang (clement@wavefront.com).
  * @author Vikram Raman (vikram@wavefront.com).
  */
+@Deprecated
 public class ProxyConnectionHandler implements BufferFlusher, Closeable {
 
   private final InetSocketAddress address;
