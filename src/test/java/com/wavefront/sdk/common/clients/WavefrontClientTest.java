@@ -65,26 +65,23 @@ public class WavefrontClientTest {
 
   @Test
   public void testUrlFormatForService() {
-    List<URI> uris = Lists.newArrayList(
-        URI.create("http://127.0.0.1:2878"),
-        URI.create("http://127.0.0.1:2878/"),
-        URI.create("http://127.0.0.1:2878////"),
-        URI.create("http://localhost:2878/report"),
-        URI.create("http://localhost:2878/report/"),
-        URI.create("http://corp.proxies.acme.com:2878/prod/report/"),
-        URI.create("https://domain.wavefront.com"),
-        URI.create("https://domain.wavefront.com/"),
-        URI.create("https://domain.wavefront.com/report/"),
-        URI.create("https://domain.wavefront.com/report")
-    );
-
-    uris.forEach(this::validateURI);
+    validateURI(URI.create("http://127.0.0.1:2878"), "http://127.0.0.1:2878/report?f=wavefront");
+    validateURI(URI.create("http://127.0.0.1:2878/"), "http://127.0.0.1:2878/report?f=wavefront");
+    validateURI(URI.create("http://127.0.0.1:2878////"), "http://127.0.0.1:2878/report?f=wavefront");
+    validateURI(URI.create("http://localhost:2878/report"), "http://localhost:2878/report?f=wavefront");
+    validateURI(URI.create("http://localhost:2878/report/"), "http://localhost:2878/report?f=wavefront");
+    validateURI(URI.create("http://corp.proxies.acme.com:2878/prod/report/"),
+        "http://corp.proxies.acme.com:2878/prod/report?f=wavefront");
+    validateURI(URI.create("https://domain.wavefront.com"), "https://domain.wavefront.com/report?f=wavefront");
+    validateURI(URI.create("https://domain.wavefront.com/"), "https://domain.wavefront.com/report?f=wavefront");
+    validateURI(URI.create("https://domain.wavefront.com/report/"), "https://domain.wavefront.com/report?f=wavefront");
+    validateURI(URI.create("https://domain.wavefront.com/report"), "https://domain.wavefront.com/report?f=wavefront");
   }
 
-  private void validateURI(URI uri) {
+  private void validateURI(URI uri, String expected) {
     try {
       URL url = ReportingService.getReportingUrl(uri, "wavefront");
-      assertTrue(url.toString().endsWith("/report?f=wavefront"));
+      assertEquals(url.toString(), expected);
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     }

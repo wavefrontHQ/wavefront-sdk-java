@@ -58,8 +58,8 @@ public class ReportingService implements ReportAPI {
       readAndClose(urlConn.getInputStream());
     } catch (IOException ex) {
       if (urlConn != null) {
-          statusCode = urlConn.getResponseCode();
-          readAndClose(urlConn.getErrorStream());
+        statusCode = urlConn.getResponseCode();
+        readAndClose(urlConn.getErrorStream());
       }
     }
     return statusCode;
@@ -70,7 +70,8 @@ public class ReportingService implements ReportAPI {
       try (InputStream is = stream) {
         byte[] buffer = new byte[BUFFER_SIZE];
         // read entire stream before closing
-        while (is.read(buffer) > 0) {}
+        while (is.read(buffer) > 0) {
+        }
       }
     }
   }
@@ -78,6 +79,7 @@ public class ReportingService implements ReportAPI {
   /**
    * For a given URI generate a properly formatted URL suitable
    * for sending data to either proxies or a Wavefront service.
+   *
    * @param server a server to report to
    * @param format the format of data to send
    * @return returns as properly formatted URL ending in /report?=format
@@ -86,12 +88,12 @@ public class ReportingService implements ReportAPI {
   @VisibleForTesting
   public static URL getReportingUrl(URI server, String format) throws MalformedURLException {
     String originalPath = server.getPath() != null ? server.getPath() : "";
+    originalPath = originalPath.replaceAll("(\\/){2,}", "/");
+    originalPath = originalPath.equals("/") ? "" : originalPath;
     if (originalPath.endsWith("/report/")) {
-      originalPath = originalPath.replaceAll("/report/$","/report");
-    } else {
-      if (!originalPath.endsWith("/report")) {
-        originalPath += "/report";
-      }
+      originalPath = originalPath.replaceAll("/report/$", "/report");
+    } else if (!originalPath.endsWith("/report")) {
+      originalPath += "/report";
     }
     URL url = new URL(server.getScheme(), server.getHost(), server.getPort(), originalPath + "?f=" + format);
     return url;
