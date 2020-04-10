@@ -1,10 +1,12 @@
 package com.wavefront.sdk.common.clients.service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.wavefront.sdk.common.annotation.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.zip.GZIPOutputStream;
@@ -33,10 +35,10 @@ public class ReportingService implements ReportAPI {
     HttpURLConnection urlConn = null;
     int statusCode = 400;
     try {
-      String originalPath = uri.getPath() != null ? uri.getPath() : "";
-      URL url = new URL(uri.getScheme(), uri.getHost(), uri.getPort(), originalPath + "/?f=" + format);
+      URL url = getReportingUrl(uri, format);
       urlConn = (HttpURLConnection) url.openConnection();
       urlConn.setDoOutput(true);
+      urlConn.setRequestMethod("POST");
       urlConn.addRequestProperty("Content-Type", "application/octet-stream");
       urlConn.addRequestProperty("Content-Encoding", "gzip");
       if (token != null && !token.equals("")) {
@@ -56,8 +58,8 @@ public class ReportingService implements ReportAPI {
       readAndClose(urlConn.getInputStream());
     } catch (IOException ex) {
       if (urlConn != null) {
-          statusCode = urlConn.getResponseCode();
-          readAndClose(urlConn.getErrorStream());
+        statusCode = urlConn.getResponseCode();
+        readAndClose(urlConn.getErrorStream());
       }
     }
     return statusCode;
@@ -68,8 +70,32 @@ public class ReportingService implements ReportAPI {
       try (InputStream is = stream) {
         byte[] buffer = new byte[BUFFER_SIZE];
         // read entire stream before closing
-        while (is.read(buffer) > 0) {}
+        while (is.read(buffer) > 0) {
+        }
       }
     }
+  }
+
+  /**
+   * For a given URI generate a properly formatted URL suitable
+   * for sending data to either proxies or a Wavefront service.
+   *
+   * @param server a server to report to
+   * @param format the format of data to send
+   * @return returns as properly formatted URL ending in /report?=format
+   * @throws MalformedURLException
+   */
+  @VisibleForTesting
+  public static URL getReportingUrl(URI server, String format) throws MalformedURLException {
+    String originalPath = server.getPath() != null ? server.getPath() : "";
+    originalPath = originalPath.replaceAll("(\\/){2,}", "/");
+    originalPath = originalPath.equals("/") ? "" : originalPath;
+    if (originalPath.endsWith("/report/")) {
+      originalPath = originalPath.replaceAll("/report/$", "/report");
+    } else if (!originalPath.endsWith("/report")) {
+      originalPath += "/report";
+    }
+    URL url = new URL(server.getScheme(), server.getHost(), server.getPort(), originalPath + "?f=" + format);
+    return url;
   }
 }
