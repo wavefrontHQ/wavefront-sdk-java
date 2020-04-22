@@ -1,11 +1,14 @@
 package com.wavefront.sdk.common.application;
 
+import com.google.common.base.Strings;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.wavefront.sdk.common.Constants.APPLICATION_TAG_KEY;
 import static com.wavefront.sdk.common.Constants.CLUSTER_TAG_KEY;
@@ -82,7 +85,45 @@ public class ApplicationTags {
      * @return {@code this}
      */
     public Builder customTags(Map<String, String> customTags) {
-      this.customTags = customTags;
+      this.customTags.putAll(customTags);
+      return this;
+    }
+
+    /**
+     * Set additional custom tags from environment variables that matches the a
+     * regular expressions.
+     * This setting is optional.
+     *
+     * @param regex Regular expression.
+     * @return {@code this}
+     */
+    public Builder tagsFromEnv(String regex) {
+      Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+      Map<String, String> env = System.getenv();
+      env.forEach((var, value) -> {
+        Matcher matcher = pattern.matcher(var);
+        if (matcher.matches()) {
+            if (!Strings.isNullOrEmpty(value)) {
+              this.customTags.put(var, value);
+            }
+        }
+      });
+      return this;
+    }
+    
+    /**
+     * Set additional a custom tag from environment variable.
+     * This setting is optional.
+     *
+     * @param varName Regular environment variable name.
+     * @param tagName Custom tag name.
+     * @return {@code this}
+     */
+   public Builder tagFromEnv(String varName, String tagName) {
+      String value = System.getenv().get(varName);
+      if (!Strings.isNullOrEmpty(value)) {
+          this.customTags.put(tagName, value);
+      }
       return this;
     }
 
