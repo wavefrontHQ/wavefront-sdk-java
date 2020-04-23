@@ -90,9 +90,7 @@ public class ApplicationTags {
     }
 
     /**
-     * Set additional custom tags from environment variables that matches the a
-     * regular expressions.
-     * This setting is optional.
+     * Set additional custom tags from environment variables that match the given regex.
      *
      * @param regex Regular expression.
      * @return {@code this}
@@ -112,8 +110,7 @@ public class ApplicationTags {
     }
     
     /**
-     * Set additional a custom tag from environment variable.
-     * This setting is optional.
+     * Set a custom tag from the given environment variable.
      *
      * @param varName Regular environment variable name.
      * @param tagName Custom tag name.
