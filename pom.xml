@@ -145,6 +145,12 @@
             <scope>test</scope>
             <version>3.6</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.stefanbirkner</groupId>
+            <artifactId>system-rules</artifactId>
+            <scope>test</scope>
+            <version>1.19.0</version>
+        </dependency>
     </dependencies>
 
     <profiles>
