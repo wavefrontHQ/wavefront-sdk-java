@@ -97,7 +97,7 @@ public class ApplicationTags {
      */
     public Builder tagsFromEnv(String regex) {
       Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-      Map<String, String> env = System.getenv();
+      Map<String, String> env = this.getenv();
       env.forEach((var, value) -> {
         Matcher matcher = pattern.matcher(var);
         if (matcher.matches()) {
@@ -110,6 +110,14 @@ public class ApplicationTags {
     }
     
     /**
+     * just for unit tests
+     * @return 
+     */
+    Map<String,String> getenv() {
+      return System.getenv();
+    }
+    
+    /**
      * Set a custom tag from the given environment variable.
      *
      * @param varName Regular environment variable name.
@@ -117,7 +125,7 @@ public class ApplicationTags {
      * @return {@code this}
      */
    public Builder tagFromEnv(String varName, String tagName) {
-      String value = System.getenv().get(varName);
+      String value = this.getenv().get(varName);
       if (!Strings.isNullOrEmpty(value)) {
           this.customTags.put(tagName, value);
       }
@@ -207,3 +215,4 @@ public class ApplicationTags {
     }});
   }
 }
+
