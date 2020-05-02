@@ -63,7 +63,7 @@ public class HeartbeaterService implements Runnable, Closeable {
     }
     scheduler = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("heart-beater"));
-    scheduler.scheduleAtFixedRate(this, 1, 5, TimeUnit.MINUTES);
+    scheduler.scheduleAtFixedRate(this, 1, 300, TimeUnit.SECONDS);
   }
 
   public void reportCustomTags(Map<String, String> customTagsMap) {
