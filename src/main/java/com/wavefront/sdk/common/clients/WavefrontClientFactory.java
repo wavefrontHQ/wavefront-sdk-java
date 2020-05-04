@@ -67,6 +67,27 @@ public class WavefrontClientFactory {
    */
   public WavefrontClientFactory addClient(String url, @Nullable Integer batchSize, @Nullable Integer maxQueueSize,
                                           @Nullable Integer flushIntervalSeconds, @Nullable Integer messageSizeInBytes) {
+    return addClient(url, batchSize, maxQueueSize, flushIntervalSeconds, messageSizeInBytes, true);
+  }
+
+  /**
+   * Adds a new WavefrontSender that will either forward points to a proxy or directly to a Wavefront service.
+   * <br />
+   * <strong>proxy ingestion:</strong> <i>proxy://your.proxy.com:port</i> <br />
+   * <strong>direct ingestion:</strong> <i>https://token@yourCluster.wavefront.com</i> <br />
+   * <br />
+   *
+   * @param url The URL of either yourCluster or your.proxy.com
+   * @param batchSize The total metrics, histograms, spans, or span logs to send in a single flush
+   * @param maxQueueSize The total metrics, histograms, spans, or span logs to queue internally before dropping data
+   * @param flushIntervalSeconds  How often to flush data upstream
+   * @param includeSdkMetrics Whether or not to include the internal SDK Metrics
+   * @return
+   * Returns {@link WavefrontClientFactory} so that more clients may be initialized
+   */
+  public WavefrontClientFactory addClient(String url, @Nullable Integer batchSize, @Nullable Integer maxQueueSize,
+                                          @Nullable Integer flushIntervalSeconds, @Nullable Integer messageSizeInBytes,
+                                          boolean includeSdkMetrics) {
     ParsedHostString parsedHostString = getServerAndTokenFromEndpoint(url);
     if (existingClient(parsedHostString.server)) {
       throw new UnsupportedOperationException("client with id " + url + " already exists.");
@@ -85,9 +106,11 @@ public class WavefrontClientFactory {
     if (messageSizeInBytes != null) {
       builder.messageSizeBytes(messageSizeInBytes);
     }
+    builder.includeSdkMetrics(includeSdkMetrics);
 
     clients.add(builder.build());
     return this;
+
   }
 
   /**

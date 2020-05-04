@@ -31,6 +31,7 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
   private final String prefix;
   private final ConcurrentMap<String, WavefrontSdkMetric> metrics;
   private final ScheduledExecutorService scheduler;
+  private final boolean sendSdkMetrics;
 
   public static class Builder {
     // Required parameters
@@ -39,6 +40,7 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
     // Optional parameters
     private final Map<String, String> tags;
     private int reportingIntervalSeconds = 60;
+    private boolean sendSdkMetrics = true;
     private String source;
     private String prefix;
 
@@ -109,6 +111,16 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
     }
 
     /**
+     * If this is set to false the sender will never actually send metrics and will simply flush metrics
+     * @param sendSdkMetrics
+     * @return
+     */
+    public Builder sendSdkMetrics(boolean sendSdkMetrics) {
+      this.sendSdkMetrics = sendSdkMetrics;
+      return this;
+    }
+
+    /**
      * Builds a registry.
      *
      * @return  A new instance of the registry.
@@ -123,11 +135,16 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
     source = builder.source;
     tags = builder.tags;
     prefix = builder.prefix == null || builder.prefix.isEmpty() ? "" : builder.prefix + ".";
+    sendSdkMetrics = builder.sendSdkMetrics;
     metrics = new ConcurrentHashMap<>();
-    scheduler = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sdk-metrics-registry"));
-    scheduler.scheduleAtFixedRate(this, builder.reportingIntervalSeconds,
-        builder.reportingIntervalSeconds, TimeUnit.SECONDS);
+    if (sendSdkMetrics) {
+      scheduler = Executors.newScheduledThreadPool(1,
+          new NamedThreadFactory("sdk-metrics-registry"));
+      scheduler.scheduleAtFixedRate(this, builder.reportingIntervalSeconds,
+          builder.reportingIntervalSeconds, TimeUnit.SECONDS);
+    } else {
+      scheduler = null;
+    }
   }
 
   @Override
@@ -154,7 +171,9 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
 
   @Override
   public void close() {
-    Utils.shutdownExecutorAndWait(scheduler);
+    if (sendSdkMetrics) {
+      Utils.shutdownExecutorAndWait(scheduler);
+    }
   }
 
   /**
