@@ -490,8 +490,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
                   "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). Data " +
                       "will be requeued and resent.");
               requeue(buffer, items, dropped, entityType, bufferFullMessageType);
-            }
           }
+        }
       } catch (IOException ex) {
         dropped.inc(items.size());
         reportErrors.inc();
