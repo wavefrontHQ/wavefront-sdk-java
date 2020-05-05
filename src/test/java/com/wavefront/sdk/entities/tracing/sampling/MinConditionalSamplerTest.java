@@ -22,7 +22,7 @@ public class MinConditionalSamplerTest {
    */
   @Test
   public void testValidSpan() {
-    assertTrue(minConditionalSampler.sample(SPAN_OP_NAME,1231, 13),
+    assertTrue(minConditionalSampler.sample(SPAN_OP_NAME, 1231, 13),
         "Span duration is greater than minimum threshold and expected to be sampled.");
 
   }
@@ -32,7 +32,7 @@ public class MinConditionalSamplerTest {
    */
   @Test
   public void testInvalidSpan() {
-    assertFalse(minConditionalSampler.sample(SPAN_OP_NAME,1231, 8),
+    assertFalse(minConditionalSampler.sample(SPAN_OP_NAME, 1231, 8),
         "Span duration is less than minimum threshold and expected to be discarded.");
   }
 
