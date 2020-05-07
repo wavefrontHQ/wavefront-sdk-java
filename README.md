@@ -189,7 +189,7 @@ WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 
 ```java
 // Proxy based ingestion
-   new WavefrontClient.Builder(proxyServerWithPort).
+WavefrontSender wavefrontSender = new WavefrontClient.Builder(proxyServerWithPort).
         messageSizeBytes(messageSizeInBytes).
         batchSize(batchSize).
         flushIntervalSeconds(flushIntervalSeconds).
@@ -219,7 +219,7 @@ WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 
 ```java
 // Wavefront Direct Ingestion
-   new WavefrontClient.Builder(cluster, token).
+WavefrontSender wavefrontSender = new WavefrontClient.Builder(cluster, token).
         messageSizeBytes(messageSizeInBytes).
         batchSize(batchSize).
         flushIntervalSeconds(flushIntervalSeconds).
