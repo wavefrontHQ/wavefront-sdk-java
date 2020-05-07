@@ -160,7 +160,7 @@ The `WavefrontClientFactory` supports multiple client bindings. If more than one
   <br/>Before your application can use a `WavefrontClient` you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).  
 * Sending data via direct ingestion? 
   * Verify that you have the Direct Data Ingestion permission. For details, see [Examine Groups, Roles, and Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
-  * The URL of your Wavefront instance. This is the URL you connect to when you log in to Wavefront, typically something like `https://<domain>.wavefront.com`.
+  * The HTTP URL of your Wavefront instance. This is the URL you connect to when you log in to Wavefront, typically something like `http://<domain>.wavefront.com`.<br/> With Wavefront proxy version 7.0 or newer, you can send data over HTTP using a single port. Example: `http://<domain>.wavefront.com:<port>`
   * [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
 
 ### Initialize the WavefrontClient
@@ -178,7 +178,7 @@ Together, the batch size and flush interval control the maximum theoretical thro
 **Example**: Use a factory class to create a WavefrontClient and send data to Wavefront via Wavefront Proxy. 
 
 ```java
-// Add a client with the following URL format: "proxy://<your.proxy.load.balancer>.com"
+// Add a client with the following URL format: "proxy://<your.proxy.load.balancer.com>:<somePort>"
 // to send data to proxies
 WavefrontClientFactory wavefrontClientFactory = new WavefrontClientFactory();
 wavefrontClientFactory.addClient(wavefrontURL)
@@ -200,7 +200,7 @@ WavefrontSender wavefrontSender = new WavefrontClient.Builder(proxyServerWithPor
 **Example**: Use a factory class to create a WavefrontClient and send  data to Wavefront via direct ingestion.
 
 ```java
-// Create a factory and add a client with the following URL format: "https://TOKEN@DOMAIN.wavefront.com"
+// Create a factory and add a client with the following URL format: "http://TOKEN@DOMAIN.wavefront.com"
 // and a Wavefront API token with direct ingestion permission
 WavefrontClientFactory wavefrontClientFactory = new WavefrontClientFactory();
 
