@@ -1,6 +1,8 @@
 package com.wavefront.sdk.common.application;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.annotation.Nullable;
 
@@ -101,22 +103,19 @@ public class ApplicationTags {
       env.forEach((var, value) -> {
         Matcher matcher = pattern.matcher(var);
         if (matcher.matches()) {
-            if (!Strings.isNullOrEmpty(value)) {
-              this.customTags.put(var, value);
-            }
+          if (!Strings.isNullOrEmpty(value)) {
+            this.customTags.put(var, value);
+          }
         }
       });
       return this;
     }
-    
-    /**
-     * just for unit tests
-     * @return 
-     */
-    Map<String,String> getenv() {
+
+    @VisibleForTesting
+    Map<String, String> getenv() {
       return System.getenv();
     }
-    
+
     /**
      * Set a custom tag from the given environment variable.
      *
@@ -124,10 +123,10 @@ public class ApplicationTags {
      * @param tagName Custom tag name.
      * @return {@code this}
      */
-   public Builder tagFromEnv(String varName, String tagName) {
+    public Builder tagFromEnv(String varName, String tagName) {
       String value = this.getenv().get(varName);
       if (!Strings.isNullOrEmpty(value)) {
-          this.customTags.put(tagName, value);
+        this.customTags.put(tagName, value);
       }
       return this;
     }
