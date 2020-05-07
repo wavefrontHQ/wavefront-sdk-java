@@ -1,8 +1,13 @@
 package com.wavefront.sdk.common.clients;
 
+import com.google.common.collect.Lists;
+import com.wavefront.sdk.common.clients.service.ReportingService;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
 import org.junit.jupiter.api.Test;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -11,6 +16,7 @@ import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for the {@link WavefrontClient} class
@@ -55,5 +61,29 @@ public class WavefrontClientTest {
   private String createString(int size) {
     return new String(new char[size]).replace("\0", "a");
   }
-  
+
+
+  @Test
+  public void testUrlFormatForService() {
+    validateURI(URI.create("http://127.0.0.1:2878"), "http://127.0.0.1:2878/report?f=wavefront");
+    validateURI(URI.create("http://127.0.0.1:2878/"), "http://127.0.0.1:2878/report?f=wavefront");
+    validateURI(URI.create("http://127.0.0.1:2878////"), "http://127.0.0.1:2878/report?f=wavefront");
+    validateURI(URI.create("http://localhost:2878/report"), "http://localhost:2878/report?f=wavefront");
+    validateURI(URI.create("http://localhost:2878/report/"), "http://localhost:2878/report?f=wavefront");
+    validateURI(URI.create("http://corp.proxies.acme.com:2878/prod/report/"),
+        "http://corp.proxies.acme.com:2878/prod/report?f=wavefront");
+    validateURI(URI.create("https://domain.wavefront.com"), "https://domain.wavefront.com/report?f=wavefront");
+    validateURI(URI.create("https://domain.wavefront.com/"), "https://domain.wavefront.com/report?f=wavefront");
+    validateURI(URI.create("https://domain.wavefront.com/report/"), "https://domain.wavefront.com/report?f=wavefront");
+    validateURI(URI.create("https://domain.wavefront.com/report"), "https://domain.wavefront.com/report?f=wavefront");
+  }
+
+  private void validateURI(URI uri, String expected) {
+    try {
+      URL url = ReportingService.getReportingUrl(uri, "wavefront");
+      assertEquals(url.toString(), expected);
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

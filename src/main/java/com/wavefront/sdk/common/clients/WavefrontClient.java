@@ -118,9 +118,19 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param server A server URL of the form "https://clusterName.wavefront.com" or "http://internal.proxy.com:port"
      * @param token  A valid API token with direct ingestion permissions
      */
-    protected Builder(String server, @Nullable String token) {
+    public Builder(String server, @Nullable String token) {
       this.server = server;
       this.token = token;
+    }
+
+    /**
+     * Create a new WavefrontClient.Builder
+     *
+     * @param proxyServer A server URL of the the form "http://internal.proxy.com:port"
+     */
+    public Builder(String proxyServer) {
+      this.server = proxyServer;
+      this.token = null;
     }
 
     /**
