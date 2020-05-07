@@ -145,23 +145,18 @@ You can send metrics, histograms, or trace data from your application to the Wav
 * Use a [**Wavefront proxy**](https://docs.wavefront.com/proxies.html), which then forwards the data to the Wavefront service. This is the recommended choice for a large-scale deployment that needs resilience to internet outages, control over data queuing and filtering, and more.
 * Use [**direct ingestion**](https://docs.wavefront.com/direct_ingestion.html) to send the data directly to the Wavefront service. This is the simplest way to get up and running quickly.
 
-The `WavefrontSender` interface has the following implementations:
+[Create a `WavefrontClient`](#Sending-Data-via-the-WavefrontClient) to send data to Wavefront either via Wavefront proxy or directly over HTTP.
 
-* **Option 1**: [Create a `WavefrontClient`](#Option-1-Sending-Data-via-the-WavefrontClient) to send data to Wavefront either via Wavefront proxy or directly over HTTP.
-    > **Note**: *If you are sending data via the Wavefront Proxy, currently, this option only supports distributions, and scalar values over HTTP. All metrics will be supported after proxy version 7.0.*
+> **Deprecated implementations**: *`WavefrontDirectIngestionClient` and `WavefrontProxyClient` are deprecated. We recommend all new applications to use the `WavefrontClient`.*
 
-* **Option 2**: [Create a `WavefrontProxyClient`](#Option-2-Sending-Data-via-the-Wavefront-Proxy) to send data to a Wavefront proxy.
-
-> **Deprecated implementations**: *`WavefrontDirectIngestionClient` is deprecated. But, if you have configured your application to use the `WavefrontDirectIngestionClient`, it still sends data to Wavefront. We recommend all new applications to use the `WavefrontClient`.*
-
-### Option 1: Sending Data via the WavefrontClient
+### Sending Data via the WavefrontClient
 
 Use `WavefrontClientFactory` to create a `WavefrontClient` instance, which can send data directly to a Wavefront service or send data using a Wavefront Proxy.
 
 The `WavefrontClientFactory` supports multiple client bindings. If more than one client configuration is specified, you can create a `WavefrontMultiClient` to send multiple Wavefront services.
 
 #### Prerequisites  
-* Sending data via the Wavefront Proxy? 
+* Sending data via Wavefront proxy? 
   <br/>Before your application can use a `WavefrontClient` you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).  
 * Sending data via direct ingestion? 
   * Verify that you have the Direct Data Ingestion permission. For details, see [Examine Groups, Roles, and Permissions](https://docs.wavefront.com/users_account_managing.html#examine-groups-roles-and-permissions).
@@ -174,13 +169,13 @@ You initialize a `WavefrontClient` by building it with the information you obtai
 
 Optionally, you can call factory methods to tune the following ingestion properties:
 
-* Max queue size - Internal buffer capacity of the `WavefrontSender`. Any data in excess of this size is dropped.
+* Max queue size - Internal buffer capacity of the `WavefrontSender`. Data that exceeds this size is dropped.
 * Flush interval - Interval for flushing data from the `WavefrontSender` directly to Wavefront.
 * Batch size - Amount of data to send to Wavefront in each flush interval.
 
 Together, the batch size and flush interval control the maximum theoretical throughput of the `WavefrontSender`. Override the defaults _only_ to set higher values.
 
-**Example**: Sending data to Wavefront via the Wavefront Proxy (after proxy version 7.0)
+**Example**: Sending data to Wavefront via the Wavefront Proxy
 ```java
 // Add a client with the following URL format: "proxy://<your.proxy.load.balancer>.com"
 // to send data to proxies
@@ -219,51 +214,6 @@ wavefrontClientFactory.addClient("proxy://our.proxy.lb.com:2878");
 
 WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 ```
-
-### Option 2: Sending Data via the Wavefront Proxy
-
-**Prerequisite** 
-Before your application can use a `WavefrontProxyClient`, you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).
-
-When sending data via the Wavefront proxy, you need to create a `WavefrontProxyClient`. Include the following information.
-
-* The name of the host that will run the Wavefront proxy.
-* One or more proxy listening ports to send data to. The ports you specify depend on the kinds of data you want to send (metrics, histograms, and/or trace data). You must specify at least one listener port. 
-* Optional settings for tuning communication with the proxy.
-
-> **Note**: See [Advanced Proxy Configuration and Installation](https://docs.wavefront.com/proxies_configuring.html) for details.
-
-```java
-// Create the builder with the proxy hostname or address
-WavefrontProxyClient.Builder wfProxyClientBuilder = new WavefrontProxyClient.Builder(proxyHostName);
-
-// Set the proxy port to send metrics to. Default: 2878
-wfProxyClientBuilder.metricsPort(2878);
-
-// Set a proxy port to send histograms to.  Recommended: 2878
-wfProxyClientBuilder.distributionPort(2878);
-
-// Set a proxy port to send trace data to. Recommended: 30000
-wfProxyClientBuilder.tracingPort(30_000);
-
-// Optional: Set a custom socketFactory to override the default SocketFactory
-wfProxyClientBuilder.socketFactory(<SocketFactory>);
-
-// Optional: Set a nondefault interval (in seconds) for flushing data from the sender to the proxy. Default: 5 seconds
-wfProxyClientBuilder.flushIntervalSeconds(2);
-
-// Create the WavefrontProxyClient
-WavefrontSender wavefrontSender = wfProxyClientBuilder.build();
-```
-
-> **Note:** When you set up a Wavefront proxy on the specified proxy host, you specify the port it will listen to for each type of data to be sent. The `WavefrontProxyClient` must send data to the same ports that the Wavefront proxy listens to. Consequently, the port-related builder methods must specify the same port numbers as the corresponding proxy configuration properties. See the following table: 
-
-| `WavefrontProxyClient` builder method | Corresponding property in `wavefront.conf` |
-| ----- | -------- |
-| `metricsPort()` | `pushListenerPorts=` |
-| `distributionPort()` | `histogramDistListenerPorts=` |
-| `tracingPort()` | `traceListenerPorts=` |
-
 
 ## Send Data to Wavefront
 
