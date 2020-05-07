@@ -145,7 +145,7 @@ You can send metrics, histograms, or trace data from your application to the Wav
 * Use a [**Wavefront proxy**](https://docs.wavefront.com/proxies.html), which then forwards the data to the Wavefront service. This is the recommended choice for a large-scale deployment that needs resilience to internet outages, control over data queuing and filtering, and more.
 * Use [**direct ingestion**](https://docs.wavefront.com/direct_ingestion.html) to send the data directly to the Wavefront service. This is the simplest way to get up and running quickly.
 
-[Create a `WavefrontClient`](#Sending-Data-via-the-WavefrontClient) to send data to Wavefront either via Wavefront proxy or directly over HTTP.
+Let's [create a `WavefrontClient`](#Sending-Data-via-the-WavefrontClient) to send data to Wavefront either via Wavefront proxy or directly over HTTP.
 
 > **Deprecated implementations**: *`WavefrontDirectIngestionClient` and `WavefrontProxyClient` are deprecated. We recommend all new applications to use the `WavefrontClient`.*
 
@@ -155,7 +155,7 @@ Use `WavefrontClientFactory` to create a `WavefrontClient` instance, which can s
 
 The `WavefrontClientFactory` supports multiple client bindings. If more than one client configuration is specified, you can create a `WavefrontMultiClient` to send multiple Wavefront services.
 
-#### Prerequisites  
+### Prerequisites  
 * Sending data via Wavefront proxy? 
   <br/>Before your application can use a `WavefrontClient` you must [set up and start a Wavefront proxy](https://docs.wavefront.com/proxies_installing.html).  
 * Sending data via direct ingestion? 
@@ -163,7 +163,7 @@ The `WavefrontClientFactory` supports multiple client bindings. If more than one
   * The URL of your Wavefront instance. This is the URL you connect to when you log in to Wavefront, typically something like `https://<domain>.wavefront.com`.
   * [Obtain the API token](http://docs.wavefront.com/wavefront_api.html#generating-an-api-token).
 
-#### Initialize the WavefrontClient
+### Initialize the WavefrontClient
 
 You initialize a `WavefrontClient` by building it with the information you obtained in the Prerequisites section.
 
@@ -201,7 +201,7 @@ wavefrontClientFactory.addClient(wavefrontURL,
 
 WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 ```
-#### Sending data to multiple Wavefront services
+### Sending data to multiple Wavefront services
 
 Use `WavefrontMultiClient` to send data to multiple Wavefront services so you handle the data traffic.
 The `addClient()` supports null for batch size, queue size, and push interval. The defaults values are used if nothing is specified.
