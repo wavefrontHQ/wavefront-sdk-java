@@ -472,7 +472,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       try (InputStream is = itemsToStream(items)) {
         int statusCode = reportingService.send(format, is);
         sdkMetricsRegistry.newCounter(entityPrefix + ".report." + statusCode).inc();
-        if ((400 <= statusCode && statusCode <= 599) || statusCode == -1) {
+        if (400 <= statusCode && statusCode <= 599) {
           switch (statusCode) {
             case 401:
               logger.log(permissionsMessageType.toString(), Level.SEVERE,
