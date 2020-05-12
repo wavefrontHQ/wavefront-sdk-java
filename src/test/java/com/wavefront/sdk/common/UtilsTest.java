@@ -464,12 +464,41 @@ public class UtilsTest {
   public void testSpanLogsToLineData() throws IOException {
     assertEquals("{\"traceId\":\"7b3bf470-9456-11e8-9eb6-529269fb1459\"," +
             "\"spanId\":\"0313bafe-9457-11e8-9eb6-529269fb1459\"," +
-            "\"logs\":[{\"timestamp\":91616745187,\"fields\":{\"key1\":\"val1\"}}]}\n",
+            "\"logs\":[{\"timestamp\":91616745187,\"fields\":{\"key1\":\"val1\"}}]," +
+            "\"span\":null}\n",
         spanLogsToLineData(UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
             UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
             Arrays.asList(new SpanLog(91616745187L,
                 new HashMap<String, String>() {{
                   put("key1", "val1");
                 }}))));
+  }
+
+  @Test
+  public void testSpanLogsToLineDataWithSpan() throws IOException {
+    assertEquals("{\"traceId\":\"7b3bf470-9456-11e8-9eb6-529269fb1459\"," +
+            "\"spanId\":\"0313bafe-9457-11e8-9eb6-529269fb1459\"," +
+            "\"logs\":[{\"timestamp\":91616745187,\"fields\":{\"key1\":\"val1\"}}]," +
+            "\"span\":\"\\\"getAllUsers\\\" source=\\\"localhost\\\" " +
+              "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
+              "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
+              "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
+              "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
+              "\\\"application\\\"=\\\"Wavefront\\\" \\\"http.method\\\"=\\\"GET\\\" " +
+              "1493773500 343500\\n\"" +
+            "}\n",
+        spanLogsToLineData(UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
+            UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
+            Arrays.asList(new SpanLog(91616745187L,
+                new HashMap<String, String>() {{
+                  put("key1", "val1");
+                }})),
+            "\"getAllUsers\" source=\"localhost\" " +
+                "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
+                "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
+                "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
+                "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
+                "\"application\"=\"Wavefront\" " +
+                "\"http.method\"=\"GET\" 1493773500 343500\n"));
   }
 }

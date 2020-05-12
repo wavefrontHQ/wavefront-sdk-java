@@ -261,6 +261,12 @@ public class Utils {
 
   public static String spanLogsToLineData(UUID traceId, UUID spanId, @NonNull List<SpanLog> spanLogs)
       throws JsonProcessingException {
+    return spanLogsToLineData(traceId, spanId, spanLogs, null);
+  }
+
+  public static String spanLogsToLineData(UUID traceId, UUID spanId,
+                                          @NonNull List<SpanLog> spanLogs, @Nullable String span)
+      throws JsonProcessingException {
     /*
      * Wavefront Span Log Data format
      * Example:
@@ -282,7 +288,8 @@ public class Utils {
      */
 
     StringBuilder toReturn = new StringBuilder();
-    toReturn.append(JSON_PARSER.writeValueAsString(new SpanLogsDTO(traceId, spanId, spanLogs)));
+    toReturn.append(JSON_PARSER.writeValueAsString(new SpanLogsDTO(traceId, spanId, spanLogs,
+        span)));
     toReturn.append("\n");
     return toReturn.toString();
   }

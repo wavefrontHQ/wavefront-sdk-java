@@ -355,7 +355,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     if (tracingSpansBuffer.offer(span)) {
       // attempt span logs after span is sent.
       if (spanLogs != null && !spanLogs.isEmpty()) {
-        sendSpanLogs(traceId, spanId, spanLogs);
+        sendSpanLogs(traceId, spanId, spanLogs, span);
       }
     } else {
       spansDropped.inc();
@@ -368,10 +368,10 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
-  private void sendSpanLogs(UUID traceId, UUID spanId, List<SpanLog> spanLogs) {
+  private void sendSpanLogs(UUID traceId, UUID spanId, List<SpanLog> spanLogs, String span) {
     // attempt span logs
     try {
-      String spanLogsJson = spanLogsToLineData(traceId, spanId, spanLogs);
+      String spanLogsJson = spanLogsToLineData(traceId, spanId, spanLogs, span);
       spanLogsValid.inc();
       if (!spanLogsBuffer.offer(spanLogsJson)) {
         spanLogsDropped.inc();
