@@ -451,7 +451,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       try (InputStream is = itemsToStream(items)) {
         int statusCode = directService.report(format, is);
         sdkMetricsRegistry.newCounter(entityPrefix + ".report." + statusCode).inc();
-        if ((400 <= statusCode && statusCode <= 599) || statusCode == -1)
+        if ((400 <= statusCode && statusCode <= 599) || statusCode == -1) {
           switch (statusCode) {
             case 401:
               logger.log(permissionsMessageType.toString(), Level.SEVERE,
