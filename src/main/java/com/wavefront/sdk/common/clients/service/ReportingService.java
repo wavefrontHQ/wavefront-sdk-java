@@ -2,6 +2,7 @@ package com.wavefront.sdk.common.clients.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.wavefront.sdk.common.annotation.Nullable;
+import com.wavefront.sdk.common.logging.MessageDedupingLogger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,8 +21,8 @@ import java.util.zip.GZIPOutputStream;
  */
 public class ReportingService implements ReportAPI {
 
-  private static final Logger log = Logger.getLogger(ReportingService.class.getCanonicalName());
-
+  private static final MessageDedupingLogger log =
+      new MessageDedupingLogger(Logger.getLogger(ReportingService.class.getCanonicalName()), 2, 0.2f);
 
   private final String token;
   private final URI uri;
