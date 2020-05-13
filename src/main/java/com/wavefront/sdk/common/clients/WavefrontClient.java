@@ -111,6 +111,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private int batchSize = 10000;
     private int flushIntervalSeconds = 1;
     private int messageSizeBytes = Integer.MAX_VALUE;
+    private boolean includeSdkMetrics = true;
 
     /**
      * Create a new WavefrontClient.Builder
@@ -180,6 +181,17 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
 
     /**
+     * Default is true, if false the internal metrics emitted from this sender will be disabled
+     *
+     * @param includeSdkMetrics Whether or not to include the SDK Internal Metrics
+     * @return
+     */
+    public Builder includeSdkMetrics(boolean includeSdkMetrics) {
+      this.includeSdkMetrics = includeSdkMetrics;
+      return this;
+    }
+
+    /**
      * Creates a new client that flushes directly to a Proxy or Wavefront service.
      *
      * return {@link WavefrontClient}
@@ -213,6 +225,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     sdkMetricsRegistry = new WavefrontSdkMetricsRegistry.Builder(this).
         prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.wfclient").
         tag(Constants.PROCESS_TAG_KEY, processId).
+        sendSdkMetrics(builder.includeSdkMetrics).
         build();
 
     sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);
