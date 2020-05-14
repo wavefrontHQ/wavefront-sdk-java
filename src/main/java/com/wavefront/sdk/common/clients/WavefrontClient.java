@@ -472,7 +472,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       try (InputStream is = itemsToStream(items)) {
         int statusCode = reportingService.send(format, is);
         sdkMetricsRegistry.newCounter(entityPrefix + ".report." + statusCode).inc();
-        if (400 <= statusCode && statusCode <= 599) {
+        if ((400 <= statusCode && statusCode <= 599) || statusCode == -1) {
           switch (statusCode) {
             case 401:
               logger.log(permissionsMessageType.toString(), Level.SEVERE,
@@ -503,8 +503,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
                   "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). Data " +
                       "will be requeued and resent.");
               requeue(buffer, items, dropped, entityType, bufferFullMessageType);
-            }
           }
+        }
       } catch (IOException ex) {
         dropped.inc(items.size());
         reportErrors.inc();
