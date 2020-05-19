@@ -13,9 +13,9 @@ import java.util.ArrayList;
 public class MinConditionalSamplerTest {
 
   private static final String SPAN_OP_NAME = "spanOperationName";
-  private static final long SPAN_MIN_DURATION = 10;
+  private static final long SPAN_MIN_DURATION_MILLIS = 10;
   MinConditionalSampler minConditionalSampler = new MinConditionalSampler(new ArrayList<>(),
-      SPAN_MIN_DURATION);
+      SPAN_MIN_DURATION_MILLIS);
 
   /**
    * Test valid span i.e. span more than minimum duration gets accepted.

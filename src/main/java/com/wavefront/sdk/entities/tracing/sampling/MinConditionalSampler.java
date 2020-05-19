@@ -11,18 +11,35 @@ import java.util.List;
  */
 public class MinConditionalSampler extends CompositeSampler{
 
-  private final long minimumDuration;
+  private volatile long minimumDurationMillis;
 
-  public MinConditionalSampler(List<Sampler> samplers, long minimumDuration) {
+  /**
+   * Constructor.
+   *
+   * @param samplers              The list of samplers to delegate to if the minimum duration
+   *                              condition is met.
+   * @param minimumDurationMillis The minimum duration in milliseconds. Spans with durations lesser
+   *                              than this are discarded.
+   */
+  public MinConditionalSampler(List<Sampler> samplers, long minimumDurationMillis) {
     super(samplers);
-    this.minimumDuration = minimumDuration;
+    this.minimumDurationMillis = minimumDurationMillis;
   }
 
   @Override
   public boolean sample(String operationName, long traceId, long duration) {
-    if (duration < this.minimumDuration) {
+    if (duration < this.minimumDurationMillis) {
       return false;
     }
     return super.sample(operationName, traceId, duration);
+  }
+
+  /**
+   * Sets the minimum duration for this sampler.
+   *
+   * @param minimumDurationMillis The minimum duration in milliseconds.
+   */
+  public void setMinimumDurationMillis(long minimumDurationMillis) {
+    this.minimumDurationMillis = minimumDurationMillis;
   }
 }
