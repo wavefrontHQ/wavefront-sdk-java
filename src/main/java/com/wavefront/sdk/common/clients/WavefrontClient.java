@@ -107,7 +107,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private final String token;
 
     // Optional parameters
-    private int maxQueueSize = 50000;
+    private int maxQueueSize = 500000;
     private int batchSize = 10000;
     private int flushIntervalSeconds = 1;
     private int messageSizeBytes = Integer.MAX_VALUE;
