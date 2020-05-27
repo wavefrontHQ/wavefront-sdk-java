@@ -2,6 +2,7 @@ package com.wavefront.sdk.common.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Maps;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
@@ -58,6 +59,11 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   private final String defaultSource;
   private final String clientId;
 
+  /**
+   * A unique identifier that identifies this instance in code
+   */
+  private final String instanceId = Integer.toHexString((int) (Math.random() * Integer.MAX_VALUE));
+
   private final int batchSize;
   private final int messageSizeBytes;
   private final LinkedBlockingQueue<String> metricsBuffer;
@@ -112,6 +118,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private int flushIntervalSeconds = 1;
     private int messageSizeBytes = Integer.MAX_VALUE;
     private boolean includeSdkMetrics = true;
+    private Map<String, String> tags = Maps.newHashMap();
 
     /**
      * Create a new WavefrontClient.Builder
@@ -184,10 +191,20 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * Default is true, if false the internal metrics emitted from this sender will be disabled
      *
      * @param includeSdkMetrics Whether or not to include the SDK Internal Metrics
-     * @return
+     * @return {@code this}
      */
     public Builder includeSdkMetrics(boolean includeSdkMetrics) {
       this.includeSdkMetrics = includeSdkMetrics;
+      return this;
+    }
+
+    /**
+     * Set the tags to apply to the internal SDK metrics
+     * @param tags a map of point tags to apply to the internal sdk metrics
+     * @return {@code this}
+     */
+    public Builder sdkMetricsTags(Map<String, String> tags) {
+      this.tags.putAll(tags);
       return this;
     }
 
@@ -225,6 +242,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     sdkMetricsRegistry = new WavefrontSdkMetricsRegistry.Builder(this).
         prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.wfclient").
         tag(Constants.PROCESS_TAG_KEY, processId).
+        tag(Constants.INSTANCE_TAG_KEY, instanceId).
+        tags(builder.tags).
         sendSdkMetrics(builder.includeSdkMetrics).
         build();
 

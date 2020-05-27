@@ -96,6 +96,11 @@ public final class Constants {
   public static final String PROCESS_TAG_KEY = "pid";
 
   /**
+   * Tag key for defining an instance identifier.
+   */
+  public static final String INSTANCE_TAG_KEY = "instanceId";
+
+  /**
    * Tag key for defining an error span.
    */
   public static final String ERROR_TAG_KEY = "error";
