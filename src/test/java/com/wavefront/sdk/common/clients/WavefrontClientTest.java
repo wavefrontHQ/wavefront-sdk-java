@@ -1,6 +1,5 @@
 package com.wavefront.sdk.common.clients;
 
-import com.google.common.collect.Lists;
 import com.wavefront.sdk.common.clients.service.ReportingService;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,6 @@ import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for the {@link WavefrontClient} class
@@ -24,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Mike McMahon (mike.mcmahon@wavefront.com)
  */
 public class WavefrontClientTest {
+
   @Test
   public void testGetBatch() {
     int batchSize = 8;
@@ -61,7 +60,6 @@ public class WavefrontClientTest {
   private String createString(int size) {
     return new String(new char[size]).replace("\0", "a");
   }
-
 
   @Test
   public void testUrlFormatForService() {
