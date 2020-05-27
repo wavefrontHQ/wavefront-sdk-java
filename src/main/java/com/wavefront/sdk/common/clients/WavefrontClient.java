@@ -8,6 +8,7 @@ import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.common.WavefrontSender;
+import com.wavefront.sdk.common.annotation.NonNull;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.common.clients.service.ReportingService;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
@@ -115,7 +116,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     // Optional parameters
     private int maxQueueSize = 500000;
     private int batchSize = 10000;
-    private int flushIntervalSeconds = 1;
+    private long flushInterval = 1;
+    private TimeUnit flushIntervalTimeUnit = TimeUnit.SECONDS;
     private int messageSizeBytes = Integer.MAX_VALUE;
     private boolean includeSdkMetrics = true;
     private Map<String, String> tags = Maps.newHashMap();
@@ -166,11 +168,25 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     /**
      * Set interval at which you want to flush points to Wavefront cluster.
      *
+     * @param flushInterval Interval at which you want to flush points to Wavefront cluster
+     * @param timeUnit      Time unit for the specified interval
+     * @return {@code this}
+     */
+    public Builder flushInterval(int flushInterval, @NonNull TimeUnit timeUnit) {
+      this.flushInterval = flushInterval;
+      this.flushIntervalTimeUnit = timeUnit;
+      return this;
+    }
+
+    /**
+     * Set interval (in seconds) at which you want to flush points to Wavefront cluster.
+     *
      * @param flushIntervalSeconds Interval at which you want to flush points to Wavefront cluster
      * @return {@code this}
      */
     public Builder flushIntervalSeconds(int flushIntervalSeconds) {
-      this.flushIntervalSeconds = flushIntervalSeconds;
+      this.flushInterval = flushIntervalSeconds;
+      this.flushIntervalTimeUnit = TimeUnit.SECONDS;
       return this;
     }
 
@@ -236,7 +252,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     spanLogsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     reportingService = new ReportingService(builder.server, builder.token);
     scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory("wavefrontClientSender"));
-    scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
+    scheduler.scheduleAtFixedRate(this, 1, builder.flushInterval, builder.flushIntervalTimeUnit);
 
     String processId = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
     sdkMetricsRegistry = new WavefrontSdkMetricsRegistry.Builder(this).
