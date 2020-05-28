@@ -2,11 +2,13 @@ package com.wavefront.sdk.common.clients;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Maps;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.common.WavefrontSender;
+import com.wavefront.sdk.common.annotation.NonNull;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.common.clients.service.ReportingService;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
@@ -58,6 +60,11 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   private final String defaultSource;
   private final String clientId;
 
+  /**
+   * A unique identifier that identifies this instance in code
+   */
+  private final String instanceId = Integer.toHexString((int) (Math.random() * Integer.MAX_VALUE));
+
   private final int batchSize;
   private final int messageSizeBytes;
   private final LinkedBlockingQueue<String> metricsBuffer;
@@ -107,10 +114,13 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private final String token;
 
     // Optional parameters
-    private int maxQueueSize = 50000;
+    private int maxQueueSize = 500000;
     private int batchSize = 10000;
-    private int flushIntervalSeconds = 1;
+    private long flushInterval = 1;
+    private TimeUnit flushIntervalTimeUnit = TimeUnit.SECONDS;
     private int messageSizeBytes = Integer.MAX_VALUE;
+    private boolean includeSdkMetrics = true;
+    private Map<String, String> tags = Maps.newHashMap();
 
     /**
      * Create a new WavefrontClient.Builder
@@ -158,11 +168,25 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     /**
      * Set interval at which you want to flush points to Wavefront cluster.
      *
+     * @param flushInterval Interval at which you want to flush points to Wavefront cluster
+     * @param timeUnit      Time unit for the specified interval
+     * @return {@code this}
+     */
+    public Builder flushInterval(int flushInterval, @NonNull TimeUnit timeUnit) {
+      this.flushInterval = flushInterval;
+      this.flushIntervalTimeUnit = timeUnit;
+      return this;
+    }
+
+    /**
+     * Set interval (in seconds) at which you want to flush points to Wavefront cluster.
+     *
      * @param flushIntervalSeconds Interval at which you want to flush points to Wavefront cluster
      * @return {@code this}
      */
     public Builder flushIntervalSeconds(int flushIntervalSeconds) {
-      this.flushIntervalSeconds = flushIntervalSeconds;
+      this.flushInterval = flushIntervalSeconds;
+      this.flushIntervalTimeUnit = TimeUnit.SECONDS;
       return this;
     }
 
@@ -176,6 +200,27 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      */
     public Builder messageSizeBytes(int bytes) {
       this.messageSizeBytes = bytes;
+      return this;
+    }
+
+    /**
+     * Default is true, if false the internal metrics emitted from this sender will be disabled
+     *
+     * @param includeSdkMetrics Whether or not to include the SDK Internal Metrics
+     * @return {@code this}
+     */
+    public Builder includeSdkMetrics(boolean includeSdkMetrics) {
+      this.includeSdkMetrics = includeSdkMetrics;
+      return this;
+    }
+
+    /**
+     * Set the tags to apply to the internal SDK metrics
+     * @param tags a map of point tags to apply to the internal sdk metrics
+     * @return {@code this}
+     */
+    public Builder sdkMetricsTags(Map<String, String> tags) {
+      this.tags.putAll(tags);
       return this;
     }
 
@@ -207,12 +252,15 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     spanLogsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     reportingService = new ReportingService(builder.server, builder.token);
     scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory("wavefrontClientSender"));
-    scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
+    scheduler.scheduleAtFixedRate(this, 1, builder.flushInterval, builder.flushIntervalTimeUnit);
 
     String processId = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
     sdkMetricsRegistry = new WavefrontSdkMetricsRegistry.Builder(this).
         prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.wfclient").
         tag(Constants.PROCESS_TAG_KEY, processId).
+        tag(Constants.INSTANCE_TAG_KEY, instanceId).
+        tags(builder.tags).
+        sendSdkMetrics(builder.includeSdkMetrics).
         build();
 
     sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);
@@ -459,7 +507,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       try (InputStream is = itemsToStream(items)) {
         int statusCode = reportingService.send(format, is);
         sdkMetricsRegistry.newCounter(entityPrefix + ".report." + statusCode).inc();
-        if (400 <= statusCode && statusCode <= 599) {
+        if ((400 <= statusCode && statusCode <= 599) || statusCode == -1) {
           switch (statusCode) {
             case 401:
               logger.log(permissionsMessageType.toString(), Level.SEVERE,
@@ -490,8 +538,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
                   "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). Data " +
                       "will be requeued and resent.");
               requeue(buffer, items, dropped, entityType, bufferFullMessageType);
-            }
           }
+        }
       } catch (IOException ex) {
         dropped.inc(items.size());
         reportErrors.inc();

@@ -2,6 +2,7 @@ package com.wavefront.sdk.common.clients.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.wavefront.sdk.common.annotation.Nullable;
+import com.wavefront.sdk.common.logging.MessageDedupingLogger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +10,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -18,12 +21,16 @@ import java.util.zip.GZIPOutputStream;
  */
 public class ReportingService implements ReportAPI {
 
+  private static final MessageDedupingLogger log =
+      new MessageDedupingLogger(Logger.getLogger(ReportingService.class.getCanonicalName()), 2, 0.2f);
+
   private final String token;
   private final URI uri;
 
   private static final int CONNECT_TIMEOUT_MILLIS = 30000;
   private static final int READ_TIMEOUT_MILLIS = 10000;
   private static final int BUFFER_SIZE = 4096;
+  private static final int NO_HTTP_RESPONSE = -1;
 
   public ReportingService(String server, @Nullable String token) {
     this.uri = URI.create(server);
@@ -31,7 +38,7 @@ public class ReportingService implements ReportAPI {
   }
 
   @Override
-  public int send(String format, InputStream stream) throws IOException {
+  public int send(String format, InputStream stream) {
     HttpURLConnection urlConn = null;
     int statusCode = 400;
     try {
@@ -58,10 +65,29 @@ public class ReportingService implements ReportAPI {
       readAndClose(urlConn.getInputStream());
     } catch (IOException ex) {
       if (urlConn != null) {
-        statusCode = urlConn.getResponseCode();
-        readAndClose(urlConn.getErrorStream());
+        return safeGetResponseCodeAndClose(urlConn);
       }
     }
+    return statusCode;
+  }
+
+  private int safeGetResponseCodeAndClose(HttpURLConnection urlConn) {
+    int statusCode;
+    try {
+      statusCode = urlConn.getResponseCode();
+    } catch (IOException ex) {
+      log.log(Level.SEVERE, "Unable to obtain status code from the Wavefront service at "
+          + urlConn.getURL().toString(), ex);
+      statusCode = NO_HTTP_RESPONSE;
+    }
+
+    try {
+      readAndClose(urlConn.getErrorStream());
+    } catch (IOException ex) {
+      log.log(Level.SEVERE, "Unable to read and close error stream from the Wavefront service at "
+          + urlConn.getURL().toString(), ex);
+    }
+
     return statusCode;
   }
 

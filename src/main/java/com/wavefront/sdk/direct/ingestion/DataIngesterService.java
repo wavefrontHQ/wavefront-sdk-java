@@ -1,12 +1,15 @@
 package com.wavefront.sdk.direct.ingestion;
 
 import com.wavefront.sdk.common.clients.WavefrontClientFactory;
+import com.wavefront.sdk.common.clients.service.ReportingService;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -19,11 +22,15 @@ import java.util.zip.GZIPOutputStream;
  */
 @Deprecated
 public class DataIngesterService implements DataIngesterAPI {
+
+  private static final Logger log = Logger.getLogger(ReportingService.class.getCanonicalName());
+
   private final String token;
   private final URI uri;
   private static final String BAD_REQUEST = "Bad client request";
   private static final int CONNECT_TIMEOUT_MILLIS = 30000;
   private static final int READ_TIMEOUT_MILLIS = 10000;
+  private static final int NO_HTTP_RESPONSE = -1;
 
   DataIngesterService(String server, String token) {
       this.token = token;
@@ -31,7 +38,7 @@ public class DataIngesterService implements DataIngesterAPI {
   }
 
   @Override
-  public int report(String format, InputStream stream) throws IOException {
+  public int report(String format, InputStream stream) {
     /*
      * Refer https://docs.oracle.com/javase/8/docs/technotes/guides/net/http-keepalive.html
      * for details around why this code is written as it is.
@@ -61,10 +68,29 @@ public class DataIngesterService implements DataIngesterAPI {
       readAndClose(urlConn.getInputStream());
     } catch (IOException ex) {
       if (urlConn != null) {
-        statusCode = urlConn.getResponseCode();
-        readAndClose(urlConn.getErrorStream());
+        return safeGetResponseCodeAndClose(urlConn);
       }
     }
+    return statusCode;
+  }
+
+  private int safeGetResponseCodeAndClose(HttpURLConnection urlConn) {
+    int statusCode;
+    try {
+      statusCode = urlConn.getResponseCode();
+    } catch (IOException ex) {
+      log.log(Level.SEVERE, "Unable to obtain status code from the Wavefront service at "
+          + urlConn.getURL().toString(), ex);
+      statusCode = NO_HTTP_RESPONSE;
+    }
+
+    try {
+      readAndClose(urlConn.getErrorStream());
+    } catch (IOException ex) {
+      log.log(Level.SEVERE, "Unable to read and close error stream from the Wavefront service at "
+          + urlConn.getURL().toString(), ex);
+    }
+
     return statusCode;
   }
 
