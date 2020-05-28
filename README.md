@@ -306,7 +306,7 @@ wavefrontSender.sendDeltaCounter("lambda.thumbnail.generate", 10,
     ImmutableMap.<String, String>builder().put("image-format", "jpeg").build());
 ```
 
-> ***Note***: If your `metricName` has a bad character, that character is replaced with a `-`.
+***Note***: If your `metricName` has a bad character, that character is replaced with a `-`.
 
 #### Distributions (Histograms)
 
