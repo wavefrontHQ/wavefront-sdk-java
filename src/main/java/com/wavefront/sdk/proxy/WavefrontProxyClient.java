@@ -393,13 +393,13 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
 
     if (spanLogs != null && !spanLogs.isEmpty()) {
-      sendSpanLogsData(traceId, spanId, spanLogs);
+      sendSpanLogsData(traceId, spanId, spanLogs, lineData);
     }
   }
 
-  private void sendSpanLogsData(UUID traceId, UUID spanId, List<SpanLog> spanLogs) {
+  private void sendSpanLogsData(UUID traceId, UUID spanId, List<SpanLog> spanLogs, String span) {
     try {
-      String lineData = spanLogsToLineData(traceId, spanId, spanLogs);
+      String lineData = spanLogsToLineData(traceId, spanId, spanLogs, span);
       spanLogsValid.inc();
       tracingProxyConnectionHandler.sendData(lineData);
     } catch (JsonProcessingException e) {
