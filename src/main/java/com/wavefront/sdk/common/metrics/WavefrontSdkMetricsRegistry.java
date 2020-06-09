@@ -125,7 +125,7 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
     prefix = builder.prefix == null || builder.prefix.isEmpty() ? "" : builder.prefix + ".";
     metrics = new ConcurrentHashMap<>();
     scheduler = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sdk-metrics-registry"));
+        new NamedThreadFactory("sdk-metrics-registry").setDaemon(true));
     scheduler.scheduleAtFixedRate(this, builder.reportingIntervalSeconds,
         builder.reportingIntervalSeconds, TimeUnit.SECONDS);
   }

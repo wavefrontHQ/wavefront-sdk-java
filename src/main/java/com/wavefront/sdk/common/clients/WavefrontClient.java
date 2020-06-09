@@ -206,7 +206,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     tracingSpansBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     spanLogsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     reportingService = new ReportingService(builder.server, builder.token);
-    scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory("wavefrontClientSender"));
+    scheduler = Executors.newScheduledThreadPool(1,
+        new NamedThreadFactory("wavefrontClientSender").setDaemon(true));
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
 
     String processId = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];

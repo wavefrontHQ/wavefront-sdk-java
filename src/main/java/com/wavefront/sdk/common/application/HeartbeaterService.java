@@ -62,7 +62,7 @@ public class HeartbeaterService implements Runnable, Closeable {
       }});
     }
     scheduler = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("heart-beater"));
+        new NamedThreadFactory("heart-beater").setDaemon(true));
     scheduler.scheduleAtFixedRate(this, 1, 300, TimeUnit.SECONDS);
   }
 
