@@ -442,9 +442,9 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
                       + entityType + " will be discarded until the service is restarted.");
             } else {
               logger.log(permissionsMessageType.toString(), Level.SEVERE,
-                      "Please verify that Direct Data Ingestion and " + entityType + " are " +
-                          "enabled for your account! All " + entityType + " will be discarded " +
-                          "until the service is restarted.");
+                  "Please verify that Direct Data Ingestion and " + entityType + " are " +
+                      "enabled for your account! All " + entityType + " will be discarded " +
+                      "until the service is restarted.");
             }
         }
         continue;
@@ -452,7 +452,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       try (InputStream is = itemsToStream(items)) {
         int statusCode = directService.report(format, is);
         sdkMetricsRegistry.newCounter(entityPrefix + ".report." + statusCode).inc();
-        if (400 <= statusCode && statusCode <= 599) {
+        if ((400 <= statusCode && statusCode <= 599) || statusCode == -1) {
           switch (statusCode) {
             case 401:
               logger.log(permissionsMessageType.toString(), Level.SEVERE,

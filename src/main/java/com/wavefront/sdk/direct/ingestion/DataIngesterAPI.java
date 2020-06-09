@@ -2,7 +2,6 @@ package com.wavefront.sdk.direct.ingestion;
 
 import com.wavefront.sdk.common.clients.WavefrontClientFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -18,5 +17,5 @@ public interface DataIngesterAPI {
   /**
    * Returns the HTTP response's status code.
    */
-  int report(String format, InputStream stream) throws IOException;
+  int report(String format, InputStream stream);
 }

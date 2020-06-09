@@ -9,5 +9,5 @@ import java.io.InputStream;
  * @author Mike McMahon (mike.mcmahon@wavefront.com)
  */
 public interface ReportAPI {
-  int send(String format, InputStream stream) throws IOException;
+  int send(String format, InputStream stream);
 }
