@@ -200,7 +200,8 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     tracingSpansBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     spanLogsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     directService = new DataIngesterService(builder.server, builder.token);
-    scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory("wavefrontDirectSender"));
+    scheduler = Executors.newScheduledThreadPool(1,
+        new NamedThreadFactory("wavefrontDirectSender").setDaemon(true));
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
 
     String processId = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];

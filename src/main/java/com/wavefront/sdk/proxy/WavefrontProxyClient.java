@@ -227,7 +227,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     this.clientId = uniqueId;
 
     scheduler = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("wavefrontProxySender"));
+        new NamedThreadFactory("wavefrontProxySender").setDaemon(true));
     // flush every 5 seconds
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
 
