@@ -139,7 +139,7 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
     metrics = new ConcurrentHashMap<>();
     if (sendSdkMetrics) {
       scheduler = Executors.newScheduledThreadPool(1,
-          new NamedThreadFactory("sdk-metrics-registry"));
+          new NamedThreadFactory("sdk-metrics-registry").setDaemon(true));
       scheduler.scheduleAtFixedRate(this, builder.reportingIntervalSeconds,
           builder.reportingIntervalSeconds, TimeUnit.SECONDS);
     } else {

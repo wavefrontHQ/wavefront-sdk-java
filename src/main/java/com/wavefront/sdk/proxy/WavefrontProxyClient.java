@@ -227,7 +227,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     this.clientId = uniqueId;
 
     scheduler = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("wavefrontProxySender"));
+        new NamedThreadFactory("wavefrontProxySender").setDaemon(true));
     // flush every 5 seconds
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
 
@@ -393,13 +393,13 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
 
     if (spanLogs != null && !spanLogs.isEmpty()) {
-      sendSpanLogsData(traceId, spanId, spanLogs);
+      sendSpanLogsData(traceId, spanId, spanLogs, lineData);
     }
   }
 
-  private void sendSpanLogsData(UUID traceId, UUID spanId, List<SpanLog> spanLogs) {
+  private void sendSpanLogsData(UUID traceId, UUID spanId, List<SpanLog> spanLogs, String span) {
     try {
-      String lineData = spanLogsToLineData(traceId, spanId, spanLogs);
+      String lineData = spanLogsToLineData(traceId, spanId, spanLogs, span);
       spanLogsValid.inc();
       tracingProxyConnectionHandler.sendData(lineData);
     } catch (JsonProcessingException e) {

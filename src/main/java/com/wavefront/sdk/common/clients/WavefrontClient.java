@@ -251,7 +251,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     tracingSpansBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     spanLogsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     reportingService = new ReportingService(builder.server, builder.token);
-    scheduler = Executors.newScheduledThreadPool(1, new NamedThreadFactory("wavefrontClientSender"));
+    scheduler = Executors.newScheduledThreadPool(1,
+        new NamedThreadFactory("wavefrontClientSender").setDaemon(true));
     scheduler.scheduleAtFixedRate(this, 1, builder.flushInterval, builder.flushIntervalTimeUnit);
 
     String processId = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
@@ -403,7 +404,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     if (tracingSpansBuffer.offer(span)) {
       // attempt span logs after span is sent.
       if (spanLogs != null && !spanLogs.isEmpty()) {
-        sendSpanLogs(traceId, spanId, spanLogs);
+        sendSpanLogs(traceId, spanId, spanLogs, span);
       }
     } else {
       spansDropped.inc();
@@ -416,10 +417,10 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
-  private void sendSpanLogs(UUID traceId, UUID spanId, List<SpanLog> spanLogs) {
+  private void sendSpanLogs(UUID traceId, UUID spanId, List<SpanLog> spanLogs, String span) {
     // attempt span logs
     try {
-      String spanLogsJson = spanLogsToLineData(traceId, spanId, spanLogs);
+      String spanLogsJson = spanLogsToLineData(traceId, spanId, spanLogs, span);
       spanLogsValid.inc();
       if (!spanLogsBuffer.offer(spanLogsJson)) {
         spanLogsDropped.inc();
