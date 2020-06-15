@@ -197,14 +197,14 @@ WavefrontSender wavefrontSender = new WavefrontClient.Builder(proxyServerWithPor
         build(); // Returns a WavefrontClient
 ```
 
-When you use a Sender SDK, you won’t see span-level RED metrics by default unless you use the Wavefront proxy and define a custom tracing port. See [Instrument Your Application with Wavefront Sender SDKs](https://www.wavefront.com/tracing_instrumenting_frameworks.html/#instrument-your-application-with-wavefront-sender-sdks) for details.
+When you use a Sender SDK, you won’t see span-level RED metrics by default unless you use the Wavefront proxy and define a custom tracing port (`tracingPort`). See [Instrument Your Application with Wavefront Sender SDKs](https://www.wavefront.com/tracing_instrumenting_frameworks.html/#instrument-your-application-with-wavefront-sender-sdks) for details.
 
 **Example**:
 
 ```java
 // set up wavefront sender for Proxy based ingestion
 WavefrontSender wavefrontSender = new WavefrontClient.Builder(proxyHost).
-        tracingPort(30001). // customTracingListenerPorts configured in proxy above
+        tracingPort(30001). // the same port as the customTracingListenerPorts configured in the wavefront proxy
         metricsPort(metricsPort).
         distributionPort(distributionPort).
         messageSizeBytes(messageSizeInBytes).
