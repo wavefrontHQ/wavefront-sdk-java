@@ -333,7 +333,7 @@ wavefrontSender.sendDistribution("request.latency",
 
 #### Tracing Spans
 
-When you use a Sender SDK, you won’t see span-level RED metrics by default unless you use the Wavefront proxy and define a custom tracing port (`tracingPort`). See [Instrument Your Application with Wavefront Sender SDKs](https://www.wavefront.com/tracing_instrumenting_frameworks.html/#instrument-your-application-with-wavefront-sender-sdks) for details.
+When you use a Sender SDK, you won’t see span-level RED metrics by default unless you use the Wavefront proxy and define a custom tracing port (`tracingPort`). See [Instrument Your Application with Wavefront Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
 
 ```java
 // Set up Wavefront Sender for proxy based ingestion
