@@ -190,6 +190,9 @@ WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 ```java
 // Proxy based ingestion
 WavefrontSender wavefrontSender = new WavefrontClient.Builder(proxyServerWithPort).
+        tracingPort(tracing port). // if you are directly using the sender sdk to send spans without using any other sdk, use the same port as the customTracingListenerPorts configured in the wavefront proxy 
+        metricsPort(metricsPort).
+        distributionPort(distributionPort).
         messageSizeBytes(messageSizeInBytes).
         batchSize(batchSize).
         flushIntervalSeconds(flushIntervalSeconds).
@@ -286,7 +289,7 @@ WavefrontSender wavefrontSender = wfClientBuilder.build();
 
  Wavefront supports different metric types, such as gauges, counters, delta counters, histograms, traces, and spans. See [Metrics](https://docs.wavefront.com/metric_types.html) for details. To send data to Wavefront using the `WavefrontSender` you need to instantiate the following:
  * [Metrics and Delta Counters](#Metrics-and-Delta-Counters)
- * [Distributions (Histograms)](#Distributions-(Histograms))
+ * [Distributions (Histograms)](#distributions-histograms)
  * [Tracing Spans](#Tracing-Spans)
 
 #### Metrics and Delta Counters
@@ -330,8 +333,22 @@ wavefrontSender.sendDistribution("request.latency",
 
 #### Tracing Spans
 
+If you are directly using the Sender SDK to send data to Wavefront, you won’t see span-level RED metrics by default unless you use the Wavefront proxy and define a custom tracing port (`tracingPort`). See [Instrument Your Application with Wavefront Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
+
 ```java
- // Wavefront Tracing Span Data format
+// Set up Wavefront Sender for proxy based ingestion
+WavefrontSender wavefrontSender = new WavefrontClient.Builder(proxyHost).
+        tracingPort(30001). // the same port as the customTracingListenerPorts configured in the wavefront proxy
+        metricsPort(metricsPort).
+        distributionPort(distributionPort).
+        messageSizeBytes(messageSizeInBytes).
+        batchSize(batchSize).
+        flushIntervalSeconds(flushIntervalSeconds).
+        maxQueueSize(queueSize).
+        build(); // Returns a WavefrontClient
+
+// Now send distributed tracing spans as below
+ // Wavefront tracing span data format
  // <tracingSpanName> source=<source> [pointTags] <start_millis> <duration_milliseconds>
  // Example: "getAllUsers source=localhost
  //           traceId=7b3bf470-9456-11e8-9eb6-529269fb1459
