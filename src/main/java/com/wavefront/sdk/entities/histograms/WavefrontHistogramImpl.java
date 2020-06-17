@@ -29,9 +29,15 @@ import static java.lang.Double.NaN;
  */
 public class WavefrontHistogramImpl {
   /**
-   * We support approx 100 centroids for every minute bin T-Digest distributions
+   * We support approx 32 centroids for every minute bin T-Digest distributions
    */
-  private final static int ACCURACY = 100;
+  private final static int ACCURACY = 32;
+
+  /**
+   * Re-compress the centroids when their number exceeds {@code #ACCURACY} multiplied
+   * by this bloat factor.
+   */
+  private static final double RECOMPRESSION_THRESHOLD_FACTOR = 2.0;
 
   /**
    * If a thread's bin queue has exceeded MAX_BINS number of bins (e.g., the thread has data
@@ -257,10 +263,12 @@ public class WavefrontHistogramImpl {
       while (binsIter.hasNext()) {
         MinuteBin minuteBin = binsIter.next();
         if (minuteBin.minuteMillis < cutoffMillis) {
-          minuteBinToCentroidsMap.putIfAbsent(minuteBin.minuteMillis, new ArrayList<>());
-          minuteBinToCentroidsMap.get(minuteBin.minuteMillis).addAll(
-                  minuteBin.distribution.centroids().stream().
-                          map(c -> new Pair<>(c.mean(), c.count())).collect(Collectors.toList()));
+          if (minuteBin.distribution.centroidCount() > ACCURACY * RECOMPRESSION_THRESHOLD_FACTOR) {
+            minuteBin.distribution.compress();
+          }
+          minuteBinToCentroidsMap.computeIfAbsent(minuteBin.minuteMillis, x -> new ArrayList<>()).
+              addAll(minuteBin.distribution.centroids().stream().
+                  map(c -> new Pair<>(c.mean(), c.count())).collect(Collectors.toList()));
           binsIter.remove();
         }
       }
@@ -281,7 +289,9 @@ public class WavefrontHistogramImpl {
     } finally {
       readLock.unlock();
     }
-
+    if (snapshot.centroidCount() > ACCURACY * RECOMPRESSION_THRESHOLD_FACTOR) {
+      snapshot.compress();
+    }
     return new Snapshot(snapshot);
   }
 

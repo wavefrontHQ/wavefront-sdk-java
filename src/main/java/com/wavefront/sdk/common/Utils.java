@@ -144,13 +144,8 @@ public class Utils {
         sb.append(' ');
         sb.append(Long.toString(timestamp));
       }
-      for (Pair<Double, Integer> centroid : centroids) {
-        sb.append(" #");
-        sb.append(centroid._2);
-        sb.append(' ');
-        sb.append(centroid._1);
-      }
       sb.append(' ');
+      appendCompactedCentroids(sb, centroids);
       sb.append(sanitize(name));
       sb.append(" source=");
       sb.append(sanitize(source));
@@ -373,6 +368,31 @@ public class Utils {
       return sb.toString();
     } catch (Exception ex) {
       return "";
+    }
+  }
+
+  private static void appendCompactedCentroids(StringBuilder sb,
+                                               List<Pair<Double, Integer>> centroids) {
+    Double accumulatedValue = null;
+    int accumulatedCount = 0;
+    for (Pair<Double, Integer> centroid : centroids) {
+      double value = centroid._1;
+      int count = centroid._2;
+      if (accumulatedValue != null && value != accumulatedValue) {
+        sb.append('#').append(accumulatedCount).append(' ');
+        sb.append(accumulatedValue).append(' ');
+        accumulatedValue = value;
+        accumulatedCount = count;
+      } else {
+        if (accumulatedValue == null) {
+          accumulatedValue = value;
+        }
+        accumulatedCount += count;
+      }
+    }
+    if (accumulatedValue != null) {
+      sb.append('#').append(accumulatedCount).append(' ');
+      sb.append(accumulatedValue).append(' ');
     }
   }
 }
