@@ -190,7 +190,7 @@ WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 ```java
 // Proxy based ingestion
 WavefrontSender wavefrontSender = new WavefrontClient.Builder(proxyServerWithPort).
-        tracingPort(tracing port). // the same port as the customTracingListenerPorts configured in the wavefront proxy
+        tracingPort(tracing port). // the same port as the customTracingListenerPorts configured in the wavefront proxy if you are only using the sender sdk to send data to Wavefront
         metricsPort(metricsPort).
         distributionPort(distributionPort).
         messageSizeBytes(messageSizeInBytes).
@@ -333,7 +333,7 @@ wavefrontSender.sendDistribution("request.latency",
 
 #### Tracing Spans
 
-When you use a Sender SDK, you won’t see span-level RED metrics by default unless you use the Wavefront proxy and define a custom tracing port (`tracingPort`). See [Instrument Your Application with Wavefront Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
+If you are using the Sender SDK to send data to Wavefront, you won’t see span-level RED metrics by default unless you use the Wavefront proxy and define a custom tracing port (`tracingPort`). See [Instrument Your Application with Wavefront Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
 
 ```java
 // Set up Wavefront Sender for proxy based ingestion
