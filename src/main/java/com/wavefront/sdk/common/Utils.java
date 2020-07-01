@@ -402,7 +402,7 @@ public class Utils {
       try {
         return Double.valueOf(sdkVersion.toString());
       } catch (Exception ex) {
-        logger.log(Level.WARNING, ex.getMessage());
+        logger.log(Level.INFO, ex.getMessage());
       }
     }
     return 0.0D;

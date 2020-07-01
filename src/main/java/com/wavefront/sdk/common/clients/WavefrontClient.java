@@ -278,7 +278,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       double sdkVersion = getSemVer(version);
       sdkMetricsRegistry.newGauge("version", () -> sdkVersion);
     } catch (IOException e) {
-      logger.log(e.getMessage(), Level.WARNING, "Error fetching version.");
+      logger.log(e.getMessage(), Level.INFO, "Error fetching version.");
     }
 
     sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);
