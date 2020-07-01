@@ -394,19 +394,19 @@ public class Utils {
     if (version != null && !version.isEmpty()) {
       Matcher semVerMatcher = SEMVER_PATTERN.matcher(version);
       if (semVerMatcher.matches()) {
-        //Major version
+        // Major version
         StringBuilder sdkVersion = new StringBuilder(semVerMatcher.group(1));
         sdkVersion.append(".");
         String minor = semVerMatcher.group(2);
         String patch = semVerMatcher.group(3);
         String snapshot = semVerMatcher.group(4);
-        //Minor version
+        // Minor version
         if (minor.length() == 1) {
           sdkVersion.append("0" + minor);
         } else {
           sdkVersion.append(minor);
         }
-        //Patch Version
+        // Patch Version
         if (patch.length() == 1) {
           sdkVersion.append("0" + patch);
         } else {

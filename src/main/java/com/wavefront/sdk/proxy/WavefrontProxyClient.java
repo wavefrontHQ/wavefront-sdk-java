@@ -198,9 +198,6 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
         tag(Constants.PROCESS_TAG_KEY, processId).
         build();
 
-    double sdkVersion = getSemVer();
-    sdkMetricsRegistry.newGauge("version", () -> sdkVersion);
-
     String uniqueId = builder.proxyHostName + ":";
     if (builder.metricsPort == null) {
       metricsProxyConnectionHandler = null;

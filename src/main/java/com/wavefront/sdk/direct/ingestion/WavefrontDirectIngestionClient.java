@@ -212,9 +212,6 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
         tag(Constants.PROCESS_TAG_KEY, processId).
         build();
 
-    double sdkVersion = getSemVer();
-    sdkMetricsRegistry.newGauge("version", () -> sdkVersion);
-
     sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);
     sdkMetricsRegistry.newGauge("points.queue.remaining_capacity",
         metricsBuffer::remainingCapacity);
