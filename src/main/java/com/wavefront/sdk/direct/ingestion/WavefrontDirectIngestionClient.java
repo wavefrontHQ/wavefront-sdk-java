@@ -36,7 +36,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.wavefront.sdk.common.Utils.getSemVer;
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.spanLogsToLineData;

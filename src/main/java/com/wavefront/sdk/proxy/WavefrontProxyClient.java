@@ -31,7 +31,6 @@ import java.util.logging.Logger;
 
 import javax.net.SocketFactory;
 
-import static com.wavefront.sdk.common.Utils.getSemVer;
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
