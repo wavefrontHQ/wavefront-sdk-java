@@ -505,6 +505,10 @@ public class UtilsTest {
 
   @Test
   public void testSemVer() throws IOException {
+    assertEquals(0.0D, getSemVer(null));
+
+    assertEquals(0.0D, getSemVer(""));
+
     assertEquals(1.0100D, getSemVer("1.1.0"));
 
     assertEquals(1.0100D, getSemVer("1.1.0-SNAPSHOT"));

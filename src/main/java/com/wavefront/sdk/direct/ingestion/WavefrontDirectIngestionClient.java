@@ -1,14 +1,14 @@
 package com.wavefront.sdk.direct.ingestion;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Throwables;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.Nullable;
-import com.wavefront.sdk.common.clients.WavefrontClient;
 import com.wavefront.sdk.common.clients.WavefrontClientFactory;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
@@ -25,7 +25,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -213,14 +213,11 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
         tag(Constants.PROCESS_TAG_KEY, processId).
         build();
 
-    try {
-      final Properties properties = new Properties();
-      properties.load(WavefrontClient.class.getResourceAsStream("/build.properties"));
-      String version = properties.getProperty("version");
+    ResourceBundle resourceBundle = ResourceBundle.getBundle("build");
+    if (resourceBundle.containsKey("version")) {
+      String version = resourceBundle.getString("version");
       double sdkVersion = getSemVer(version);
       sdkMetricsRegistry.newGauge("version", () -> sdkVersion);
-    } catch (IOException e) {
-      logger.log(Level.INFO, "Error fetching version.");
     }
 
     sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);

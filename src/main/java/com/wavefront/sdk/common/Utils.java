@@ -379,6 +379,9 @@ public class Utils {
   }
 
   public static double getSemVer(String version) {
+    if (version == null || version.isEmpty()) {
+      return 0.0D;
+    }
     Matcher semVerMatcher = SEMVER_PATTERN.matcher(version);
     if (semVerMatcher.matches()) {
       //Major version

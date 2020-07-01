@@ -1,11 +1,9 @@
 package com.wavefront.sdk.common.clients;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 
-import com.fasterxml.jackson.databind.deser.DataFormatReaders;
-import com.wavefront.sdk.Main;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
@@ -29,7 +27,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -40,8 +38,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.wavefront.sdk.common.Utils.getSemVer;
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
@@ -271,14 +267,11 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         sendSdkMetrics(builder.includeSdkMetrics).
         build();
 
-    try {
-      final Properties properties = new Properties();
-      properties.load(WavefrontClient.class.getResourceAsStream("/build.properties"));
-      String version = properties.getProperty("version");
+    ResourceBundle resourceBundle = ResourceBundle.getBundle("build");
+    if (resourceBundle.containsKey("version")) {
+      String version = resourceBundle.getString("version");
       double sdkVersion = getSemVer(version);
       sdkMetricsRegistry.newGauge("version", () -> sdkVersion);
-    } catch (IOException e) {
-      logger.log(e.getMessage(), Level.INFO, "Error fetching version.");
     }
 
     sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);

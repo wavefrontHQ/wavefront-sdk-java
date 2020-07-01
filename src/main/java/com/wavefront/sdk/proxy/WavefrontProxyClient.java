@@ -7,14 +7,12 @@ import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.Nullable;
-import com.wavefront.sdk.common.clients.WavefrontClient;
 import com.wavefront.sdk.common.clients.WavefrontClientFactory;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
 
-import javax.net.SocketFactory;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
@@ -22,7 +20,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -31,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.net.SocketFactory;
 
 import static com.wavefront.sdk.common.Utils.getSemVer;
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
@@ -199,14 +199,11 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
         tag(Constants.PROCESS_TAG_KEY, processId).
         build();
 
-    try {
-      final Properties properties = new Properties();
-      properties.load(WavefrontClient.class.getResourceAsStream("/build.properties"));
-      String version = properties.getProperty("version");
+    ResourceBundle resourceBundle = ResourceBundle.getBundle("build");
+    if (resourceBundle.containsKey("version")) {
+      String version = resourceBundle.getString("version");
       double sdkVersion = getSemVer(version);
       sdkMetricsRegistry.newGauge("version", () -> sdkVersion);
-    } catch (IOException e) {
-      logger.log(Level.INFO, "Error fetching version.");
     }
 
     String uniqueId = builder.proxyHostName + ":";
