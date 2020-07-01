@@ -25,7 +25,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -213,12 +212,8 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
         tag(Constants.PROCESS_TAG_KEY, processId).
         build();
 
-    ResourceBundle resourceBundle = ResourceBundle.getBundle("build");
-    if (resourceBundle.containsKey("version")) {
-      String version = resourceBundle.getString("version");
-      double sdkVersion = getSemVer(version);
-      sdkMetricsRegistry.newGauge("version", () -> sdkVersion);
-    }
+    double sdkVersion = getSemVer();
+    sdkMetricsRegistry.newGauge("version", () -> sdkVersion);
 
     sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);
     sdkMetricsRegistry.newGauge("points.queue.remaining_capacity",
