@@ -16,7 +16,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 
+import static com.wavefront.sdk.common.Constants.SEMVER_PATTERN;
 import static com.wavefront.sdk.common.Constants.SPAN_LOG_KEY;
 
 /**
@@ -374,5 +376,35 @@ public class Utils {
     } catch (Exception ex) {
       return "";
     }
+  }
+
+  public static double getSemVer(String version) {
+    Matcher semVerMatcher = SEMVER_PATTERN.matcher(version);
+    if (semVerMatcher.matches()) {
+      //Major version
+      StringBuilder sdkVersion = new StringBuilder(semVerMatcher.group(1));
+      sdkVersion.append(".");
+      String minor = semVerMatcher.group(2);
+      String patch = semVerMatcher.group(3);
+      String snapshot = semVerMatcher.group(4);
+      //Minor version
+      if (minor.length() == 1) {
+        sdkVersion.append("0" + minor);
+      } else {
+        sdkVersion.append(minor);
+      }
+      //Patch Version
+      if (patch.length() == 1) {
+        sdkVersion.append("0" + patch);
+      } else {
+        sdkVersion.append(patch);
+      }
+      try {
+        return Double.valueOf(sdkVersion.toString());
+      } catch (Exception ex) {
+        logger.log(Level.FINE, ex.getMessage());
+      }
+    }
+    return 0.0D;
   }
 }

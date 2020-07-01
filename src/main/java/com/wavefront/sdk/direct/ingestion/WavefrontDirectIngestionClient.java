@@ -8,6 +8,7 @@ import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.Nullable;
+import com.wavefront.sdk.common.clients.WavefrontClient;
 import com.wavefront.sdk.common.clients.WavefrontClientFactory;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
 import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
@@ -24,6 +25,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -35,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.wavefront.sdk.common.Utils.getSemVer;
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
@@ -209,6 +212,16 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
         prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.direct").
         tag(Constants.PROCESS_TAG_KEY, processId).
         build();
+
+    try {
+      final Properties properties = new Properties();
+      properties.load(WavefrontClient.class.getResourceAsStream("/build.properties"));
+      String version = properties.getProperty("version");
+      double sdkVersion = getSemVer(version);
+      sdkMetricsRegistry.newGauge("version", () -> sdkVersion);
+    } catch (IOException e) {
+      logger.log(Level.INFO, "Error fetching version.");
+    }
 
     sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);
     sdkMetricsRegistry.newGauge("points.queue.remaining_capacity",

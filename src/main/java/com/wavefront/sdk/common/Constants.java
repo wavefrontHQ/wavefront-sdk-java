@@ -1,5 +1,7 @@
 package com.wavefront.sdk.common;
 
+import java.util.regex.Pattern;
+
 /**
  * Class to define all java-sdk constants
  *
@@ -114,4 +116,10 @@ public final class Constants {
    * Name prefix for internal diagnostic metrics for Wavefront SDKs.
    */
   public static final String SDK_METRIC_PREFIX = "~sdk.java";
+
+  /**
+   * Semantic version pattern matcher regex.
+   */
+  public static final Pattern SEMVER_PATTERN = Pattern.
+      compile("([0-9]\\d*)\\.(\\d+)\\.(\\d+)(?:-([a-zA-Z0-9]+))?");
 }
