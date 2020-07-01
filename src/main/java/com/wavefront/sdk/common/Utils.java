@@ -384,6 +384,8 @@ public class Utils {
     if (resourceBundle.containsKey("version")) {
       String version = resourceBundle.getString("version");
       return getSemVerValue(version);
+    } else {
+      logger.log(Level.INFO, "Could not retrieve build version info.");
     }
     return 0.0D;
   }
