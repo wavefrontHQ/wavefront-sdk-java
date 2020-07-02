@@ -10,13 +10,16 @@ import com.wavefront.sdk.entities.tracing.SpanLogsDTO;
 
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 
+import static com.wavefront.sdk.common.Constants.SEMVER_PATTERN;
 import static com.wavefront.sdk.common.Constants.SPAN_LOG_KEY;
 
 /**
@@ -374,5 +377,48 @@ public class Utils {
     } catch (Exception ex) {
       return "";
     }
+  }
+
+  public static double getSemVer() {
+    ResourceBundle resourceBundle = ResourceBundle.getBundle("build");
+    if (resourceBundle.containsKey("version")) {
+      String version = resourceBundle.getString("version");
+      return getSemVerValue(version);
+    } else {
+      logger.log(Level.INFO, "Could not retrieve build version info.");
+    }
+    return 0.0D;
+  }
+
+  public static double getSemVerValue(String version) {
+    if (version != null && !version.isEmpty()) {
+      Matcher semVerMatcher = SEMVER_PATTERN.matcher(version);
+      if (semVerMatcher.matches()) {
+        // Major version
+        StringBuilder sdkVersion = new StringBuilder(semVerMatcher.group(1));
+        sdkVersion.append(".");
+        String minor = semVerMatcher.group(2);
+        String patch = semVerMatcher.group(3);
+        String snapshot = semVerMatcher.group(4);
+        // Minor version
+        if (minor.length() == 1) {
+          sdkVersion.append("0" + minor);
+        } else {
+          sdkVersion.append(minor);
+        }
+        // Patch Version
+        if (patch.length() == 1) {
+          sdkVersion.append("0" + patch);
+        } else {
+          sdkVersion.append(patch);
+        }
+        try {
+          return Double.valueOf(sdkVersion.toString());
+        } catch (Exception ex) {
+          logger.log(Level.INFO, ex.getMessage());
+        }
+      }
+    }
+    return 0.0D;
   }
 }
