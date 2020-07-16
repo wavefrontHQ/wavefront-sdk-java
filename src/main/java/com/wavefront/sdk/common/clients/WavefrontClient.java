@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -582,7 +583,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       // every line item ends with \n
       sb.append(item);
     }
-    return new ByteArrayInputStream(sb.toString().getBytes());
+    return new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8));
   }
 
   @Override
