@@ -248,7 +248,7 @@ public class WavefrontHistogramImpl {
     final List<Distribution> distributions = new ArrayList<>();
     Iterator<WeakReference<ConcurrentLinkedDeque<MinuteBin>>> globalBinsIter =
         globalHistogramBinsList.iterator();
-    Map<Long, List<Pair<Double, Integer>>> minuteBinToCentroidsMap = new HashMap<>();
+    Map<Long, MinuteBin> mergedBins = new HashMap<>();
     while (globalBinsIter.hasNext()) {
       WeakReference<ConcurrentLinkedDeque<MinuteBin>> weakRef = globalBinsIter.next();
       ConcurrentLinkedDeque<MinuteBin> sharedBinsInstance = weakRef.get();
@@ -258,22 +258,30 @@ public class WavefrontHistogramImpl {
         continue;
       }
 
-
       Iterator<MinuteBin> binsIter = sharedBinsInstance.iterator();
       while (binsIter.hasNext()) {
         MinuteBin minuteBin = binsIter.next();
         if (minuteBin.minuteMillis < cutoffMillis) {
-          if (minuteBin.distribution.centroidCount() > ACCURACY * RECOMPRESSION_THRESHOLD_FACTOR) {
-            minuteBin.distribution.compress();
-          }
-          minuteBinToCentroidsMap.computeIfAbsent(minuteBin.minuteMillis, x -> new ArrayList<>()).
-              addAll(minuteBin.distribution.centroids().stream().
-                  map(c -> new Pair<>(c.mean(), c.count())).collect(Collectors.toList()));
+          mergedBins.compute(minuteBin.minuteMillis, (k, v) -> {
+            if (v == null) {
+              return minuteBin;
+            } else {
+              v.distribution.add(minuteBin.distribution);
+              return v;
+            }
+          });
           binsIter.remove();
         }
       }
     }
-    minuteBinToCentroidsMap.forEach((key, value) -> distributions.add(new Distribution(key, value)));
+    mergedBins.forEach((key, value) -> {
+      if (value.distribution.centroidCount() > ACCURACY * RECOMPRESSION_THRESHOLD_FACTOR) {
+        value.distribution.compress();
+      }
+      List<Pair<Double, Integer>> centroids = value.distribution.centroids().stream().
+          map(c -> new Pair<>(c.mean(), c.count())).collect(Collectors.toList());
+      distributions.add(new Distribution(key, centroids));
+    });
     return distributions;
   }
 
