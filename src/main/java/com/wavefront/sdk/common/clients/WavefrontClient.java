@@ -1,8 +1,9 @@
 package com.wavefront.sdk.common.clients;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
@@ -23,6 +24,7 @@ import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.wavefront.sdk.common.Utils.getSemVer;
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
@@ -263,6 +266,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         tags(builder.tags).
         sendSdkMetrics(builder.includeSdkMetrics).
         build();
+
+    double sdkVersion = getSemVer();
+    sdkMetricsRegistry.newGauge("version", () -> sdkVersion);
 
     sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);
     sdkMetricsRegistry.newGauge("points.queue.remaining_capacity",
@@ -577,7 +583,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       // every line item ends with \n
       sb.append(item);
     }
-    return new ByteArrayInputStream(sb.toString().getBytes());
+    return new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8));
   }
 
   @Override

@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.wavefront.sdk.common.Utils.getSemVer;
+import static com.wavefront.sdk.common.Utils.getSemVerValue;
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.sanitize;
@@ -501,4 +503,28 @@ public class UtilsTest {
                 "\"application\"=\"Wavefront\" " +
                 "\"http.method\"=\"GET\" 1493773500 343500\n"));
   }
+
+  @Test
+  public void testSemVerValue() throws IOException {
+    assertEquals(0.0D, getSemVerValue(null));
+
+    assertEquals(0.0D, getSemVerValue(""));
+
+    assertEquals(1.0100D, getSemVerValue("1.1.0"));
+
+    assertEquals(1.0100D, getSemVerValue("1.1.0-SNAPSHOT"));
+
+    assertEquals(1.0101D, getSemVerValue("1.1.1"));
+
+    assertEquals(1.1001D, getSemVerValue("1.10.1"));
+
+    assertEquals(1.0110D, getSemVerValue("1.1.10"));
+
+    assertEquals(1.0001D, getSemVerValue("1.0.1"));
+
+    assertEquals(1.0010D, getSemVerValue("1.0.10"));
+
+    assertEquals(1.1010D, getSemVerValue("1.10.10"));
+  }
+
 }
