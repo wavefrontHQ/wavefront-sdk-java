@@ -10,6 +10,7 @@ import com.wavefront.sdk.entities.tracing.SpanLogsDTO;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
@@ -19,8 +20,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
+import static com.wavefront.sdk.common.Constants.RESOURCES_ROOT;
 import static com.wavefront.sdk.common.Constants.SEMVER_PATTERN;
 import static com.wavefront.sdk.common.Constants.SPAN_LOG_KEY;
+import static com.wavefront.sdk.common.Constants.VERSION;
 
 /**
  * Common Util methods
@@ -399,18 +402,77 @@ public class Utils {
     }
   }
 
-  public static double getSemVer() {
-    ResourceBundle resourceBundle = ResourceBundle.getBundle("build");
-    if (resourceBundle.containsKey("version")) {
-      String version = resourceBundle.getString("version");
-      return getSemVerValue(version);
+  /**
+   * Return the resource at the given resource path in the resource directory
+   * {@code META-INF/}.
+   *
+   * @param pathToResource
+   * @return the resource at the given path, if exists.
+   */
+  public static Optional<ResourceBundle> getResource(String pathToResource) {
+    if (pathToResource != null && !pathToResource.isEmpty()) {
+      ResourceBundle resourceBundle = null;
+      try {
+        resourceBundle = ResourceBundle.getBundle(RESOURCES_ROOT + pathToResource);
+      } catch (Exception ex) {
+        logger.log(Level.WARNING, ex.getMessage());
+      }
+      if (resourceBundle != null) {
+        return Optional.of(resourceBundle);
+      }
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Return the version of the given artifact Id.
+   * This depends on a file with name "&lt;artifactId&gt;.properties" in the resource directory
+   * {@code META-INF/}. The file should contain a line that specifies the project version as
+   * "project.version".
+   *
+   * @param artifactId
+   * @return the version for the given artifactId
+   */
+  public static Optional<String> getVersion(String artifactId) {
+    if (artifactId != null && !artifactId.isEmpty()) {
+      Optional<ResourceBundle> resource = getResource(artifactId + "/build");
+      if (resource.isPresent()) {
+        ResourceBundle resourceBundle = resource.get();
+        if (resourceBundle.containsKey(VERSION)) {
+          String version = resourceBundle.getString(VERSION);
+          if (version != null && !version.isEmpty()) {
+            return Optional.of(version);
+          }
+        }
+      }
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Return the version of the given artifact Id as a gauge value to be reported to Wavefront.
+   * This depends on a file with name "&lt;artifactId&gt;.properties" in the resource directory
+   * {@code META-INF/}. The file should contain a line that specifies the project version as
+   * "project.version".
+   * Format of semantic version gauge value reported to Wavefront =
+   * <majorVersion>.<2-digit-minorVersion><2-digit-patchVersion>
+   *
+   * Ex: v2.6.1 => 2.0601
+   *
+   * @param artifactId
+   * @return the version Gauge value for the given artifactId
+   */
+  public static double getSemVerGauge(String artifactId) {
+    Optional<String> version = getVersion(artifactId);
+    if (version.isPresent()) {
+      return convertSemVerToGauge(version.get());
     } else {
-      logger.log(Level.INFO, "Could not retrieve build version info.");
+      logger.log(Level.INFO, "Could not retrieve build version info for : ", artifactId);
     }
     return 0.0D;
   }
 
-  public static double getSemVerValue(String version) {
+  public static double convertSemVerToGauge(String version) {
     if (version != null && !version.isEmpty()) {
       Matcher semVerMatcher = SEMVER_PATTERN.matcher(version);
       if (semVerMatcher.matches()) {

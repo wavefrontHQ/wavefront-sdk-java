@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.wavefront.sdk.common.Utils.getSemVer;
+import static com.wavefront.sdk.common.Utils.getSemVerGauge;
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
@@ -267,7 +267,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         sendSdkMetrics(builder.includeSdkMetrics).
         build();
 
-    double sdkVersion = getSemVer();
+    double sdkVersion = getSemVerGauge("wavefront-sdk-java");
     sdkMetricsRegistry.newGauge("version", () -> sdkVersion);
 
     sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);

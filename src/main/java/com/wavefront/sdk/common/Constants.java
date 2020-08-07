@@ -122,4 +122,16 @@ public final class Constants {
    */
   public static final Pattern SEMVER_PATTERN = Pattern.
       compile("([0-9]\\d*)\\.(\\d+)\\.(\\d+)(?:-([a-zA-Z0-9]+))?");
+
+  /**
+   * The Project Version of the sdk or artifactId in properties file.
+   */
+  public static final String VERSION = "project.version";
+
+
+  /**
+   * The root folder of the resources for a artifactId.
+   */
+  public static final String RESOURCES_ROOT = "META-INF/";
+
 }
