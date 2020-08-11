@@ -95,7 +95,7 @@
                             <filter>
                                 <artifact>*:*</artifact>
                                 <excludes>
-                                    <exclude>META-INF/**</exclude>
+                                    <exclude>META-INF/license/**</exclude>
                                     <exclude>mozilla/**</exclude>
                                 </excludes>
                             </filter>

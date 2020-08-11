@@ -14,16 +14,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.wavefront.sdk.common.Utils.getSemVer;
-import static com.wavefront.sdk.common.Utils.getSemVerValue;
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.sanitize;
 import static com.wavefront.sdk.common.Utils.sanitizeValue;
 import static com.wavefront.sdk.common.Utils.sanitizeWithoutQuotes;
-import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
-
+import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -505,26 +502,26 @@ public class UtilsTest {
   }
 
   @Test
-  public void testSemVerValue() throws IOException {
-    assertEquals(0.0D, getSemVerValue(null));
+  public void convertSemVerToGauge() throws IOException {
+    assertEquals(0.0D, Utils.convertSemVerToGauge(null));
 
-    assertEquals(0.0D, getSemVerValue(""));
+    assertEquals(0.0D, Utils.convertSemVerToGauge(""));
 
-    assertEquals(1.0100D, getSemVerValue("1.1.0"));
+    assertEquals(1.0100D, Utils.convertSemVerToGauge("1.1.0"));
 
-    assertEquals(1.0100D, getSemVerValue("1.1.0-SNAPSHOT"));
+    assertEquals(1.0100D, Utils.convertSemVerToGauge("1.1.0-SNAPSHOT"));
 
-    assertEquals(1.0101D, getSemVerValue("1.1.1"));
+    assertEquals(1.0101D, Utils.convertSemVerToGauge("1.1.1"));
 
-    assertEquals(1.1001D, getSemVerValue("1.10.1"));
+    assertEquals(1.1001D, Utils.convertSemVerToGauge("1.10.1"));
 
-    assertEquals(1.0110D, getSemVerValue("1.1.10"));
+    assertEquals(1.0110D, Utils.convertSemVerToGauge("1.1.10"));
 
-    assertEquals(1.0001D, getSemVerValue("1.0.1"));
+    assertEquals(1.0001D, Utils.convertSemVerToGauge("1.0.1"));
 
-    assertEquals(1.0010D, getSemVerValue("1.0.10"));
+    assertEquals(1.0010D, Utils.convertSemVerToGauge("1.0.10"));
 
-    assertEquals(1.1010D, getSemVerValue("1.10.10"));
+    assertEquals(1.1010D, Utils.convertSemVerToGauge("1.10.10"));
   }
 
 }
