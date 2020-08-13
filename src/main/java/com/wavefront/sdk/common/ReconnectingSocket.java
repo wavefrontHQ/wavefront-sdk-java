@@ -8,6 +8,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
@@ -179,7 +180,7 @@ public class ReconnectingSocket {
         throw new Exception("Remote server terminated.");  // Handled below.
       }
       // Might be NPE due to previously failed call to resetSocket.
-      socketOutputStream.get().write(message.getBytes());
+      socketOutputStream.get().write(message.getBytes(StandardCharsets.UTF_8));
       writeSuccesses.inc();
     } catch (Exception e) {
       try {
@@ -192,7 +193,7 @@ public class ReconnectingSocket {
           logger.warning(warningMsg);
         }
         resetSocket();
-        socketOutputStream.get().write(message.getBytes());
+        socketOutputStream.get().write(message.getBytes(StandardCharsets.UTF_8));
         writeSuccesses.inc();
       } catch (Exception e2) {
         writeErrors.inc();
