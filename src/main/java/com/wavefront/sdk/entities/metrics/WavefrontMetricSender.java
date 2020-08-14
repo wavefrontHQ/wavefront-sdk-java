@@ -41,11 +41,8 @@ public interface WavefrontMetricSender {
   void sendFormattedMetric(String point) throws IOException;
 
   /**
-   * Sends the given delta counter to Wavefront. The timestamp for the point on the client side is
-   * null because the final timestamp of the delta counter is assigned when the point is
-   * aggregated on the server side. Do not use this method to send older points (say around 5 min
-   * old) as they will be aggregated on server with the current timestamp which yields in a wrong
-   * final aggregated value.
+   * Sends the given delta counter to Wavefront. Use this method so that the timestamp for the delta counter
+   * is assigned when the delta counter hits Wavefront server.
    *
    * @param name      The name of the delta counter. Name will be prefixed by ∆ if it does
    *                  not start with that symbol already. Also, spaces are replaced with '-'
@@ -68,11 +65,8 @@ public interface WavefrontMetricSender {
   }
 
   /**
-   * Sends the given delta counter to Wavefront. The timestamp for the point on the client side is
-   * null because the final timestamp of the delta counter is assigned when the point is
-   * aggregated on the server side. Do not use this method to send older points (say around 5 min
-   * old) as they will be aggregated on server with the current timestamp which yields in a wrong
-   * final aggregated value.
+   * Sends the given delta counter to Wavefront. Use this method to explicitly send the timestamp
+   * for the delta counter point.
    *
    * @param name      The name of the delta counter. Name will be prefixed by ∆ if it does
    *                  not start with that symbol already. Also, spaces are replaced with '-'
