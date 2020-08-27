@@ -4,10 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wavefront.sdk.common.annotation.NonNull;
 import com.wavefront.sdk.common.annotation.Nullable;
+import com.wavefront.sdk.entities.events.EventDTO;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
 import com.wavefront.sdk.entities.tracing.SpanLogsDTO;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -260,6 +263,132 @@ public class Utils {
     return sb.toString();
   }
 
+  public static String eventToLineData(String name, long startMillis, long endMillis,
+                                       @Nullable String source, @Nullable Map<String, String> tags,
+                                       @Nullable Map<String, String> annotations,
+                                       String defaultSource, boolean jsonify)
+      throws JsonProcessingException {
+
+    /* Wavefront Event Data format
+     *
+     * Proxy: @Event <startMillis> <endMillis> <name> [annotations] host=source [tags]
+     * Direct Ingestion: JSON string
+     *
+     * Example:
+     * Direct Ingestion:
+     *                    {
+     *                      "name": "Event Example",
+     *                      "hosts": ["localhost"]
+     *                      "annotations": {
+     *                        "severity": "info",
+     *                        "type": "event type",
+     *                        "details": "description"
+     *                      },
+     *                      "tags" : ["key1: value1"],
+     *                      "startTime": 1598571847285,
+     *                      "endTime": 1598571847286
+     *                    }
+     * Proxy: @Event 1598571847285 1598571847286 "Event Example" details="description"
+     *        type="event type" severity="severity" host="localhost" tag="key1: value1"
+     */
+
+    // check and sanitize parameters
+    if (source == null || source.isEmpty()) {
+      source = defaultSource;
+    }
+    if (name == null || name.isEmpty()) {
+      throw new IllegalArgumentException("event name cannot be blank " +
+          getContextInfo(name, source, tags));
+    }
+    if (source == null || source.isEmpty()) {
+      throw new IllegalArgumentException("event source or default source cannot be blank " +
+          getContextInfo(name, source, tags));
+    }
+
+    if (endMillis == 0) {
+      endMillis = startMillis + 1;
+    }
+
+    List<String> sanitizedTags = null;
+    Map<String, String> sanitizedAnnotations = null;
+
+    if (tags != null) {
+      sanitizedTags = new ArrayList<>();
+      for (final Map.Entry<String, String> tag : tags.entrySet()) {
+        String key = tag.getKey();
+        String val = tag.getValue();
+        if (key == null || key.isEmpty()) {
+          throw new IllegalArgumentException("event tag key cannot be blank " +
+              getContextInfo(name, source, tags));
+        }
+        if (val == null || val.isEmpty()) {
+          throw new IllegalArgumentException("event tag value cannot be blank for " +
+              "tag key: " + key + " " + getContextInfo(name, source, tags));
+        }
+        sanitizedTags.add(sanitizeWithoutQuotes(key) + ": " + val.trim());
+      }
+    }
+
+    if (annotations != null) {
+      sanitizedAnnotations = new HashMap<>();
+      for (final Map.Entry<String, String> annotation : annotations.entrySet()) {
+        String key = annotation.getKey();
+        String val = annotation.getValue();
+        if (key == null || key.isEmpty()) {
+          throw new IllegalArgumentException("event annotation key cannot be blank " +
+              getContextInfo(name, source, tags));
+        }
+        if (val == null || val.isEmpty()) {
+          throw new IllegalArgumentException("event annotation value cannot be blank for " +
+              "annotation key: " + key + " " + getContextInfo(name, source, tags));
+        }
+        sanitizedAnnotations.put(sanitizeWithoutQuotes(key), val.trim());
+      }
+    }
+
+    if (jsonify) {
+      // convert event to JSON string
+      final StringBuilder toReturn = new StringBuilder();
+      toReturn.append(JSON_PARSER.writeValueAsString(new EventDTO(name, startMillis, endMillis,
+          source, sanitizedTags, sanitizedAnnotations)))
+          .append("\n");
+      return toReturn.toString();
+    }
+
+    // convert event to line format
+    final StringBuilder sb = new StringBuilder();
+
+    sb.append("@Event");
+    sb.append(' ');
+    sb.append(startMillis);
+    sb.append(' ');
+    sb.append(endMillis);
+    sb.append(' ');
+    sb.append(sanitizeValue(name));
+
+    if (sanitizedAnnotations != null) {
+      for (final Map.Entry<String, String> annotation : annotations.entrySet()) {
+        sb.append(' ');
+        sb.append(annotation.getKey());
+        sb.append('=');
+        sb.append(sanitizeValue(annotation.getValue()));
+      }
+    }
+
+    sb.append(" host=");
+    sb.append(sanitize(source));
+
+    if (sanitizedTags != null) {
+      for (String tag : sanitizedTags) {
+        sb.append(" tag=");
+        sb.append(sanitizeValue(tag));
+      }
+    }
+
+    sb.append('\n');
+    return sb.toString();
+  }
+
   public static String spanLogsToLineData(UUID traceId, UUID spanId, @NonNull List<SpanLog> spanLogs)
       throws JsonProcessingException {
     return spanLogsToLineData(traceId, spanId, spanLogs, null);
@@ -341,7 +470,7 @@ public class Utils {
   }
 
   /**
-   * Builds a best-effort string representation of a metric/histogram/span to provide additional
+   * Builds a best-effort string representation of a metric/histogram/span/event to provide additional
    * context to error messages. This implementation doesn't have to be as strict about escaping
    * values, since this is for internal use only. This method swallows all exceptions so it's
    * safe to use in critical blocks.
