@@ -10,4 +10,6 @@ import java.io.InputStream;
  */
 public interface ReportAPI {
   int send(String format, InputStream stream);
+
+  int sendEvent(InputStream stream);
 }

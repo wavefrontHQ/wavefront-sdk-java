@@ -33,6 +33,16 @@ public final class Constants {
   public static final String WAVEFRONT_SPAN_LOG_FORMAT = "spanLogs";
 
   /**
+   * Use this format to send event data to Wavefront
+   */
+  public static final String WAVEFRONT_EVENT_FORMAT = "event";
+
+  /**
+   * URI scheme for proxy
+   */
+  public static final String HTTP_PROXY_SCHEME = "http";
+
+  /**
    * ∆: INCREMENT
    */
   public static final String DELTA_PREFIX = "\u2206";

@@ -22,8 +22,11 @@ public interface WavefrontEventSender {
    * @param source         The source (or host) that's sending the event. If null, then assigned
    *                       by Wavefront.
    * @param tags           The tags associated with this event.
+   * @param annotations    The annotations (details, type, severity, e.g.) associated with this event
    * @throws IOException   if there was an error sending the event.
    */
   void sendEvent(String name, long startMillis, long endMillis, @Nullable String source,
-                 @Nullable Map<String, String> tags) throws IOException;
+                 @Nullable Map<String, String> tags,
+                 @Nullable Map<String, String> annotations)
+      throws IOException;
 }

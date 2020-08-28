@@ -1,15 +1,18 @@
 package com.wavefront.sdk.common.clients.service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
@@ -71,6 +74,59 @@ public class ReportingService implements ReportAPI {
     return statusCode;
   }
 
+  @Override
+  public int sendEvent(InputStream stream) {
+    HttpURLConnection urlConn = null;
+    int statusCode = 400;
+    try {
+      URL url = getEventReportingUrl(uri);
+      urlConn = (HttpURLConnection) url.openConnection();
+      urlConn.setDoOutput(true);
+      urlConn.setRequestMethod("POST");
+
+      if (uri.getScheme().equals(Constants.HTTP_PROXY_SCHEME)) {
+        // Event is in compressed line format for proxy
+        urlConn.addRequestProperty("Content-Type", "application/octet-stream");
+        urlConn.addRequestProperty("Content-Encoding", "gzip");
+      } else {
+        // Event is in uncompressed JSON format for direct ingestion
+        urlConn.addRequestProperty("Content-Type", "application/json");
+      }
+
+      if (token != null && !token.equals("")) {
+        urlConn.addRequestProperty("Authorization", "Bearer " + token);
+      }
+      urlConn.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
+      urlConn.setReadTimeout(READ_TIMEOUT_MILLIS);
+
+      if (uri.getScheme().equals(Constants.HTTP_PROXY_SCHEME)) {
+        try (GZIPOutputStream gzipOS = new GZIPOutputStream(urlConn.getOutputStream())) {
+          byte[] buffer = new byte[BUFFER_SIZE];
+          while (stream.available() > 0) {
+            gzipOS.write(buffer, 0, stream.read(buffer));
+          }
+          gzipOS.flush();
+        }
+      } else {
+        try (OutputStream urlOS = urlConn.getOutputStream()) {
+          byte[] buffer = new byte[BUFFER_SIZE];
+          while (stream.available() > 0) {
+            urlOS.write(buffer, 0, stream.read(buffer));
+          }
+          urlOS.flush();
+        }
+      }
+
+      statusCode = urlConn.getResponseCode();
+      readAndClose(urlConn.getInputStream());
+    } catch (IOException ex) {
+      if (urlConn != null) {
+        return safeGetResponseCodeAndClose(urlConn);
+      }
+    }
+    return statusCode;
+  }
+
   private int safeGetResponseCodeAndClose(HttpURLConnection urlConn) {
     int statusCode;
     try {
@@ -122,6 +178,20 @@ public class ReportingService implements ReportAPI {
       originalPath += "/report";
     }
     URL url = new URL(server.getScheme(), server.getHost(), server.getPort(), originalPath + "?f=" + format);
+    return url;
+  }
+
+  @VisibleForTesting
+  public static URL getEventReportingUrl(URI server) throws MalformedURLException {
+    String originalPath = server.getPath() != null ? server.getPath() : "";
+    originalPath = originalPath.replaceAll("(\\/){2,}", "/");
+    originalPath = originalPath.equals("/") ? "" : originalPath;
+    if (originalPath.endsWith("/api/v2/event/")) {
+      originalPath = originalPath.replaceAll("\\/api\\/v2\\/event\\/$", "/api/v2/event");
+    } else if (!originalPath.endsWith("/api/v2/event")) {
+      originalPath += "/api/v2/event";
+    }
+    URL url = new URL(server.getScheme(), server.getHost(), server.getPort(), originalPath);
     return url;
   }
 }
