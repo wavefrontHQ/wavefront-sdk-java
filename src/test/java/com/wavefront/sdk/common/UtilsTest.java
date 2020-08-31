@@ -492,7 +492,7 @@ public class UtilsTest {
             1598466688001L, "localhost", tags, annotations, "localhost", true));
 
     assertEquals("{\"name\":\"test event\",\"startTime\":1598466688000,\"endTime\":1598466688001," +
-            "\"hosts\":[\"localhost\"]}\n",
+            "\"hosts\":[\"localhost\"],\"annotations\":{}}\n",
         eventToLineData("test event", 1598466688000L,
             1598466688001L, null, null, null, "localhost", true));
   }

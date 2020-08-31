@@ -23,7 +23,7 @@ public class EventDTO {
   private final Map<String, String> annotations;
 
   public EventDTO(String name, long startTime, long endTime, String source,
-                  @Nullable List<String> listTags, @Nullable Map<String, String> annotations) {
+                  Map<String, String> annotations, @Nullable List<String> listTags) {
     this.name = name;
     this.startTime = startTime;
     this.endTime = endTime;
@@ -56,9 +56,6 @@ public class EventDTO {
   }
 
   public Map<String, String> getAnnotations() {
-    if (annotations == null) {
-      return null;
-    }
     return Collections.unmodifiableMap(annotations);
   }
 

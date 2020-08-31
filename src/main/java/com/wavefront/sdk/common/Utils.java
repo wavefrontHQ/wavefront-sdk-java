@@ -349,8 +349,12 @@ public class Utils {
     if (jsonify) {
       // convert event to JSON string
       final StringBuilder toReturn = new StringBuilder();
+      // For JSON format in direct ingestion, annotations field is required even it is empty
+      if (sanitizedAnnotations == null) {
+        sanitizedAnnotations = new HashMap<>();
+      }
       toReturn.append(JSON_PARSER.writeValueAsString(new EventDTO(name, startMillis, endMillis,
-          source, sanitizedTags, sanitizedAnnotations)))
+          source, sanitizedAnnotations, sanitizedTags)))
           .append("\n");
       return toReturn.toString();
     }
@@ -367,7 +371,7 @@ public class Utils {
     sb.append(sanitizeValue(name));
 
     if (sanitizedAnnotations != null) {
-      for (final Map.Entry<String, String> annotation : annotations.entrySet()) {
+      for (final Map.Entry<String, String> annotation : sanitizedAnnotations.entrySet()) {
         sb.append(' ');
         sb.append(annotation.getKey());
         sb.append('=');
