@@ -301,7 +301,7 @@ public class Utils {
           getContextInfo(name, source, tags));
     }
     if (source == null || source.isEmpty()) {
-      throw new IllegalArgumentException("event source or default source cannot be blank " +
+      throw new IllegalArgumentException("event source and default source cannot be blank " +
           getContextInfo(name, source, tags));
     }
 

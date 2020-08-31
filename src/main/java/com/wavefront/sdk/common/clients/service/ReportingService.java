@@ -84,15 +84,6 @@ public class ReportingService implements ReportAPI {
       urlConn.setDoOutput(true);
       urlConn.setRequestMethod("POST");
 
-      if (uri.getScheme().equals(Constants.HTTP_PROXY_SCHEME)) {
-        // Event is in compressed line format for proxy
-        urlConn.addRequestProperty("Content-Type", "application/octet-stream");
-        urlConn.addRequestProperty("Content-Encoding", "gzip");
-      } else {
-        // Event is in uncompressed JSON format for direct ingestion
-        urlConn.addRequestProperty("Content-Type", "application/json");
-      }
-
       if (token != null && !token.equals("")) {
         urlConn.addRequestProperty("Authorization", "Bearer " + token);
       }
@@ -100,6 +91,9 @@ public class ReportingService implements ReportAPI {
       urlConn.setReadTimeout(READ_TIMEOUT_MILLIS);
 
       if (uri.getScheme().equals(Constants.HTTP_PROXY_SCHEME)) {
+        // Event is in compressed line format for proxy.
+        urlConn.addRequestProperty("Content-Type", "application/octet-stream");
+        urlConn.addRequestProperty("Content-Encoding", "gzip");
         try (GZIPOutputStream gzipOS = new GZIPOutputStream(urlConn.getOutputStream())) {
           byte[] buffer = new byte[BUFFER_SIZE];
           while (stream.available() > 0) {
@@ -108,6 +102,8 @@ public class ReportingService implements ReportAPI {
           gzipOS.flush();
         }
       } else {
+        // Event is in uncompressed JSON format for direct ingestion.
+        urlConn.addRequestProperty("Content-Type", "application/json");
         try (OutputStream urlOS = urlConn.getOutputStream()) {
           byte[] buffer = new byte[BUFFER_SIZE];
           while (stream.available() > 0) {
@@ -181,6 +177,14 @@ public class ReportingService implements ReportAPI {
     return url;
   }
 
+  /**
+   * For a given URI generate a properly formatted URL suitable
+   * for sending events to either proxies or a Wavefront service.
+   *
+   * @param server a server to report to
+   * @return returns as properly formatted URL ending in /api/v2/event
+   * @throws MalformedURLException
+   */
   @VisibleForTesting
   public static URL getEventReportingUrl(URI server) throws MalformedURLException {
     String originalPath = server.getPath() != null ? server.getPath() : "";

@@ -420,7 +420,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
                         @Nullable Map<String, String> annotations)
       throws UnsupportedOperationException {
     throw new UnsupportedOperationException("Sending event is not supported for " +
-        "deprecated WavefrontProxyClient.");
+        "deprecated WavefrontProxyClient. Please use WavefrontClient to send events.");
   }
 
   @Override

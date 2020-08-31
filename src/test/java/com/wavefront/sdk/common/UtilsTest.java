@@ -519,7 +519,7 @@ public class UtilsTest {
           null, null, false);
       fail();
     } catch (IllegalArgumentException e) {
-      assertTrue(e.getMessage().contains("event source or default source cannot be blank"));
+      assertTrue(e.getMessage().contains("event source and default source cannot be blank"));
       assertTrue(e.getMessage().contains("test event"));
       assertTrue(e.getMessage().contains("key1=[value1]"));
     }

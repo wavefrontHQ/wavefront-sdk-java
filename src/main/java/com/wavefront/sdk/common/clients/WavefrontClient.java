@@ -420,8 +420,10 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     URI uri = URI.create(this.clientId);
     try {
       if (uri.getScheme().equals(Constants.HTTP_PROXY_SCHEME)) {
+        // If the path starts with http, the event is sent with proxy.
         event = eventToLineData(name, startMillis, endMillis, source, tags, annotations, defaultSource, false);
       } else {
+        // If the path starts with https, the event is sent with direct ingestion.
         event = eventToLineData(name, startMillis, endMillis, source, tags, annotations, defaultSource, true);
       }
       eventsValid.inc();
