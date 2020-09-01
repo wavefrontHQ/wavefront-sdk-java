@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.wavefront.sdk.common.Utils.eventToLineData;
 import static com.wavefront.sdk.common.Utils.getSemVerGauge;
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
@@ -74,6 +76,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   private final LinkedBlockingQueue<String> histogramsBuffer;
   private final LinkedBlockingQueue<String> tracingSpansBuffer;
   private final LinkedBlockingQueue<String> spanLogsBuffer;
+  private final LinkedBlockingQueue<String> eventsBuffer;
   private final ReportingService reportingService;
   private final ScheduledExecutorService scheduler;
   private final WavefrontSdkMetricsRegistry sdkMetricsRegistry;
@@ -102,11 +105,18 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   private final WavefrontSdkCounter spanLogsDropped;
   private final WavefrontSdkCounter spanLogReportErrors;
 
+  //Internal event metrics
+  private final WavefrontSdkCounter eventsValid;
+  private final WavefrontSdkCounter eventsInvalid;
+  private final WavefrontSdkCounter eventsDropped;
+  private final WavefrontSdkCounter eventsReportErrors;
+
   // Consider the feature to be enabled when value is 0, and disabled otherwise
   private final AtomicInteger metricsDisabledStatusCode;
   private final AtomicInteger histogramsDisabledStatusCode;
   private final AtomicInteger spansDisabledStatusCode;
   private final AtomicInteger spanLogsDisabledStatusCode;
+  private final AtomicInteger eventsDisabledStatusCode;
 
   // Flag to prevent sending after close() has been called
   private final AtomicBoolean closed = new AtomicBoolean(false);
@@ -253,6 +263,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     histogramsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     tracingSpansBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     spanLogsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
+    eventsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     reportingService = new ReportingService(builder.server, builder.token);
     scheduler = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("wavefrontClientSender").setDaemon(true));
@@ -302,10 +313,19 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     spanLogsDropped = sdkMetricsRegistry.newCounter("span_logs.dropped");
     spanLogReportErrors = sdkMetricsRegistry.newCounter("span_logs.report.errors");
 
+    sdkMetricsRegistry.newGauge("events.queue.size", eventsBuffer::size);
+    sdkMetricsRegistry.newGauge("events.queue.remaining_capacity",
+        eventsBuffer::remainingCapacity);
+    eventsValid = sdkMetricsRegistry.newCounter("events.valid");
+    eventsInvalid = sdkMetricsRegistry.newCounter("events.invalid");
+    eventsDropped = sdkMetricsRegistry.newCounter("events.dropped");
+    eventsReportErrors = sdkMetricsRegistry.newCounter("events.report.errors");
+
     metricsDisabledStatusCode = new AtomicInteger();
     histogramsDisabledStatusCode = new AtomicInteger();
     spansDisabledStatusCode = new AtomicInteger();
     spanLogsDisabledStatusCode = new AtomicInteger();
+    eventsDisabledStatusCode = new AtomicInteger();
 
     this.clientId = builder.server;
   }
@@ -385,6 +405,36 @@ public class WavefrontClient implements WavefrontSender, Runnable {
           "Buffer full, dropping histograms: " + histograms + ". Consider increasing the batch " +
               "size of your sender to increase throughput.");
 
+    }
+  }
+
+  @Override
+  public void sendEvent(String name, long startMillis, long endMillis, @Nullable String source,
+                        @Nullable Map<String, String> tags,
+                        @Nullable Map<String, String> annotations)
+      throws IOException {
+    if (closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
+    String event;
+    URI uri = URI.create(this.clientId);
+    try {
+      if (uri.getScheme().equals(Constants.HTTP_PROXY_SCHEME)) {
+        // If the path starts with http, the event is sent with proxy.
+        event = eventToLineData(name, startMillis, endMillis, source, tags, annotations, defaultSource, false);
+      } else {
+        // If the path starts with https, the event is sent with direct ingestion.
+        event = eventToLineData(name, startMillis, endMillis, source, tags, annotations, defaultSource, true);
+      }
+      eventsValid.inc();
+    } catch (IllegalArgumentException e) {
+      eventsInvalid.inc();
+      throw e;
+    }
+    if (!eventsBuffer.offer(event)) {
+      eventsDropped.inc();
+      logger.log(LogMessageType.EVENTS_BUFFER_FULL.toString(), Level.WARNING,
+          "Buffer full, dropping events: " + event + ".");
     }
   }
 
@@ -476,6 +526,10 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         spanLogsDropped, spanLogReportErrors, spanLogsDisabledStatusCode,
         LogMessageType.SEND_SPANLOGS_ERROR, LogMessageType.SEND_SPANLOGS_PERMISSIONS,
         LogMessageType.SPANLOGS_BUFFER_FULL);
+    internalFlush(eventsBuffer, Constants.WAVEFRONT_EVENT_FORMAT, "events", "events",
+        eventsDropped, eventsReportErrors, eventsDisabledStatusCode,
+        LogMessageType.SEND_EVENTS_ERROR, LogMessageType.SEND_EVENTS_PERMISSIONS,
+        LogMessageType.EVENTS_BUFFER_FULL);
   }
 
   private void internalFlush(LinkedBlockingQueue<String> buffer, String format,
@@ -486,7 +540,13 @@ public class WavefrontClient implements WavefrontSender, Runnable {
                              LogMessageType permissionsMessageType,
                              LogMessageType bufferFullMessageType)
       throws IOException {
-    List<List<String>> batch = getBatch(buffer, batchSize, messageSizeBytes, dropped);
+    List<List<String>> batch = null;
+    if(format.equals(Constants.WAVEFRONT_EVENT_FORMAT)){
+      // Event direct ingestion now does not support batching
+      batch = getBatch(buffer, 1, messageSizeBytes, dropped);
+    }else{
+      batch = getBatch(buffer, batchSize, messageSizeBytes, dropped);
+    }
     for (int i = 0; i < batch.size(); i++) {
       List<String> items = batch.get(i);
       int featureDisabledReason = featureDisabledStatusCode.get();
@@ -512,7 +572,12 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         continue;
       }
       try (InputStream is = itemsToStream(items)) {
-        int statusCode = reportingService.send(format, is);
+        int statusCode;
+        if (format.equals(Constants.WAVEFRONT_EVENT_FORMAT)) {
+          statusCode = reportingService.sendEvent(is);
+        } else {
+          statusCode = reportingService.send(format, is);
+        }
         sdkMetricsRegistry.newCounter(entityPrefix + ".report." + statusCode).inc();
         if ((400 <= statusCode && statusCode <= 599) || statusCode == -1) {
           switch (statusCode) {
@@ -589,7 +654,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   @Override
   public int getFailureCount() {
     return (int) (pointReportErrors.count() + histogramReportErrors.count() +
-        spanReportErrors.count());
+        spanReportErrors.count() + eventsReportErrors.count());
   }
 
   @Override
@@ -673,6 +738,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     HISTOGRAMS_BUFFER_FULL,
     SPANS_BUFFER_FULL,
     SPANLOGS_BUFFER_FULL,
+    EVENTS_BUFFER_FULL,
     SPANLOGS_PROCESSING_ERROR,
     FLUSH_ERROR,
     CLOSE_WHILE_CLOSED,
@@ -680,10 +746,12 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     SEND_HISTOGRAMS_ERROR,
     SEND_SPANS_ERROR,
     SEND_SPANLOGS_ERROR,
+    SEND_EVENTS_ERROR,
     SEND_METRICS_PERMISSIONS,
     SEND_HISTOGRAMS_PERMISSIONS,
     SEND_SPANS_PERMISSIONS,
     SEND_SPANLOGS_PERMISSIONS,
+    SEND_EVENTS_PERMISSIONS,
     SHUTDOWN_ERROR,
     MESSAGE_SIZE_LIMIT_EXCEEDED
   }

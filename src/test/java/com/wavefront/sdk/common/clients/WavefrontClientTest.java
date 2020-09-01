@@ -84,4 +84,28 @@ public class WavefrontClientTest {
       throw new RuntimeException(e);
     }
   }
+
+  @Test
+  public void testUrlFormatForEvnetService() {
+    validateEventURI(URI.create("http://127.0.0.1:2878"), "http://127.0.0.1:2878/api/v2/event");
+    validateEventURI(URI.create("http://127.0.0.1:2878/"), "http://127.0.0.1:2878/api/v2/event");
+    validateEventURI(URI.create("http://127.0.0.1:2878////"), "http://127.0.0.1:2878/api/v2/event");
+    validateEventURI(URI.create("http://localhost:2878/api/v2/event"), "http://localhost:2878/api/v2/event");
+    validateEventURI(URI.create("http://localhost:2878/api/v2/event/"), "http://localhost:2878/api/v2/event");
+    validateEventURI(URI.create("http://corp.proxies.acme.com:2878/prod/api/v2/event/"),
+        "http://corp.proxies.acme.com:2878/prod/api/v2/event");
+    validateEventURI(URI.create("https://domain.wavefront.com"), "https://domain.wavefront.com/api/v2/event");
+    validateEventURI(URI.create("https://domain.wavefront.com/"), "https://domain.wavefront.com/api/v2/event");
+    validateEventURI(URI.create("https://domain.wavefront.com/api/v2/event/"), "https://domain.wavefront.com/api/v2/event");
+    validateEventURI(URI.create("https://domain.wavefront.com/api/v2/event"), "https://domain.wavefront.com/api/v2/event");
+  }
+
+  private void validateEventURI(URI uri, String expected) {
+    try {
+      URL url = ReportingService.getEventReportingUrl(uri);
+      assertEquals(url.toString(), expected);
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

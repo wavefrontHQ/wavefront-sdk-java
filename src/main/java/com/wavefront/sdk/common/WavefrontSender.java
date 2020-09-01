@@ -1,5 +1,6 @@
 package com.wavefront.sdk.common;
 
+import com.wavefront.sdk.entities.events.WavefrontEventSender;
 import com.wavefront.sdk.entities.histograms.WavefrontHistogramSender;
 import com.wavefront.sdk.entities.metrics.WavefrontMetricSender;
 import com.wavefront.sdk.entities.tracing.WavefrontTracingSpanSender;
@@ -12,6 +13,6 @@ import java.io.Closeable;
  * @author Sushant Dewan (sushant@wavefront.com).
  */
 public interface WavefrontSender extends WavefrontMetricSender, WavefrontHistogramSender,
-    WavefrontTracingSpanSender, BufferFlusher, Closeable {
+    WavefrontTracingSpanSender, WavefrontEventSender, BufferFlusher, Closeable {
   String getClientId();
 }

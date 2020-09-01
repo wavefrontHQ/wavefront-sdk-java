@@ -17,8 +17,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * WavefrontMultiClient supports multicasting metrics/distributions/spans onto multiple endpoints
- * for either Proxy or Direct Ingestion.
+ * WavefrontMultiClient supports multicasting metrics/distributions/spans/events onto multiple
+ * endpoints for either Proxy or Direct Ingestion.
  *
  * User should probably attempt to reconnect when exceptions are thrown from any methods.
  *
@@ -161,6 +161,23 @@ public class WavefrontMultiClient implements WavefrontSender, Runnable {
         client.sendSpan(name, startMillis, durationMillis, source, traceId, spanId, parents, followsFrom, tags, spanLogs);
       } catch (IOException ex) {
         logger.log(Level.SEVERE, "Client " + client.getClientId() + " failed to send span.", ex);
+        exceptions.add(ex);
+      }
+    }
+
+    exceptions.checkAndThrow();
+  }
+
+  public void sendEvent(String name, long startMillis, long endMillis, @Nullable String source,
+                        @Nullable Map<String, String> tags,
+                        @Nullable Map<String, String> annotations)
+      throws IOException {
+    MultiClientIOException exceptions = new MultiClientIOException();
+    for (WavefrontSender client : wavefrontSenders.values()) {
+      try {
+        client.sendEvent(name, startMillis, endMillis, source, tags, annotations);
+      } catch (IOException ex) {
+        logger.log(Level.SEVERE, "Client " + client.getClientId() + " failed to send event.", ex);
         exceptions.add(ex);
       }
     }

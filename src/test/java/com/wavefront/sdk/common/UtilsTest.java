@@ -21,6 +21,7 @@ import static com.wavefront.sdk.common.Utils.sanitizeValue;
 import static com.wavefront.sdk.common.Utils.sanitizeWithoutQuotes;
 import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
+import static com.wavefront.sdk.common.Utils.eventToLineData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -456,6 +457,133 @@ public class UtilsTest {
       assertTrue(e.getMessage().contains("source=localhost"));
       assertTrue(e.getMessage().contains("application=[Wavefront]"));
       assertTrue(e.getMessage().contains("http.method=[]"));
+    }
+  }
+
+  @Test
+  public void testEventToLineData() throws IOException {
+    Map<String, String> tags = new HashMap<String, String>() {{
+      put("namespace", "default");
+      put("Kind", "Deployment");
+    }};
+    Map<String, String> annotations = new HashMap<String, String>() {{
+      put("details", "Details");
+      put("type", "test_type");
+      put("severity", "info");
+    }};
+    assertEquals("@Event 1598466688000 1598466688001 \"test event\" severity=\"info\" details=\"Details\" " +
+            "type=\"test_type\" host=\"localhost\" tag=\"Kind: Deployment\" tag=\"namespace: default\"\n",
+        eventToLineData("test event", 1598466688000L,
+            1598466688001L, "localhost", tags, annotations, "localhost", false));
+
+    assertEquals("@Event 1598466688000 1598466688001 \"test event\" severity=\"info\" details=\"Details\" " +
+            "type=\"test_type\" host=\"localhost\" tag=\"Kind: Deployment\" tag=\"namespace: default\"\n",
+        eventToLineData("test event", 1598466688000L,
+            0, "localhost", tags, annotations, "localhost", false));
+
+    assertEquals("@Event 1598466688000 1598466688001 \"test event\" host=\"localhost\"\n",
+        eventToLineData("test event", 1598466688000L,
+            1598466688001L, null, null, null, "localhost", false));
+
+    assertEquals("{\"name\":\"test event\",\"startTime\":1598466688000,\"endTime\":1598466688001," +
+            "\"hosts\":[\"localhost\"],\"tags\":[\"Kind: Deployment\",\"namespace: default\"]," +
+            "\"annotations\":{\"severity\":\"info\",\"details\":\"Details\",\"type\":\"test_type\"}}\n",
+        eventToLineData("test event", 1598466688000L,
+            1598466688001L, "localhost", tags, annotations, "localhost", true));
+
+    assertEquals("{\"name\":\"test event\",\"startTime\":1598466688000,\"endTime\":1598466688001," +
+            "\"hosts\":[\"localhost\"],\"annotations\":{}}\n",
+        eventToLineData("test event", 1598466688000L,
+            1598466688001L, null, null, null, "localhost", true));
+  }
+
+  @Test
+  public void testInvalidEventToLineDataThrows() throws IOException {
+    try {
+      eventToLineData(null, 1598466688000L,
+          1598466688001L, null, new HashMap<String, String>() {{
+            put("key1", "value1");
+          }},
+          null, "localhost", false);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("event name cannot be blank"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("key1=[value1]"));
+    }
+    try {
+      eventToLineData("test event", 1598466688000L,
+          1598466688001L, null, new HashMap<String, String>() {{
+            put("key1", "value1");
+          }},
+          null, null, false);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("event source and default source cannot be blank"));
+      assertTrue(e.getMessage().contains("test event"));
+      assertTrue(e.getMessage().contains("key1=[value1]"));
+    }
+    try {
+      eventToLineData("test event", 1598466688000L,
+          1598466688001L, null, new HashMap<String, String>() {{
+            put("", "value1");
+          }},
+          null, "localhost", false);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("event tag key cannot be blank"));
+      assertTrue(e.getMessage().contains("test event"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+    }
+    try {
+      eventToLineData("test event", 1598466688000L,
+          1598466688001L, null, new HashMap<String, String>() {{
+            put("key1", "");
+          }},
+          null, "localhost", false);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("event tag value cannot be blank for tag key: key1"));
+      assertTrue(e.getMessage().contains("test event"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("key1=[]"));
+    }
+    try {
+      eventToLineData("test event", 1598466688000L,
+          1598466688001L, null, new HashMap<String, String>() {{
+            put("key1", null);
+          }},
+          null, "localhost", false);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("event tag value cannot be blank for tag key: key1"));
+      assertTrue(e.getMessage().contains("test event"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("key1=[null]"));
+    }
+    try {
+      eventToLineData("test event", 1598466688000L,
+          1598466688001L, null, null,
+          new HashMap<String, String>() {{
+            put("severity", null);
+          }}, "localhost", false);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("event annotation value cannot be blank for annotation key: severity"));
+      assertTrue(e.getMessage().contains("test event"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+    }
+    try {
+      eventToLineData("test event", 1598466688000L,
+          1598466688001L, null, null,
+          new HashMap<String, String>() {{
+            put("", null);
+          }}, "localhost", false);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("event annotation key cannot be blank"));
+      assertTrue(e.getMessage().contains("test event"));
+      assertTrue(e.getMessage().contains("source=localhost"));
     }
   }
 

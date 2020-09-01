@@ -382,6 +382,14 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     }
   }
 
+  public void sendEvent(String name, long startMillis, long endMillis, @Nullable String source,
+                        @Nullable Map<String, String> tags,
+                        @Nullable Map<String, String> annotations)
+      throws UnsupportedOperationException {
+    throw new UnsupportedOperationException("Sending event is not supported for " +
+        "deprecated WavefrontDirectIngestionClient. Please use WavefrontClient to send events.");
+  }
+
   @Override
   public void run() {
     try {
