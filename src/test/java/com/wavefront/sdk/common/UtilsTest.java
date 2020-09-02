@@ -70,6 +70,10 @@ public class UtilsTest {
     assertEquals("\"new-york.power.usage\" 42422.0 1493773500 source=\"localhost\" " +
         "\"datacenter\"=\"dc1\"\n", metricToLineData("new-york.power.usage", 42422, 1493773500L,
         "localhost", tags, "defaultSource"));
+    // source with colon
+    assertEquals("\"new-york.power.usage\" 42422.0 1493773500 source=\"localhost:8080\" " +
+        "\"datacenter\"=\"dc1\"\n", metricToLineData("new-york.power.usage", 42422, 1493773500L,
+        "localhost:8080", tags, "defaultSource"));
     // null timestamp
     assertEquals("\"new-york.power.usage\" 42422.0 source=\"localhost\" " +
         "\"datacenter\"=\"dc1\"\n", metricToLineData("new-york.power.usage", 42422, null,
@@ -87,8 +91,8 @@ public class UtilsTest {
         metricToLineData("new-york.power.usage", 42422, null, null, null, "defaultSource"));
     // Add tag key with invalid char, val with empty space
     tags.put(" key name~1", " val name 1 ");
-    // Invalid char in source and metrics
-    assertEquals("\"new-york.power.usage\" 42422.0 1493773500 source=\"local-host\" " +
+    // Invalid char in metrics
+    assertEquals("\"new-york.power.usage\" 42422.0 1493773500 source=\"local~host\" " +
             "\"-key-name-1\"=\"val name 1\" " + "\"datacenter\"=\"dc1\"\n",
         metricToLineData("new~york.power.usage", 42422, 1493773500L, "local~host", tags,
             "defaultSource"));
@@ -170,6 +174,12 @@ public class UtilsTest {
         histogramToLineData("request.latency", Arrays.asList(new Pair<>(30.0, 20),
             new Pair<>(5.1, 10)), minGranularity,
             1493773500L, "appServer1", tags, "defaultSource"));
+    // source with colon
+    assertEquals("!M 1493773500 #20 30.0 #10 5.1 \"request.latency\" source=\"appServer1:5050\" " +
+            "\"region\"=\"us-west\"\n",
+        histogramToLineData("request.latency", Arrays.asList(new Pair<>(30.0, 20),
+            new Pair<>(5.1, 10)), minGranularity,
+            1493773500L, "appServer1:5050", tags, "defaultSource"));
 
     // null timestamp
     assertEquals("!M #20 30.0 #10 5.1 \"request.latency\" source=\"appServer1\" " +
@@ -307,6 +317,20 @@ public class UtilsTest {
             "\"application\"=\"Wavefront\" " +
             "\"http.method\"=\"GET\" 1493773500 343500\n",
         tracingSpanToLineData("getAllUsers", 1493773500L, 343500L, "localhost",
+            UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"), UUID.fromString(
+                "0313bafe-9457-11e8-9eb6-529269fb1459"),
+            Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")),
+            Arrays.asList(UUID.fromString("5f64e538-9457-11e8-9eb6-529269fb1459")),
+            Arrays.asList(new Pair<>("application", "Wavefront"),
+                new Pair<>("http.method", "GET")), null, "defaultSource"));
+    // source with colon
+    assertEquals("\"getAllUsers\" source=\"localhost:5050\" " +
+            "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
+            "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
+            "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
+            "\"application\"=\"Wavefront\" " +
+            "\"http.method\"=\"GET\" 1493773500 343500\n",
+        tracingSpanToLineData("getAllUsers", 1493773500L, 343500L, "localhost:5050",
             UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"), UUID.fromString(
                 "0313bafe-9457-11e8-9eb6-529269fb1459"),
             Arrays.asList(UUID.fromString("2f64e538-9457-11e8-9eb6-529269fb1459")),
@@ -485,6 +509,10 @@ public class UtilsTest {
         eventToLineData("test event", 1598466688000L,
             1598466688001L, null, null, null, "localhost", false));
 
+    assertEquals("@Event 1598466688000 1598466688001 \"test event\" host=\"localhost:5050\"\n",
+        eventToLineData("test event", 1598466688000L,
+            1598466688001L, null, null, null, "localhost:5050", false));
+
     assertEquals("{\"name\":\"test event\",\"startTime\":1598466688000,\"endTime\":1598466688001," +
             "\"hosts\":[\"localhost\"],\"tags\":[\"Kind: Deployment\",\"namespace: default\"]," +
             "\"annotations\":{\"severity\":\"info\",\"details\":\"Details\",\"type\":\"test_type\"}}\n",
@@ -495,6 +523,11 @@ public class UtilsTest {
             "\"hosts\":[\"localhost\"],\"annotations\":{}}\n",
         eventToLineData("test event", 1598466688000L,
             1598466688001L, null, null, null, "localhost", true));
+
+    assertEquals("{\"name\":\"test event\",\"startTime\":1598466688000,\"endTime\":1598466688001," +
+            "\"hosts\":[\"localhost:5050\"],\"annotations\":{}}\n",
+        eventToLineData("test event", 1598466688000L,
+            1598466688001L, null, null, null, "localhost:5050", true));
   }
 
   @Test
@@ -621,6 +654,31 @@ public class UtilsTest {
                   put("key1", "val1");
                 }})),
             "\"getAllUsers\" source=\"localhost\" " +
+                "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
+                "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
+                "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
+                "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
+                "\"application\"=\"Wavefront\" " +
+                "\"http.method\"=\"GET\" 1493773500 343500\n"));
+    // source with colon
+    assertEquals("{\"traceId\":\"7b3bf470-9456-11e8-9eb6-529269fb1459\"," +
+            "\"spanId\":\"0313bafe-9457-11e8-9eb6-529269fb1459\"," +
+            "\"logs\":[{\"timestamp\":91616745187,\"fields\":{\"key1\":\"val1\"}}]," +
+            "\"span\":\"\\\"getAllUsers\\\" source=\\\"localhost:5050\\\" " +
+            "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
+            "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
+            "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
+            "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
+            "\\\"application\\\"=\\\"Wavefront\\\" \\\"http.method\\\"=\\\"GET\\\" " +
+            "1493773500 343500\\n\"" +
+            "}\n",
+        spanLogsToLineData(UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
+            UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
+            Arrays.asList(new SpanLog(91616745187L,
+                new HashMap<String, String>() {{
+                  put("key1", "val1");
+                }})),
+            "\"getAllUsers\" source=\"localhost:5050\" " +
                 "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
                 "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
                 "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +

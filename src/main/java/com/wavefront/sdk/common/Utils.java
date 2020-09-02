@@ -91,7 +91,7 @@ public class Utils {
       sb.append(timestamp);
     }
     sb.append(" source=");
-    sb.append(sanitize(source));
+    sb.append(sanitizeValue(source));
     if (tags != null) {
       for (final Map.Entry<String, String> tag : tags.entrySet()) {
         String key = tag.getKey();
@@ -157,7 +157,7 @@ public class Utils {
       appendCompactedCentroids(sb, centroids);
       sb.append(sanitize(name));
       sb.append(" source=");
-      sb.append(sanitize(source));
+      sb.append(sanitizeValue(source));
       if (tags != null) {
         for (final Map.Entry<String, String> tag : tags.entrySet()) {
           String key = tag.getKey();
@@ -213,7 +213,7 @@ public class Utils {
     final StringBuilder sb = new StringBuilder();
     sb.append(sanitizeValue(name));
     sb.append(" source=");
-    sb.append(sanitize(source));
+    sb.append(sanitizeValue(source));
     sb.append(" traceId=");
     sb.append(traceId);
     sb.append(" spanId=");
@@ -380,7 +380,7 @@ public class Utils {
     }
 
     sb.append(" host=");
-    sb.append(sanitize(source));
+    sb.append(sanitizeValue(source));
 
     if (sanitizedTags != null) {
       for (String tag : sanitizedTags) {
