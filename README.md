@@ -188,17 +188,27 @@ WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 **Example**: Use a builder to create a WavefrontClient and send data to Wavefront via Wavefront Proxy. 
 
 ```java
-// Proxy based ingestion
-WavefrontSender wavefrontSender = new WavefrontClient.Builder(proxyServerWithPort).
-        tracingPort(tracing port). // if you are directly using the sender sdk to send spans without using any other sdk, use the same port as the customTracingListenerPorts configured in the wavefront proxy 
-        metricsPort(metricsPort).
-        distributionPort(distributionPort).
-        messageSizeBytes(messageSizeInBytes).
-        batchSize(batchSize).
-        flushIntervalSeconds(flushIntervalSeconds).
-        maxQueueSize(queueSize).
-        build(); // Returns a WavefrontClient
-```
+// Using the WavefrontClient.Builder directly with a url in the form of "http://your.proxy.load.blanacer:port"
+// to send data to proxies.
+WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(proxyURL)
+
+//The maximum message size in bytes that is pushed with on each flush interval 
+wfClientBuilder.messageSizeBytes(120);
+
+// This is the size of internal buffer beyond which data is dropped
+// Optional: Set this to override the default max queue size of 50,000
+wfClientBuilder.maxQueueSize(100_000);
+
+// This is the max batch of data sent per flush interval
+// Optional: Set this to override the default batch size of 10,000
+wfClientBuilder.batchSize(20_000);
+
+// Together with batch size controls the max theoretical throughput of the sender
+// Optional: Set this to override the default flush interval value of 1 second
+wfClientBuilder.flushIntervalSeconds(2);
+
+WavefrontSender wavefrontSender = wfClientBuilder.build();
+``` 
 
 **Example**: Use a factory class to create a WavefrontClient and send  data to Wavefront via direct ingestion.
 
@@ -221,14 +231,27 @@ WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 **Example**: Use a builder to create a WavefrontClient and send  data to Wavefront via direct ingestion.
 
 ```java
-// Wavefront Direct Ingestion
-WavefrontSender wavefrontSender = new WavefrontClient.Builder(cluster, token).
-        messageSizeBytes(messageSizeInBytes).
-        batchSize(batchSize).
-        flushIntervalSeconds(flushIntervalSeconds).
-        maxQueueSize(queueSize).
-        build(); // Returns a WavefrontClient
-```
+// Using the WavefrontClient.Builder directly with a url in the form of "https://DOMAIN.wavefront.com"
+// and a Wavefront API token with direct ingestion permission
+WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(wavefrontURL, token)
+
+//The maximum message size in bytes that is pushed with on each flush interval 
+wfClientBuilder.messageSizeBytes(120);
+
+// This is the size of internal buffer beyond which data is dropped
+// Optional: Set this to override the default max queue size of 50,000
+wfClientBuilder.maxQueueSize(100_000);
+
+// This is the max batch of data sent per flush interval
+// Optional: Set this to override the default batch size of 10,000
+wfClientBuilder.batchSize(20_000);
+
+// Together with batch size controls the max theoretical throughput of the sender
+// Optional: Set this to override the default flush interval value of 1 second
+wfClientBuilder.flushIntervalSeconds(2);
+
+WavefrontSender wavefrontSender = wfClientBuilder.build();
+``` 
 
 ### Sending data to multiple Wavefront services
 
@@ -241,49 +264,11 @@ The `addClient()` supports null for batch size, queue size, and push interval. T
 WavefrontClientFactory wavefrontClientFactory = new WavefrontClientFactory();
 wavefrontClientFactory.addClient("https://someToken@DOMAIN.wavefront.com");
 wavefrontClientFactory.addClient("proxy://our.proxy.lb.com:2878");
+// Send traces and spans to the tracing port. If you are directly using the sender SDK to send spans without using any other SDK, use the same port as the customTracingListenerPorts configured in the wavefront proxy. Assume you have installed and started the proxy on <proxyHostname>.
+wavefrontClientFactory.addClient("http://<proxy_hostname>:30000/");
 
 WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 ```
-
-```java
-// Using the WavefrontClient.Builder directly with a url in the form of "https://DOMAIN.wavefront.com"
-// and a Wavefront API token with direct ingestion permission
-WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(wavefrontURL, token)
-
-// This is the size of internal buffer beyond which data is dropped
-// Optional: Set this to override the default max queue size of 50,000
-wfClientBuilder.maxQueueSize(100_000);
-
-// This is the max batch of data sent per flush interval
-// Optional: Set this to override the default batch size of 10,000
-wfClientBuilder.batchSize(20_000);
-
-// Together with batch size controls the max theoretical throughput of the sender
-// Optional: Set this to override the default flush interval value of 1 second
-wfClientBuilder.flushIntervalSeconds(2);
-
-WavefrontSender wavefrontSender = wfClientBuilder.build();
-``` 
-
-```java
-// Using the WavefrontClient.Builder directly with a url in the form of "http://your.proxy.load.blanacer:port"
-// to send data to proxies.
-WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(proxyURL)
-
-// This is the size of internal buffer beyond which data is dropped
-// Optional: Set this to override the default max queue size of 50,000
-wfClientBuilder.maxQueueSize(100_000);
-
-// This is the max batch of data sent per flush interval
-// Optional: Set this to override the default batch size of 10,000
-wfClientBuilder.batchSize(20_000);
-
-// Together with batch size controls the max theoretical throughput of the sender
-// Optional: Set this to override the default flush interval value of 1 second
-wfClientBuilder.flushIntervalSeconds(2);
-
-WavefrontSender wavefrontSender = wfClientBuilder.build();
-``` 
 
 ## Send Data to Wavefront
 
