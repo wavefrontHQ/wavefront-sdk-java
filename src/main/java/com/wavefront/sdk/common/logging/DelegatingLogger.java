@@ -43,7 +43,7 @@ public abstract class DelegatingLogger extends Logger {
    * This is a JDK8-specific implementation that is quite expensive because it fetches the
    * current stack trace. TODO: switch to StackWalker after migrating to JDK9+
    */
-  private void inferCaller(LogRecord logRecord) {
+   void inferCaller(LogRecord logRecord) {
     StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
     boolean lookingForLogger = true;
     for (StackTraceElement frame : stackTraceElements) {

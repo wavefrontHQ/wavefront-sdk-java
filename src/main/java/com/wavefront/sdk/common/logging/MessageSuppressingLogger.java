@@ -51,6 +51,32 @@ public class MessageSuppressingLogger extends DelegatingLogger {
     cache.asMap().compute(message, (key, prevTime) -> computeTimestamp(message, level, prevTime));
   }
 
+  /**
+   * This is a JDK8-specific implementation that is quite expensive because it fetches the
+   * current stack trace. TODO: switch to StackWalker after migrating to JDK9+
+   */
+  @Override
+  void inferCaller(LogRecord logRecord) {
+    StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+    boolean lookingForLogMethod = true;
+    String currentClassName = this.getClass().getCanonicalName();
+    String logMethodName = "log";
+    for (final StackTraceElement stackTraceElement : stackTraceElements) {
+      String className = stackTraceElement.getClassName();
+      String methodName = stackTraceElement.getMethodName();
+      if (lookingForLogMethod) {
+        // Locate the log method and then find the caller.
+        if (className.equals(currentClassName) && methodName.equals(logMethodName)) {
+          lookingForLogMethod = false;
+        }
+      } else {
+        logRecord.setSourceClassName(className);
+        logRecord.setSourceMethodName(methodName);
+        return;
+      }
+    }
+  }
+
   private Long computeTimestamp(String message, Level level, Long prevTime) {
     long currentTime = System.currentTimeMillis();
     if (prevTime == null) {
