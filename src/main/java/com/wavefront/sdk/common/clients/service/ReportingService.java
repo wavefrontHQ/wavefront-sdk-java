@@ -132,7 +132,7 @@ public class ReportingService implements ReportAPI {
     } catch (IOException ex) {
       MESSAGE_SUPPRESSING_LOGGER.log(urlConn.getURL().toString(), Level.SEVERE,
           "Unable to obtain status code from the Wavefront service at "
-              + urlConn.getURL().toString());
+              + urlConn.getURL().toString() + " due to: " + ex.getMessage());
       statusCode = NO_HTTP_RESPONSE;
     }
 
@@ -141,7 +141,7 @@ public class ReportingService implements ReportAPI {
     } catch (IOException ex) {
       MESSAGE_SUPPRESSING_LOGGER.log(urlConn.getURL().toString(), Level.SEVERE,
           "Unable to read and close error stream from the Wavefront service at "
-              + urlConn.getURL().toString());
+              + urlConn.getURL().toString() + " due to: " + ex.getMessage());
     }
 
     return statusCode;

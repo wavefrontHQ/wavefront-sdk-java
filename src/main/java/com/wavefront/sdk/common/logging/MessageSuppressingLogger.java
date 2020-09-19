@@ -58,21 +58,23 @@ public class MessageSuppressingLogger extends DelegatingLogger {
   @Override
   void inferCaller(LogRecord logRecord) {
     StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-    boolean lookingForLogMethod = true;
-    String currentClassName = this.getClass().getCanonicalName();
-    String logMethodName = "log";
-    for (final StackTraceElement stackTraceElement : stackTraceElements) {
-      String className = stackTraceElement.getClassName();
-      String methodName = stackTraceElement.getMethodName();
-      if (lookingForLogMethod) {
-        // Locate the log method and then find the caller.
-        if (className.equals(currentClassName) && methodName.equals(logMethodName)) {
-          lookingForLogMethod = false;
+    boolean lookingForLogger = true;
+    for (StackTraceElement frame : stackTraceElements) {
+      String cname = frame.getClassName();
+      if (lookingForLogger) {
+        // Skip all frames until we have found the first logger frame.
+        if (cname.endsWith("Logger")) {
+          lookingForLogger = false;
         }
       } else {
-        logRecord.setSourceClassName(className);
-        logRecord.setSourceMethodName(methodName);
-        return;
+        if (!cname.endsWith("Logger") && !cname.startsWith("java.lang.reflect.") &&
+            !cname.startsWith("sun.reflect.")
+            && !cname.startsWith("com.google.common.cache.LocalCache")) {
+          // We've found the relevant frame.
+          logRecord.setSourceClassName(cname);
+          logRecord.setSourceMethodName(frame.getMethodName());
+          return;
+        }
       }
     }
   }

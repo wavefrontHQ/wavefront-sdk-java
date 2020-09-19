@@ -54,9 +54,18 @@ public class MessageSuppressingLoggerTest {
     assertEquals(3, logs.getValues().size());
     assertEquals("msg1", logs.getValues().get(0).getMessage());
     assertEquals(Level.SEVERE, logs.getValues().get(0).getLevel());
+    assertEquals("com.wavefront.sdk.common.logging.MessageSuppressingLoggerTest",
+        logs.getValues().get(0).getSourceClassName());
+    assertEquals("testLogger", logs.getValues().get(0).getSourceMethodName());
     assertEquals(Level.WARNING, logs.getValues().get(1).getLevel());
     assertEquals("msg2", logs.getValues().get(1).getMessage());
+    assertEquals("com.wavefront.sdk.common.logging.MessageSuppressingLoggerTest",
+        logs.getValues().get(1).getSourceClassName());
+    assertEquals("testLogger", logs.getValues().get(1).getSourceMethodName());
     assertEquals(Level.SEVERE, logs.getValues().get(2).getLevel());
     assertEquals("msg6", logs.getValues().get(2).getMessage());
+    assertEquals("com.wavefront.sdk.common.logging.MessageSuppressingLoggerTest",
+        logs.getValues().get(2).getSourceClassName());
+    assertEquals("testLogger", logs.getValues().get(2).getSourceMethodName());
   }
 }
