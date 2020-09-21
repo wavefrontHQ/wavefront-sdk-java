@@ -68,8 +68,8 @@ public class MessageSuppressingLogger extends DelegatingLogger {
         }
       } else {
         if (!cname.endsWith("Logger") && !cname.startsWith("java.lang.reflect.") &&
-            !cname.startsWith("sun.reflect.")
-            && !cname.startsWith("com.google.common.cache.LocalCache")) {
+            !cname.startsWith("sun.reflect.") &&
+            !cname.startsWith("com.google.common.cache.LocalCache")) {
           // We've found the relevant frame.
           logRecord.setSourceClassName(cname);
           logRecord.setSourceMethodName(frame.getMethodName());
