@@ -36,7 +36,8 @@ public class MessageSuppressingLogger extends DelegatingLogger {
    * @param message    Log message.
    */
   public void log(String messageKey, Level level, String message) {
-    cache.asMap().compute(messageKey, (key, prevTime) -> computeTimestamp(message, level, prevTime));
+    cache.asMap().compute(messageKey,
+        (key, prevTime) -> logMessageAndComputeTimestamp(message, level, prevTime));
   }
 
   /**
@@ -48,7 +49,8 @@ public class MessageSuppressingLogger extends DelegatingLogger {
 
   @Override
   public void log(Level level, String message) {
-    cache.asMap().compute(message, (key, prevTime) -> computeTimestamp(message, level, prevTime));
+    cache.asMap().compute(message,
+        (key, prevTime) -> logMessageAndComputeTimestamp(message, level, prevTime));
   }
 
   /**
@@ -79,7 +81,15 @@ public class MessageSuppressingLogger extends DelegatingLogger {
     }
   }
 
-  private Long computeTimestamp(String message, Level level, Long prevTime) {
+  /**
+   * Log a message based on the previous timestamp for the message key and set a new timestamp.
+   *
+   * @param message  String to write to log.
+   * @param level    Log level.
+   * @param prevTime Previous timestamp for the message key.
+   * @return a new timestamp for the message key.
+   */
+  private Long logMessageAndComputeTimestamp(String message, Level level, Long prevTime) {
     long currentTime = System.currentTimeMillis();
     if (prevTime == null) {
       return currentTime;
