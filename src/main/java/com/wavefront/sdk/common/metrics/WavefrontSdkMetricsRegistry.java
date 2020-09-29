@@ -1,5 +1,6 @@
 package com.wavefront.sdk.common.metrics;
 
+import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.entities.metrics.WavefrontMetricSender;
@@ -159,6 +160,10 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
             Number value = (Number) ((WavefrontSdkGauge) metric).getValue();
             wavefrontMetricSender.sendMetric(name, value.doubleValue(), timestamp, source, tags);
           }
+        }  else if (metric instanceof WavefrontSdkDeltaCounter) {
+          long count = ((WavefrontSdkDeltaCounter) metric).count();
+          wavefrontMetricSender.sendMetric(name + ".count", count, timestamp, source, tags);
+          ((WavefrontSdkDeltaCounter) wavefrontMetricSender).dec(count);
         } else if (metric instanceof WavefrontSdkCounter) {
           wavefrontMetricSender.sendMetric(name + ".count", ((WavefrontSdkCounter)metric).count(),
               timestamp, source, tags);
@@ -196,8 +201,20 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
    * @param name  The metric name.
    * @return A new or pre-existing counter.
    */
-  public WavefrontSdkCounter newCounter(String name) {
+  public WavefrontSdkCounter newCounter (String name) {
     return getOrAdd(name, new WavefrontSdkCounter());
+  }
+
+  /**
+   * Returns the ∆ counter registered under the given name. If no metric is registered under this
+   * name, create and register a new counter. ∆ Prefix is added to Delta Counter name.
+   *
+   * @param name  The metric name.
+   * @return A new or pre-existing counter.
+   */
+  public WavefrontSdkDeltaCounter newDeltaCounter(String name) {
+    return getOrAdd(!name.startsWith(Constants.DELTA_PREFIX) && !name.startsWith(Constants.DELTA_PREFIX_2) ?
+      Constants.DELTA_PREFIX + name : name, new WavefrontSdkDeltaCounter());
   }
 
   @SuppressWarnings("unchecked")
