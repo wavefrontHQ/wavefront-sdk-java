@@ -62,6 +62,28 @@ public class WavefrontClientTest {
   }
 
   @Test
+  public void testUrlFormatForBuilder() {
+      assertEquals(validateBuilderURI("http://127.0.0.1:2878"), true);
+      assertEquals(validateBuilderURI("http://127.0.0.1"), true);
+      assertEquals(validateBuilderURI("http://127.0.0.1?token=secret"), true);
+      assertEquals(validateBuilderURI("127.0.0.1"), true);
+
+      assertEquals(validateBuilderURI(null), false);
+      assertEquals(validateBuilderURI("127.0.0.1:2878"), false);
+      assertEquals(validateBuilderURI("not a valid uri"), false);
+  }
+
+  private boolean validateBuilderURI(String uri) {
+    try {
+        WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(uri, "token");
+        wfClientBuilder.validateEndpoint();
+        return true;
+    } catch (IllegalStateException e) {
+        return false;
+    }
+  }
+
+  @Test
   public void testUrlFormatForService() {
     validateURI(URI.create("http://127.0.0.1:2878"), "http://127.0.0.1:2878/report?f=wavefront");
     validateURI(URI.create("http://127.0.0.1:2878/"), "http://127.0.0.1:2878/report?f=wavefront");

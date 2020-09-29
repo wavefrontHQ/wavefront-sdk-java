@@ -237,6 +237,22 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       return this;
     }
 
+  /**
+   * For a given server URI, validate according to RFC 2396
+   *
+   * @return {@code this}
+   * @throws IllegalStateException
+   */
+    public Builder validateEndpoint() throws IllegalStateException {
+        try {
+            URI.create(this.server);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new IllegalStateException(e);
+        }
+
+        return this;
+    }
+
     /**
      * Creates a new client that flushes directly to a Proxy or Wavefront service.
      *
