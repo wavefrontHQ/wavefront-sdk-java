@@ -1,7 +1,7 @@
 package com.wavefront.sdk.common.clients;
 
 import com.wavefront.sdk.common.clients.service.ReportingService;
-import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
+import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import org.junit.jupiter.api.Test;
 
 import java.net.MalformedURLException;
@@ -40,7 +40,7 @@ public class WavefrontClientTest {
     buffer.offer(createString(50));   // chunk 4
     buffer.offer(createString(50));   // remains in buffer
 
-    WavefrontSdkCounter dropped = createMock(WavefrontSdkCounter.class);
+    WavefrontSdkDeltaCounter dropped = createMock(WavefrontSdkDeltaCounter.class);
     dropped.inc();
     expectLastCall().once();
 

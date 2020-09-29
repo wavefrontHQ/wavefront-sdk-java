@@ -11,7 +11,7 @@ import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.common.clients.WavefrontClientFactory;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
-import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
+import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
@@ -75,28 +75,28 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   private final WavefrontSdkMetricsRegistry sdkMetricsRegistry;
 
   // Internal point metrics
-  private final WavefrontSdkCounter pointsValid;
-  private final WavefrontSdkCounter pointsInvalid;
-  private final WavefrontSdkCounter pointsDropped;
-  private final WavefrontSdkCounter pointReportErrors;
+  private final WavefrontSdkDeltaCounter pointsValid;
+  private final WavefrontSdkDeltaCounter pointsInvalid;
+  private final WavefrontSdkDeltaCounter pointsDropped;
+  private final WavefrontSdkDeltaCounter pointReportErrors;
 
   // Internal histogram metrics
-  private final WavefrontSdkCounter histogramsValid;
-  private final WavefrontSdkCounter histogramsInvalid;
-  private final WavefrontSdkCounter histogramsDropped;
-  private final WavefrontSdkCounter histogramReportErrors;
+  private final WavefrontSdkDeltaCounter histogramsValid;
+  private final WavefrontSdkDeltaCounter histogramsInvalid;
+  private final WavefrontSdkDeltaCounter histogramsDropped;
+  private final WavefrontSdkDeltaCounter histogramReportErrors;
 
   // Internal tracing span metrics
-  private final WavefrontSdkCounter spansValid;
-  private final WavefrontSdkCounter spansInvalid;
-  private final WavefrontSdkCounter spansDropped;
-  private final WavefrontSdkCounter spanReportErrors;
+  private final WavefrontSdkDeltaCounter spansValid;
+  private final WavefrontSdkDeltaCounter spansInvalid;
+  private final WavefrontSdkDeltaCounter spansDropped;
+  private final WavefrontSdkDeltaCounter spanReportErrors;
 
   // Internal span log metrics
-  private final WavefrontSdkCounter spanLogsValid;
-  private final WavefrontSdkCounter spanLogsInvalid;
-  private final WavefrontSdkCounter spanLogsDropped;
-  private final WavefrontSdkCounter spanLogReportErrors;
+  private final WavefrontSdkDeltaCounter spanLogsValid;
+  private final WavefrontSdkDeltaCounter spanLogsInvalid;
+  private final WavefrontSdkDeltaCounter spanLogsDropped;
+  private final WavefrontSdkDeltaCounter spanLogReportErrors;
 
   // Consider the feature to be enabled when value is 0, and disabled otherwise
   private final AtomicInteger metricsDisabledStatusCode;
@@ -215,34 +215,34 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     sdkMetricsRegistry.newGauge("points.queue.size", metricsBuffer::size);
     sdkMetricsRegistry.newGauge("points.queue.remaining_capacity",
         metricsBuffer::remainingCapacity);
-    pointsValid = sdkMetricsRegistry.newCounter("points.valid");
-    pointsInvalid = sdkMetricsRegistry.newCounter("points.invalid");
-    pointsDropped = sdkMetricsRegistry.newCounter("points.dropped");
-    pointReportErrors = sdkMetricsRegistry.newCounter("points.report.errors");
+    pointsValid = sdkMetricsRegistry.newDeltaCounter("points.valid");
+    pointsInvalid = sdkMetricsRegistry.newDeltaCounter("points.invalid");
+    pointsDropped = sdkMetricsRegistry.newDeltaCounter("points.dropped");
+    pointReportErrors = sdkMetricsRegistry.newDeltaCounter("points.report.errors");
 
     sdkMetricsRegistry.newGauge("histograms.queue.size", histogramsBuffer::size);
     sdkMetricsRegistry.newGauge("histograms.queue.remaining_capacity",
         histogramsBuffer::remainingCapacity);
-    histogramsValid = sdkMetricsRegistry.newCounter("histograms.valid");
-    histogramsInvalid = sdkMetricsRegistry.newCounter("histograms.invalid");
-    histogramsDropped = sdkMetricsRegistry.newCounter("histograms.dropped");
-    histogramReportErrors = sdkMetricsRegistry.newCounter("histograms.report.errors");
+    histogramsValid = sdkMetricsRegistry.newDeltaCounter("histograms.valid");
+    histogramsInvalid = sdkMetricsRegistry.newDeltaCounter("histograms.invalid");
+    histogramsDropped = sdkMetricsRegistry.newDeltaCounter("histograms.dropped");
+    histogramReportErrors = sdkMetricsRegistry.newDeltaCounter("histograms.report.errors");
 
     sdkMetricsRegistry.newGauge("spans.queue.size", tracingSpansBuffer::size);
     sdkMetricsRegistry.newGauge("spans.queue.remaining_capacity",
         tracingSpansBuffer::remainingCapacity);
-    spansValid = sdkMetricsRegistry.newCounter("spans.valid");
-    spansInvalid = sdkMetricsRegistry.newCounter("spans.invalid");
-    spansDropped = sdkMetricsRegistry.newCounter("spans.dropped");
-    spanReportErrors = sdkMetricsRegistry.newCounter("spans.report.errors");
+    spansValid = sdkMetricsRegistry.newDeltaCounter("spans.valid");
+    spansInvalid = sdkMetricsRegistry.newDeltaCounter("spans.invalid");
+    spansDropped = sdkMetricsRegistry.newDeltaCounter("spans.dropped");
+    spanReportErrors = sdkMetricsRegistry.newDeltaCounter("spans.report.errors");
 
     sdkMetricsRegistry.newGauge("span_logs.queue.size", spanLogsBuffer::size);
     sdkMetricsRegistry.newGauge("span_logs.queue.remaining_capacity",
         spanLogsBuffer::remainingCapacity);
-    spanLogsValid = sdkMetricsRegistry.newCounter("span_logs.valid");
-    spanLogsInvalid = sdkMetricsRegistry.newCounter("span_logs.invalid");
-    spanLogsDropped = sdkMetricsRegistry.newCounter("span_logs.dropped");
-    spanLogReportErrors = sdkMetricsRegistry.newCounter("span_logs.report.errors");
+    spanLogsValid = sdkMetricsRegistry.newDeltaCounter("span_logs.valid");
+    spanLogsInvalid = sdkMetricsRegistry.newDeltaCounter("span_logs.invalid");
+    spanLogsDropped = sdkMetricsRegistry.newDeltaCounter("span_logs.dropped");
+    spanLogReportErrors = sdkMetricsRegistry.newDeltaCounter("span_logs.report.errors");
 
     metricsDisabledStatusCode = new AtomicInteger();
     histogramsDisabledStatusCode = new AtomicInteger();
@@ -428,7 +428,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
 
   private void internalFlush(LinkedBlockingQueue<String> buffer, String format,
                              String entityPrefix, String entityType,
-                             WavefrontSdkCounter dropped, WavefrontSdkCounter reportErrors,
+                             WavefrontSdkDeltaCounter dropped, WavefrontSdkDeltaCounter reportErrors,
                              AtomicInteger featureDisabledStatusCode,
                              LogMessageType errorMessageType,
                              LogMessageType permissionsMessageType,
@@ -461,7 +461,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
       }
       try (InputStream is = itemsToStream(items)) {
         int statusCode = directService.report(format, is);
-        sdkMetricsRegistry.newCounter(entityPrefix + ".report." + statusCode).inc();
+        sdkMetricsRegistry.newDeltaCounter(entityPrefix + ".report." + statusCode).inc();
         if ((400 <= statusCode && statusCode <= 599) || statusCode == -1) {
           switch (statusCode) {
             case 401:
@@ -507,7 +507,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
   }
 
   private void requeue(LinkedBlockingQueue<String> buffer, List<String> items,
-                       WavefrontSdkCounter dropped, String entityType,
+                       WavefrontSdkDeltaCounter dropped, String entityType,
                        LogMessageType bufferFullMessageType) {
     int numAddedBackToBuffer = 0;
     for (String item : items) {
@@ -572,11 +572,11 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
    * @param buffer            The buffer queue to retrieve items from.
    * @param batchSize         The maximum number of items to retrieve from the buffer.
    * @param messageSizeBytes  The maximum number of bytes in each chunk.
-   * @param dropped           A counter counting the number of items that are dropped.
+   * @param dropped           A delta counter counting the number of items that are dropped.
    * @return A batch of items retrieved from buffer.
    */
   static List<List<String>> getBatch(LinkedBlockingQueue<String> buffer, int batchSize,
-                                     int messageSizeBytes, WavefrontSdkCounter dropped) {
+                                     int messageSizeBytes, WavefrontSdkDeltaCounter dropped) {
     batchSize = Math.min(buffer.size(), batchSize);
     List<List<String>> batch = new ArrayList<>();
     List<String> chunk = new ArrayList<>();

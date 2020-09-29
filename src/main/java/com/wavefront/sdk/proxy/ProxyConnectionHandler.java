@@ -2,7 +2,7 @@ package com.wavefront.sdk.proxy;
 
 import com.wavefront.sdk.common.BufferFlusher;
 import com.wavefront.sdk.common.ReconnectingSocket;
-import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
+import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 
 import javax.net.SocketFactory;
@@ -25,8 +25,8 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
 
   private final WavefrontSdkMetricsRegistry sdkMetricsRegistry;
   private String entityPrefix;
-  private WavefrontSdkCounter errors;
-  private WavefrontSdkCounter connectErrors;
+  private WavefrontSdkDeltaCounter errors;
+  private WavefrontSdkDeltaCounter connectErrors;
 
   ProxyConnectionHandler(InetSocketAddress address, SocketFactory socketFactory,
                          WavefrontSdkMetricsRegistry sdkMetricsRegistry, String entityPrefix) {
@@ -36,8 +36,8 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
 
     this.sdkMetricsRegistry = sdkMetricsRegistry;
     this.entityPrefix = entityPrefix == null || entityPrefix.isEmpty() ? "" : entityPrefix + ".";
-    errors = this.sdkMetricsRegistry.newCounter(this.entityPrefix + "errors");
-    connectErrors = this.sdkMetricsRegistry.newCounter(this.entityPrefix + "connect.errors");
+    errors = this.sdkMetricsRegistry.newDeltaCounter(this.entityPrefix + "errors");
+    connectErrors = this.sdkMetricsRegistry.newDeltaCounter(this.entityPrefix + "connect.errors");
   }
 
   synchronized void connect() throws IllegalStateException, IOException {
