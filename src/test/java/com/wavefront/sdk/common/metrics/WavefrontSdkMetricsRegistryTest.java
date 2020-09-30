@@ -63,5 +63,6 @@ public class WavefrontSdkMetricsRegistryTest {
 
     //Delta Counters decrements counters each time after data is sent. New counters with same name will have 0 count.
     assertEquals(0, registry.newCounter("deltaCounter").count());
+    assertEquals(0, registry.newCounter("deltaCounter2").count());
   }
 }

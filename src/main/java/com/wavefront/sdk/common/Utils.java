@@ -461,7 +461,11 @@ public class Utils {
           // or ~ tilda character for internal metrics
           isLegal = false;
         }
-      }
+        // If first character is ∆, second can be a ~ tilda character
+        if ((i==1 && cur == 126) && ((s.charAt(0) == 0x2206) || (s.charAt(0) == 0x0394))) {
+            isLegal = true;
+          }
+        }
       if (cur == '/') {
         isLegal = false;
       }
