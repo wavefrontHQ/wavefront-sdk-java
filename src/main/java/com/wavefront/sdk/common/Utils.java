@@ -454,18 +454,19 @@ public class Utils {
     for (int i = 0; i < s.length(); i++) {
       char cur = s.charAt(i);
       boolean isLegal = true;
+      boolean isTildaPrefixed = s.charAt(0) == 126;
+      boolean isDeltaPrefixed = (s.charAt(0) == 0x2206) || (s.charAt(0) == 0x0394);
+      boolean isDeltaTildaPrefixed = isDeltaPrefixed && s.charAt(1) == 126;
       if (!(44 <= cur && cur <= 57) && !(65 <= cur && cur <= 90) && !(97 <= cur && cur <= 122) &&
           cur != 95) {
-        if (!((i == 0 && cur == 0x2206) || (i == 0 && cur == 0x0394) || (i == 0 && cur == 126))) {
+        if (!(i == 0 && (isDeltaPrefixed || isTildaPrefixed) || (i == 1 && isDeltaTildaPrefixed))) {
           // first character can also be \u2206 (∆ - INCREMENT) or \u0394 (Δ - GREEK CAPITAL LETTER DELTA)
           // or ~ tilda character for internal metrics
+          // second character can be ~ tilda character if first character is \u2206 (∆ - INCREMENT)
+          // or \u0394 (Δ - GREEK CAPITAL LETTER DELTA)
           isLegal = false;
         }
-        // If first character is ∆, second can be a ~ tilda character
-        if ((i==1 && cur == 126) && ((s.charAt(0) == 0x2206) || (s.charAt(0) == 0x0394))) {
-            isLegal = true;
-          }
-        }
+      }
       if (cur == '/') {
         isLegal = false;
       }
