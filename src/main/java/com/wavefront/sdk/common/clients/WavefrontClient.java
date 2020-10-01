@@ -241,7 +241,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
 
   /**
-   * For a given server endpoint, validate according to RFC 2396
+   * For a given server endpoint, validate according to RFC 2396 and attempt
+   * to make a connection
    *
    * @return {@code this}
    * @throws IllegalStateException
@@ -252,7 +253,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       try {
         url = new URL(this.server);
       } catch (MalformedURLException e) {
-        throw new IllegalStateException(e);
+        throw new IllegalStateException("Please provide a reachable Wavefront endpoint", e);
       }
 
       try {
