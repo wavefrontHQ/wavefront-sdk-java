@@ -58,11 +58,9 @@ public class WavefrontSdkMetricsRegistryTest {
     assertEquals(2, deltaCounter.count());
     deltaCounter.dec(deltaCounter.count());
     assertEquals(0, deltaCounter.count());
-    deltaCounter.inc(5);
-    assertEquals(5, deltaCounter.count());
 
     //Delta Counters decrements counters each time after data is sent. New counters with same name will have 0 count.
-    assertEquals(0, registry.newCounter("deltaCounter").count());
-    assertEquals(0, registry.newCounter("deltaCounter2").count());
+    assertEquals(0, registry.newDeltaCounter("deltaCounter").count());
+    assertEquals(0, registry.newDeltaCounter("deltaCounter2").count());
   }
 }
