@@ -181,7 +181,7 @@ Together, the batch size and flush interval control the maximum theoretical thro
 // Add a client with the following URL format: "proxy://<your.proxy.load.balancer.com>:<somePort>"
 // to send data to proxies
 WavefrontClientFactory wavefrontClientFactory = new WavefrontClientFactory();
-wavefrontClientFactory.addClient(wavefrontURL)
+wavefrontClientFactory.addClient(wavefrontURL);
 
 WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 ```
@@ -190,7 +190,7 @@ WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 ```java
 // Using the WavefrontClient.Builder directly with a url in the form of "http://your.proxy.load.blanacer:port"
 // to send data to proxies.
-WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(proxyURL)
+WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(proxyURL);
 
 //The maximum message size in bytes that is pushed with on each flush interval 
 wfClientBuilder.messageSizeBytes(120);
@@ -233,7 +233,7 @@ WavefrontSender wavefrontSender = wavefrontClientFactory.getClient();
 ```java
 // Using the WavefrontClient.Builder directly with a url in the form of "https://DOMAIN.wavefront.com"
 // and a Wavefront API token with direct ingestion permission
-WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(wavefrontURL, token)
+WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(wavefrontURL, token);
 
 //The maximum message size in bytes that is pushed with on each flush interval 
 wfClientBuilder.messageSizeBytes(120);
