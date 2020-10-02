@@ -161,9 +161,7 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
             wavefrontMetricSender.sendMetric(name, value.doubleValue(), timestamp, source, tags);
           }
         }  else if (metric instanceof WavefrontSdkDeltaCounter) {
-          if (!name.startsWith(Constants.DELTA_PREFIX) && !name.startsWith(Constants.DELTA_PREFIX_2)) {
-            name = Constants.DELTA_PREFIX + name;
-          }
+          name = Constants.DELTA_PREFIX + name;
           long count = ((WavefrontSdkDeltaCounter) metric).count();
           if (count > 0) {
             wavefrontMetricSender.sendMetric(name + ".count", count, timestamp, source, tags);
