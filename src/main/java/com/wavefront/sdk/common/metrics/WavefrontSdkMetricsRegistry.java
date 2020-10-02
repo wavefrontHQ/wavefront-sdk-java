@@ -206,7 +206,7 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
    * @param name  The metric name.
    * @return A new or pre-existing counter.
    */
-  public WavefrontSdkCounter newCounter (String name) {
+  public WavefrontSdkCounter newCounter(String name) {
     return getOrAdd(name, new WavefrontSdkCounter());
   }
 

@@ -142,7 +142,7 @@ public class Main {
     wavefrontClientFactory.addClient(wavefrontProxyClient);
     wavefrontClientFactory.addClient(wavefrontDirectIngestionClient);
 
-    // Get back a multi client sneder
+    // Get back a multi client sender
     WavefrontSender wavefrontClient = wavefrontClientFactory.getClient();
 
     while (true) {

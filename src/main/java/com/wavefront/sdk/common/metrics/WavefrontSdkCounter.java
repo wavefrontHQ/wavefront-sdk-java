@@ -43,7 +43,7 @@ public class WavefrontSdkCounter implements WavefrontSdkMetric {
    * @param n The amount to decrement by.
    */
   public void dec(long n) {
-    count.addAndGet(-1 * n);
+    count.addAndGet(-n);
   }
 
   /**
