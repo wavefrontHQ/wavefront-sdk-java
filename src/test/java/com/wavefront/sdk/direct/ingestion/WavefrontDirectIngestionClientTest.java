@@ -1,7 +1,5 @@
 package com.wavefront.sdk.direct.ingestion;
-
-import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
-
+import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -37,7 +35,7 @@ public class WavefrontDirectIngestionClientTest {
     buffer.offer(createString(50));   // chunk 4
     buffer.offer(createString(50));   // remains in buffer
 
-    WavefrontSdkCounter dropped = createMock(WavefrontSdkCounter.class);
+    WavefrontSdkDeltaCounter dropped = createMock(WavefrontSdkDeltaCounter.class);
     dropped.inc();
     expectLastCall().once();
 

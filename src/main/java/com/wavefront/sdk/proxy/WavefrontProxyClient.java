@@ -8,7 +8,7 @@ import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.common.clients.WavefrontClientFactory;
-import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
+import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 import com.wavefront.sdk.entities.tracing.SpanLog;
@@ -70,28 +70,28 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   private final WavefrontSdkMetricsRegistry sdkMetricsRegistry;
 
   // Internal point metrics
-  private final WavefrontSdkCounter pointsDiscarded;
-  private final WavefrontSdkCounter pointsValid;
-  private final WavefrontSdkCounter pointsInvalid;
-  private final WavefrontSdkCounter pointsDropped;
+  private final WavefrontSdkDeltaCounter pointsDiscarded;
+  private final WavefrontSdkDeltaCounter pointsValid;
+  private final WavefrontSdkDeltaCounter pointsInvalid;
+  private final WavefrontSdkDeltaCounter pointsDropped;
 
   // Internal histogram metrics
-  private final WavefrontSdkCounter histogramsDiscarded;
-  private final WavefrontSdkCounter histogramsValid;
-  private final WavefrontSdkCounter histogramsInvalid;
-  private final WavefrontSdkCounter histogramsDropped;
+  private final WavefrontSdkDeltaCounter histogramsDiscarded;
+  private final WavefrontSdkDeltaCounter histogramsValid;
+  private final WavefrontSdkDeltaCounter histogramsInvalid;
+  private final WavefrontSdkDeltaCounter histogramsDropped;
 
   // Internal tracing span metrics
-  private final WavefrontSdkCounter spansDiscarded;
-  private final WavefrontSdkCounter spansValid;
-  private final WavefrontSdkCounter spansInvalid;
-  private final WavefrontSdkCounter spansDropped;
+  private final WavefrontSdkDeltaCounter spansDiscarded;
+  private final WavefrontSdkDeltaCounter spansValid;
+  private final WavefrontSdkDeltaCounter spansInvalid;
+  private final WavefrontSdkDeltaCounter spansDropped;
 
   // Internal span log metrics
-  private final WavefrontSdkCounter spanLogsDiscarded;
-  private final WavefrontSdkCounter spanLogsValid;
-  private final WavefrontSdkCounter spanLogsInvalid;
-  private final WavefrontSdkCounter spanLogsDropped;
+  private final WavefrontSdkDeltaCounter spanLogsDiscarded;
+  private final WavefrontSdkDeltaCounter spanLogsValid;
+  private final WavefrontSdkDeltaCounter spanLogsInvalid;
+  private final WavefrontSdkDeltaCounter spanLogsDropped;
 
   // Flag to prevent sending after close() has been called
   private final AtomicBoolean closed = new AtomicBoolean(false);
@@ -232,25 +232,25 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     // flush every 5 seconds
     scheduler.scheduleAtFixedRate(this, 1, builder.flushIntervalSeconds, TimeUnit.SECONDS);
 
-    pointsDiscarded = sdkMetricsRegistry.newCounter("points.discarded");
-    pointsValid = sdkMetricsRegistry.newCounter("points.valid");
-    pointsInvalid = sdkMetricsRegistry.newCounter("points.invalid");
-    pointsDropped = sdkMetricsRegistry.newCounter("points.dropped");
+    pointsDiscarded = sdkMetricsRegistry.newDeltaCounter("points.discarded");
+    pointsValid = sdkMetricsRegistry.newDeltaCounter("points.valid");
+    pointsInvalid = sdkMetricsRegistry.newDeltaCounter("points.invalid");
+    pointsDropped = sdkMetricsRegistry.newDeltaCounter("points.dropped");
 
-    histogramsDiscarded = sdkMetricsRegistry.newCounter("histograms.discarded");
-    histogramsValid = sdkMetricsRegistry.newCounter("histograms.valid");
-    histogramsInvalid = sdkMetricsRegistry.newCounter("histograms.invalid");
-    histogramsDropped = sdkMetricsRegistry.newCounter("histograms.dropped");
+    histogramsDiscarded = sdkMetricsRegistry.newDeltaCounter("histograms.discarded");
+    histogramsValid = sdkMetricsRegistry.newDeltaCounter("histograms.valid");
+    histogramsInvalid = sdkMetricsRegistry.newDeltaCounter("histograms.invalid");
+    histogramsDropped = sdkMetricsRegistry.newDeltaCounter("histograms.dropped");
 
-    spansDiscarded = sdkMetricsRegistry.newCounter("spans.discarded");
-    spansValid = sdkMetricsRegistry.newCounter("spans.valid");
-    spansInvalid = sdkMetricsRegistry.newCounter("spans.invalid");
-    spansDropped = sdkMetricsRegistry.newCounter("spans.dropped");
+    spansDiscarded = sdkMetricsRegistry.newDeltaCounter("spans.discarded");
+    spansValid = sdkMetricsRegistry.newDeltaCounter("spans.valid");
+    spansInvalid = sdkMetricsRegistry.newDeltaCounter("spans.invalid");
+    spansDropped = sdkMetricsRegistry.newDeltaCounter("spans.dropped");
 
-    spanLogsDiscarded = sdkMetricsRegistry.newCounter("span_logs.discarded");
-    spanLogsValid = sdkMetricsRegistry.newCounter("span_logs.valid");
-    spanLogsInvalid = sdkMetricsRegistry.newCounter("span_logs.invalid");
-    spanLogsDropped = sdkMetricsRegistry.newCounter("span_logs.dropped");
+    spanLogsDiscarded = sdkMetricsRegistry.newDeltaCounter("span_logs.discarded");
+    spanLogsValid = sdkMetricsRegistry.newDeltaCounter("span_logs.valid");
+    spanLogsInvalid = sdkMetricsRegistry.newDeltaCounter("span_logs.invalid");
+    spanLogsDropped = sdkMetricsRegistry.newDeltaCounter("span_logs.dropped");
   }
 
   @Override

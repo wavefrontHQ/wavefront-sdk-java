@@ -1,6 +1,6 @@
 package com.wavefront.sdk.common;
 
-import com.wavefront.sdk.common.metrics.WavefrontSdkCounter;
+import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
 
 import javax.net.SocketFactory;
@@ -41,12 +41,12 @@ public class ReconnectingSocket {
   private AtomicReference<Socket> underlyingSocket;
   private AtomicReference<BufferedOutputStream> socketOutputStream;
 
-  private WavefrontSdkCounter writeSuccesses;
-  private WavefrontSdkCounter writeErrors;
-  private WavefrontSdkCounter flushSuccesses;
-  private WavefrontSdkCounter flushErrors;
-  private WavefrontSdkCounter resetSuccesses;
-  private WavefrontSdkCounter resetErrors;
+  private WavefrontSdkDeltaCounter writeSuccesses;
+  private WavefrontSdkDeltaCounter writeErrors;
+  private WavefrontSdkDeltaCounter flushSuccesses;
+  private WavefrontSdkDeltaCounter flushErrors;
+  private WavefrontSdkDeltaCounter resetSuccesses;
+  private WavefrontSdkDeltaCounter resetErrors;
 
   /**
    * Attempts to open a connected socket to the specified host and port.
@@ -94,12 +94,12 @@ public class ReconnectingSocket {
     }, SERVER_POLL_INTERVAL_MILLIS, SERVER_POLL_INTERVAL_MILLIS);
 
     entityPrefix = entityPrefix == null || entityPrefix.isEmpty() ? "" : entityPrefix + ".";
-    writeSuccesses = sdkMetricsRegistry.newCounter(entityPrefix + "write.success");
-    writeErrors = sdkMetricsRegistry.newCounter(entityPrefix + "write.errors");
-    flushSuccesses = sdkMetricsRegistry.newCounter(entityPrefix + "flush.success");
-    flushErrors = sdkMetricsRegistry.newCounter(entityPrefix + "flush.errors");
-    resetSuccesses = sdkMetricsRegistry.newCounter(entityPrefix + "reset.success");
-    resetErrors = sdkMetricsRegistry.newCounter(entityPrefix + "reset.errors");
+    writeSuccesses = sdkMetricsRegistry.newDeltaCounter(entityPrefix + "write.success");
+    writeErrors = sdkMetricsRegistry.newDeltaCounter(entityPrefix + "write.errors");
+    flushSuccesses = sdkMetricsRegistry.newDeltaCounter(entityPrefix + "flush.success");
+    flushErrors = sdkMetricsRegistry.newDeltaCounter(entityPrefix + "flush.errors");
+    resetSuccesses = sdkMetricsRegistry.newDeltaCounter(entityPrefix + "reset.success");
+    resetErrors = sdkMetricsRegistry.newDeltaCounter(entityPrefix + "reset.errors");
   }
 
   private Socket createAndConnectSocket() throws IOException {

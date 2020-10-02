@@ -31,6 +31,22 @@ public class WavefrontSdkCounter implements WavefrontSdkMetric {
   }
 
   /**
+   * Decrements the counter by one.
+   */
+  public void dec() {
+    dec(1);
+  }
+
+  /**
+   * Decrements the counter by the specified amount.
+   *
+   * @param n The amount to decrement by.
+   */
+  public void dec(long n) {
+    count.addAndGet(-n);
+  }
+
+  /**
    * Gets the counter's current value.
    *
    * @return The current value.
