@@ -1,6 +1,5 @@
 package com.wavefront.sdk.common.metrics;
 
-import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.entities.metrics.WavefrontMetricSender;
 import org.junit.jupiter.api.Test;
 
