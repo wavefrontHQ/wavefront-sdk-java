@@ -253,7 +253,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       try {
         url = new URL(this.server);
       } catch (MalformedURLException e) {
-        throw new IllegalStateException("Please provide a reachable Wavefront endpoint", e);
+        throw new IllegalArgumentException(this.server + " is not a valid url", e);
       }
 
       try {
@@ -261,7 +261,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         urlConn.connect();
         urlConn.disconnect();
       } catch (IOException e) {
-        throw new IllegalStateException(e);
+        throw new IllegalArgumentException("Unable to connect to " + this.server, e);
       }
 
       return this;

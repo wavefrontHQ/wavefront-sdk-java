@@ -101,7 +101,7 @@ public class WavefrontClientTest {
       WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(uri, "token");
       wfClientBuilder.validateEndpoint();
       return true;
-    } catch (IllegalStateException e) {
+    } catch (IllegalArgumentException e) {
       return false;
     }
   }
