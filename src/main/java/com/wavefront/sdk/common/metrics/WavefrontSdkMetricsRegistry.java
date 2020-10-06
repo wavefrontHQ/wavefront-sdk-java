@@ -162,10 +162,8 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
           }
         }  else if (metric instanceof WavefrontSdkDeltaCounter) {
           long count = ((WavefrontSdkDeltaCounter) metric).count();
-          if (count > 0) {
-            wavefrontMetricSender.sendDeltaCounter(name + ".count", count, timestamp, source, tags);
-            ((WavefrontSdkDeltaCounter) metric).dec(count);
-          }
+          wavefrontMetricSender.sendDeltaCounter(name + ".count", count, timestamp, source, tags);
+          ((WavefrontSdkDeltaCounter) metric).dec(count);
         } else if (metric instanceof WavefrontSdkCounter) {
           wavefrontMetricSender.sendMetric(name + ".count", ((WavefrontSdkCounter)metric).count(),
               timestamp, source, tags);
