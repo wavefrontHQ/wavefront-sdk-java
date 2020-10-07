@@ -1,9 +1,13 @@
 package com.wavefront.sdk.common.clients;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.Nullable;
 
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,12 +16,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class WavefrontClientFactory {
-  private static final String PROXY_SCHEME = "proxy";
-  private static final String HTTP_PROXY_SCHEME = "http";
-  private static final String DIRECT_DATA_INGESTION_SCHEME = "https";
+  private static final Logger log = Logger.getLogger(WavefrontClientFactory.class.getCanonicalName());
 
-  private List<WavefrontSender> clients = new ArrayList<>();
-  private static Logger log = Logger.getLogger(WavefrontClientFactory.class.getCanonicalName());
+  private static final String PROXY_SCHEME = "proxy";
+  private static final String HTTP_SCHEME = "http";
+  private static final String HTTPS_SCHEME = "https";
+
+  private final List<WavefrontSender> clients = new ArrayList<>();
 
 
   /**
@@ -142,12 +147,12 @@ public class WavefrontClientFactory {
                                           @Nullable Integer messageSizeInBytes,
                                           boolean includeSdkMetrics,
                                           @Nullable Map<String, String> sdkMetricTags) {
-    ParsedHostString parsedHostString = getServerAndTokenFromEndpoint(url);
-    if (existingClient(parsedHostString.server)) {
+    Pair<String, String> serverToken = parseEndpoint(url);
+    if (existingClient(serverToken._1)) {
       throw new UnsupportedOperationException("client with id " + url + " already exists.");
     }
 
-    WavefrontClient.Builder builder = new WavefrontClient.Builder(parsedHostString.server, parsedHostString.token);
+    WavefrontClient.Builder builder = new WavefrontClient.Builder(serverToken._1, serverToken._2);
     if (batchSize != null) {
       builder.batchSize(batchSize);
     }
@@ -190,31 +195,23 @@ public class WavefrontClientFactory {
     return clients.stream().anyMatch(c -> c.getClientId().equals(server));
   }
 
-  private ParsedHostString getServerAndTokenFromEndpoint(String endpoint) {
+  @VisibleForTesting
+  static Pair<String, String> parseEndpoint(String endpoint) {
     URI uri = URI.create(endpoint);
-    final String token;
-    final String host;
-    if (uri.getScheme().equals(DIRECT_DATA_INGESTION_SCHEME)) {
-      token = uri.getUserInfo();
-      host = DIRECT_DATA_INGESTION_SCHEME + "://" + uri.getHost();
-    } else if (uri.getScheme().equals(PROXY_SCHEME) || uri.getScheme().equals(HTTP_PROXY_SCHEME)) {
+    final String scheme = PROXY_SCHEME.equals(uri.getScheme()) ? HTTP_SCHEME : uri.getScheme();
+    if (!scheme.equals(HTTP_SCHEME) && !scheme.equals(HTTPS_SCHEME)) {
+      throw new IllegalArgumentException("Unknown scheme (" + scheme + ") specified " +
+          "while attempting to build a client " + endpoint);
+    }
+    String token = uri.getUserInfo();
+    if (token != null && scheme.equals(HTTP_SCHEME)) {
+      log.log(Level.WARNING, "Attempting to send a token over clear-text, dropping token.");
       token = null;
-      host = HTTP_PROXY_SCHEME + "://" + uri.getHost() + ":" + uri.getPort();
-      if (uri.getUserInfo() != null) {
-        log.log(Level.WARNING, "Attempting to send a token over clear-text, dropping token.");
-      }
-    } else {
-      throw new RuntimeException("Unknown scheme specified while attempting to build a client " + uri.getScheme());
     }
-    return new ParsedHostString(host, token);
-  }
-
-  private static class ParsedHostString {
-    final String server;
-    final String token;
-    ParsedHostString(String server, String token) {
-      this.server = server;
-      this.token = token;
+    StringBuilder host = new StringBuilder(scheme).append("://").append(uri.getHost());
+    if (uri.getPort() > 0) {
+      host.append(":").append(uri.getPort());
     }
+    return Pair.of(host.toString(), token);
   }
 }

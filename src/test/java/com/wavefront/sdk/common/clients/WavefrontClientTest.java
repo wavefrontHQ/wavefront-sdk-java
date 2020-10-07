@@ -1,5 +1,6 @@
 package com.wavefront.sdk.common.clients;
 
+import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.clients.service.ReportingService;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import org.junit.jupiter.api.Test;
@@ -10,11 +11,13 @@ import java.net.URL;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import static com.wavefront.sdk.common.clients.WavefrontClientFactory.parseEndpoint;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for the {@link WavefrontClient} class
@@ -79,7 +82,7 @@ public class WavefrontClientTest {
   private void validateURI(URI uri, String expected) {
     try {
       URL url = ReportingService.getReportingUrl(uri, "wavefront");
-      assertEquals(url.toString(), expected);
+      assertEquals(expected, url.toString());
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     }
@@ -107,5 +110,39 @@ public class WavefrontClientTest {
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Test
+  public void testClientEndpoint() {
+    validateClientEndpoint("https://host", null, "https://host");
+    validateClientEndpoint("https://host:4443", null, "https://host:4443");
+    validateClientEndpoint("https://host:4443", null, "https://host:4443/path/");
+    validateClientEndpoint("https://host", "usr", "https://usr@host");
+    validateClientEndpoint("https://host:4443", "usr", "https://usr@host:4443");
+    validateClientEndpoint("https://host:4443", "usr", "https://usr@host:4443/path/");
+    validateClientEndpoint("http://host", null, "proxy://host");
+    validateClientEndpoint("http://host:2878", null, "proxy://host:2878");
+    validateClientEndpoint("http://host:2878", null, "proxy://host:2878/path/");
+    validateClientEndpoint("http://host", null, "proxy://usr@host");
+    validateClientEndpoint("http://host:2878", null, "proxy://usr@host:2878");
+    validateClientEndpoint("http://host:2878", null, "proxy://usr@host:2878/path/");
+    validateClientEndpoint("http://host", null, "http://host");
+    validateClientEndpoint("http://host:2878", null, "http://host:2878");
+    validateClientEndpoint("http://host:2878", null, "http://host:2878/path/");
+    validateClientEndpoint("http://host", null, "http://usr@host");
+    validateClientEndpoint("http://host:2878", null, "http://usr@host:2878");
+    validateClientEndpoint("http://host:2878", null, "http://usr@host:2878/path/");
+    try {
+      parseEndpoint("udp://host:2878");
+      fail();
+    } catch (IllegalArgumentException e) {
+      // expected
+    }
+  }
+
+  private void validateClientEndpoint(String expectedUrl, String expectedToken, String endpoint) {
+    Pair<String, String> parsed = parseEndpoint(endpoint);
+    assertEquals(expectedUrl, parsed._1);
+    assertEquals(expectedToken, parsed._2);
   }
 }
