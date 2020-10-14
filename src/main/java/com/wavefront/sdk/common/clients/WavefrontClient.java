@@ -22,8 +22,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -234,6 +237,33 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      */
     public Builder sdkMetricsTags(Map<String, String> tags) {
       this.tags.putAll(tags);
+      return this;
+    }
+
+  /**
+   * For a given server endpoint, validate according to RFC 2396 and attempt
+   * to make a connection
+   *
+   * @return {@code this}
+   * @throws IllegalStateException
+   */
+    public Builder validateEndpoint() throws IllegalStateException {
+      URL url = null;
+
+      try {
+        url = new URL(this.server);
+      } catch (MalformedURLException e) {
+        throw new IllegalArgumentException(this.server + " is not a valid url", e);
+      }
+
+      try {
+        HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();
+        urlConn.connect();
+        urlConn.disconnect();
+      } catch (IOException e) {
+        throw new IllegalArgumentException("Unable to connect to " + this.server, e);
+      }
+
       return this;
     }
 

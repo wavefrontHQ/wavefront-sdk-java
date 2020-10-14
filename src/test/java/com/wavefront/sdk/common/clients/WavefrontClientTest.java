@@ -5,6 +5,9 @@ import com.wavefront.sdk.common.clients.service.ReportingService;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import org.junit.jupiter.api.Test;
 
+import com.sun.net.httpserver.HttpServer;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -17,6 +20,8 @@ import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -62,6 +67,43 @@ public class WavefrontClientTest {
 
   private String createString(int size) {
     return new String(new char[size]).replace("\0", "a");
+  }
+
+  @Test
+  public void testUrlFormatForBuilder() {
+    HttpServer server = runFakeServer("127.0.0.1", 28788);
+
+    assertTrue(validateBuilderEndpoint("http://127.0.0.1:28788"));
+
+    assertFalse(validateBuilderEndpoint("http://127.0.0.1"));
+    assertFalse(validateBuilderEndpoint("http://127.0.0.1:28789"));
+    assertFalse(validateBuilderEndpoint("127.0.0.1:28788"));
+    assertFalse(validateBuilderEndpoint("not a valid endpoint"));
+    assertFalse(validateBuilderEndpoint(null));
+
+    server.stop(0);
+  }
+
+  private HttpServer runFakeServer(String address, int port) {
+    HttpServer httpserver = null;
+
+    try {
+      httpserver = HttpServer.create(new InetSocketAddress(address, port), 0);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    return httpserver;
+  }
+
+  private boolean validateBuilderEndpoint(String uri) {
+    try {
+      WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(uri, "token");
+      wfClientBuilder.validateEndpoint();
+      return true;
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
   }
 
   @Test
