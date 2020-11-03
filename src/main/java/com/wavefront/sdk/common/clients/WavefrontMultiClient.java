@@ -116,6 +116,22 @@ public class WavefrontMultiClient implements WavefrontSender, Runnable {
   }
 
   @Override
+  public void sendLog(String name, double value, Long timestamp, String source, Map<String, String> tags)
+          throws IOException {
+    MultiClientIOException exceptions = new MultiClientIOException();
+    for (WavefrontSender client : wavefrontSenders.values()) {
+      try {
+        client.sendLog(name, value, timestamp, source, tags);
+      } catch (IOException ex) {
+        logger.log(Level.SEVERE, "Client " + client.getClientId() + " failed to send log.", ex);
+        exceptions.add(ex);
+      }
+    }
+
+    exceptions.checkAndThrow();
+  }
+
+  @Override
   public void sendFormattedMetric(String point) throws IOException {
     MultiClientIOException exceptions = new MultiClientIOException();
     for (WavefrontSender client : wavefrontSenders.values()) {

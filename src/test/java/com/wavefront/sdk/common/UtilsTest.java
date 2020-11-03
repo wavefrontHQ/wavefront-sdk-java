@@ -14,14 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.wavefront.sdk.common.Utils.histogramToLineData;
-import static com.wavefront.sdk.common.Utils.metricToLineData;
-import static com.wavefront.sdk.common.Utils.sanitize;
-import static com.wavefront.sdk.common.Utils.sanitizeValue;
-import static com.wavefront.sdk.common.Utils.sanitizeWithoutQuotes;
-import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
-import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
-import static com.wavefront.sdk.common.Utils.eventToLineData;
+import static com.wavefront.sdk.common.Utils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -45,6 +38,7 @@ public class UtilsTest {
     assertEquals("\"-component.heartbeat\"", sanitize("!component.heartbeat"));
     assertEquals("\"Δcomponent.heartbeat\"", sanitize("Δcomponent.heartbeat"));
     assertEquals("\"∆component.heartbeat\"", sanitize("∆component.heartbeat"));
+    assertEquals("\"/mnt/logs/auth.log\"", sanitize("/mnt/logs/auth.log", true));
   }
 
   @Test
@@ -60,6 +54,109 @@ public class UtilsTest {
     assertEquals("\"hello\\\"world\\\"\"", sanitizeValue("hello\"world\""));
     assertEquals("\"hello'world\"", sanitizeValue("hello'world"));
     assertEquals("\"hello\\nworld\"", sanitizeValue("hello\nworld"));
+  }
+
+  @Test
+  public void testLogToLineData() {
+    Map<String, String> tags = new HashMap<String, String>() {{
+      put("tag_cluster", "cluster");
+      put("logGroup", "group");
+      put("tag_mirror", "mirror");
+    }};
+    assertEquals("\"/mnt/logs/auth.log\" 42422.0 1493773500 source=\"localhost\" " +
+            "\"logGroup\"=\"group\" \"tag_cluster\"=\"cluster\" \"tag_mirror\"=\"mirror\"\n",
+            logToLineData("/mnt/logs/auth.log", 42422, 1493773500L,
+                    "localhost", tags, "defaultSource"));
+    // source with colon
+    assertEquals("\"/mnt/logs/auth.log\" 42422.0 1493773500 source=\"localhost:8080\" " +
+                    "\"logGroup\"=\"group\" \"tag_cluster\"=\"cluster\" \"tag_mirror\"=\"mirror\"\n",
+            logToLineData("/mnt/logs/auth.log", 42422, 1493773500L,
+            "localhost:8080", tags, "defaultSource"));
+    // null timestamp
+    assertEquals("\"/mnt/logs/auth.log\" 42422.0 source=\"localhost\" " +
+                    "\"logGroup\"=\"group\" \"tag_cluster\"=\"cluster\" \"tag_mirror\"=\"mirror\"\n",
+            logToLineData("/mnt/logs/auth.log", 42422, null,
+            "localhost", tags, "defaultSource"));
+    // null tags and null timestamp
+    assertEquals("\"/mnt/logs/auth.log\" 42422.0 source=\"localhost\"\n",
+            logToLineData("/mnt/logs/auth.log", 42422, null, "localhost", null,
+                    "defaultSource"));
+    // default source
+    assertEquals("\"/mnt/logs/auth.log\" 42422.0 source=\"defaultSource\"\n",
+            logToLineData("/mnt/logs/auth.log", 42422, null, null, null, "defaultSource"));
+    // Add tag key with invalid char, val with empty space
+    tags.put(" key name~1", " val name 1 ");
+    // Invalid char in metrics
+    assertEquals("\"/mnt/logs/auth-log\" 42422.0 1493773500 source=\"local~host\" " +
+                    "\"-key-name-1\"=\"val name 1\" \"logGroup\"=\"group\" \"tag_cluster\"=\"cluster\" \"tag_mirror\"=\"mirror\"\n",
+            logToLineData("/mnt/logs/auth:log", 42422, 1493773500L, "local~host", tags,
+                    "defaultSource"));
+  }
+
+  @Test
+  public void testInvalidLogToLineDataThrows() {
+    Map<String, String> tags = new HashMap<String, String>() {{
+      put("tag_cluster", "cluster");
+      put("logGroup", "group");
+      put("tag_mirror", "mirror");
+    }};
+    try {
+      logToLineData(null, 42422, 1493773500L, "localhost", tags, "defaultSource");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("metrics name cannot be blank"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("logGroup=[group] tag_cluster=[cluster] tag_mirror=[mirror]"));
+    }
+    try {
+      logToLineData("", 42422, 1493773500L, "localhost", tags, "defaultSource");
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("metrics name cannot be blank"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("logGroup=[group] tag_cluster=[cluster] tag_mirror=[mirror]"));
+    }
+    try {
+      logToLineData("/mnt/logs/auth-log", 42422, 1493773500L, null, tags, null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("source cannot be blank"));
+      assertTrue(e.getMessage().contains("/mnt/logs/auth-log"));
+      assertTrue(e.getMessage().contains("logGroup=[group] tag_cluster=[cluster] tag_mirror=[mirror]"));
+    }
+    tags.put("", "value");
+    try {
+      logToLineData("/mnt/logs/auth-log", 42422, 1493773500L, "localhost", tags, null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("metric point tag key cannot be blank"));
+      assertTrue(e.getMessage().contains("/mnt/logs/auth-log"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("logGroup=[group] tag_cluster=[cluster] tag_mirror=[mirror]"));
+    }
+    tags.remove("");
+    tags.put("emptyValue", null);
+    try {
+      logToLineData("/mnt/logs/auth-log", 42422, 1493773500L, "localhost", tags, null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("metric point tag value cannot be blank for"));
+      assertTrue(e.getMessage().contains("emptyValue=[null]"));
+      assertTrue(e.getMessage().contains("/mnt/logs/auth-log"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("logGroup=[group] tag_cluster=[cluster] tag_mirror=[mirror]"));
+    }
+    tags.put("emptyValue", "");
+    try {
+      logToLineData("/mnt/logs/auth-log", 42422, 1493773500L, "localhost", tags, null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("metric point tag value cannot be blank for"));
+      assertTrue(e.getMessage().contains("emptyValue=[]"));
+      assertTrue(e.getMessage().contains("/mnt/logs/auth-log"));
+      assertTrue(e.getMessage().contains("source=localhost"));
+      assertTrue(e.getMessage().contains("logGroup=[group] tag_cluster=[cluster] tag_mirror=[mirror]"));
+    }
   }
 
   @Test

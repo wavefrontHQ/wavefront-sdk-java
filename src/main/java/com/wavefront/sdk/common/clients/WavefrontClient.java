@@ -49,6 +49,7 @@ import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
+import static com.wavefront.sdk.common.Utils.logToLineData;
 
 /**
  * Wavefront client that sends data to Wavefront via Proxy or Directly to a Wavefront service
@@ -80,6 +81,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   private final LinkedBlockingQueue<String> tracingSpansBuffer;
   private final LinkedBlockingQueue<String> spanLogsBuffer;
   private final LinkedBlockingQueue<String> eventsBuffer;
+  private final LinkedBlockingQueue<String> logsBuffer;
   private final ReportingService reportingService;
   private final ScheduledExecutorService scheduler;
   private final WavefrontSdkMetricsRegistry sdkMetricsRegistry;
@@ -108,6 +110,12 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   private final WavefrontSdkDeltaCounter spanLogsDropped;
   private final WavefrontSdkDeltaCounter spanLogReportErrors;
 
+  // Internal log metrics
+  private final WavefrontSdkDeltaCounter logsValid;
+  private final WavefrontSdkDeltaCounter logsInvalid;
+  private final WavefrontSdkDeltaCounter logsDropped;
+  private final WavefrontSdkDeltaCounter logsReportErrors;
+
   //Internal event metrics
   private final WavefrontSdkDeltaCounter eventsValid;
   private final WavefrontSdkDeltaCounter eventsInvalid;
@@ -120,6 +128,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   private final AtomicInteger spansDisabledStatusCode;
   private final AtomicInteger spanLogsDisabledStatusCode;
   private final AtomicInteger eventsDisabledStatusCode;
+  private final AtomicInteger logsDisabledStatusCode;
 
   // Flag to prevent sending after close() has been called
   private final AtomicBoolean closed = new AtomicBoolean(false);
@@ -294,6 +303,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     tracingSpansBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     spanLogsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     eventsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
+    logsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     reportingService = new ReportingService(builder.server, builder.token);
     scheduler = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("wavefrontClientSender").setDaemon(true));
@@ -343,6 +353,11 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     spanLogsDropped = sdkMetricsRegistry.newDeltaCounter("span_logs.dropped");
     spanLogReportErrors = sdkMetricsRegistry.newDeltaCounter("span_logs.report.errors");
 
+    logsValid = sdkMetricsRegistry.newDeltaCounter("logs.valid");
+    logsInvalid = sdkMetricsRegistry.newDeltaCounter("logs.invalid");
+    logsDropped = sdkMetricsRegistry.newDeltaCounter("logs.dropped");
+    logsReportErrors = sdkMetricsRegistry.newDeltaCounter("logs.report.errors");
+
     sdkMetricsRegistry.newGauge("events.queue.size", eventsBuffer::size);
     sdkMetricsRegistry.newGauge("events.queue.remaining_capacity",
         eventsBuffer::remainingCapacity);
@@ -356,6 +371,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     spansDisabledStatusCode = new AtomicInteger();
     spanLogsDisabledStatusCode = new AtomicInteger();
     eventsDisabledStatusCode = new AtomicInteger();
+    logsDisabledStatusCode = new AtomicInteger();
 
     this.clientId = builder.server;
   }
@@ -434,6 +450,30 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       logger.log(LogMessageType.HISTOGRAMS_BUFFER_FULL.toString(), Level.WARNING,
           "Buffer full, dropping histograms: " + histograms + ". Consider increasing the batch " +
               "size of your sender to increase throughput.");
+
+    }
+  }
+
+  @Override
+  public void sendLog(String name, double value, Long timestamp, String source, Map<String, String> tags)
+          throws IOException {
+    if (closed.get()) {
+      throw new IOException("attempt to send using closed sender");
+    }
+    String point;
+    try {
+      point = logToLineData(name, value, timestamp, source, tags, defaultSource);
+      logsValid.inc();
+    } catch (IllegalArgumentException e) {
+      logsInvalid.inc();
+      throw e;
+    }
+
+    if (!logsBuffer.offer(point)) {
+      logsDropped.inc();
+      logger.log(LogMessageType.LOGS_BUFFER_FULL.toString(), Level.WARNING,
+              "Buffer full, dropping log point: " + point + ". Consider increasing the batch " +
+                      "size of your sender to increase throughput.");
 
     }
   }
@@ -560,6 +600,10 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         eventsDropped, eventsReportErrors, eventsDisabledStatusCode,
         LogMessageType.SEND_EVENTS_ERROR, LogMessageType.SEND_EVENTS_PERMISSIONS,
         LogMessageType.EVENTS_BUFFER_FULL);
+    internalFlush(logsBuffer, Constants.WAVEFRONT_LOG_FORMAT, "logs", "logs",
+            logsDropped, logsReportErrors, logsDisabledStatusCode,
+            LogMessageType.SEND_LOGS_ERROR, LogMessageType.SEND_LOGS_PERMISSIONS,
+            LogMessageType.LOGS_BUFFER_FULL);
   }
 
   private void internalFlush(LinkedBlockingQueue<String> buffer, String format,
@@ -769,6 +813,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     SPANS_BUFFER_FULL,
     SPANLOGS_BUFFER_FULL,
     EVENTS_BUFFER_FULL,
+    LOGS_BUFFER_FULL,
     SPANLOGS_PROCESSING_ERROR,
     FLUSH_ERROR,
     CLOSE_WHILE_CLOSED,
@@ -777,11 +822,13 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     SEND_SPANS_ERROR,
     SEND_SPANLOGS_ERROR,
     SEND_EVENTS_ERROR,
+    SEND_LOGS_ERROR,
     SEND_METRICS_PERMISSIONS,
     SEND_HISTOGRAMS_PERMISSIONS,
     SEND_SPANS_PERMISSIONS,
     SEND_SPANLOGS_PERMISSIONS,
     SEND_EVENTS_PERMISSIONS,
+    SEND_LOGS_PERMISSIONS,
     SHUTDOWN_ERROR,
     MESSAGE_SIZE_LIMIT_EXCEEDED
   }

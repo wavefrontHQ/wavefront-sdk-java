@@ -23,6 +23,11 @@ public final class Constants {
   public static final String WAVEFRONT_HISTOGRAM_FORMAT = "histogram";
 
   /**
+   * Use this format to send log data to Wavefront
+   */
+  public static final String WAVEFRONT_LOG_FORMAT = "log";
+
+  /**
    * Use this format to send tracing data to Wavefront
    */
   public static final String WAVEFRONT_TRACING_SPAN_FORMAT = "trace";

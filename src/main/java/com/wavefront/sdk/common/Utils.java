@@ -41,11 +41,15 @@ public class Utils {
   private static final ObjectMapper JSON_PARSER = new ObjectMapper();
 
   public static String sanitize(String s) {
-    return sanitizeInternal(s, true);
+    return sanitizeInternal(s, true, false);
+  }
+
+  public static String sanitize(String s, boolean ignoreSlash) {
+    return sanitizeInternal(s, true, ignoreSlash);
   }
 
   public static String sanitizeWithoutQuotes(String s) {
-    return sanitizeInternal(s, false);
+    return sanitizeInternal(s, false, false);
   }
 
   public static String sanitizeValue(String s) {
@@ -103,6 +107,53 @@ public class Utils {
         if (val == null || val.isEmpty()) {
           throw new IllegalArgumentException("metric point tag value cannot be blank for " +
               "tag key: " + key + " " + getContextInfo(name, source, tags));
+        }
+        sb.append(' ');
+        sb.append(sanitize(key));
+        sb.append('=');
+        sb.append(sanitizeValue(val));
+      }
+    }
+    sb.append('\n');
+    return sb.toString();
+  }
+
+  public static String logToLineData(String name, double value, @Nullable Long timestamp,
+                                        String source, @Nullable Map<String, String> tags,
+                                        String defaultSource) {
+    if (source == null || source.isEmpty()) {
+      source = defaultSource;
+    }
+    if (name == null || name.isEmpty()) {
+      throw new IllegalArgumentException("metrics name cannot be blank " +
+              getContextInfo(name, source, tags));
+    }
+    if (source == null || source.isEmpty()) {
+      throw new IllegalArgumentException("source cannot be blank " +
+              getContextInfo(name, source, tags));
+    }
+
+    final StringBuilder sb = new StringBuilder();
+    sb.append(sanitize(name, true));
+    sb.append(' ');
+    sb.append(value);
+    if (timestamp != null) {
+      sb.append(' ');
+      sb.append(timestamp);
+    }
+    sb.append(" source=");
+    sb.append(sanitizeValue(source));
+    if (tags != null) {
+      for (final Map.Entry<String, String> tag : tags.entrySet()) {
+        String key = tag.getKey();
+        String val = tag.getValue();
+        if (key == null || key.isEmpty()) {
+          throw new IllegalArgumentException("metric point tag key cannot be blank " +
+                  getContextInfo(name, source, tags));
+        }
+        if (val == null || val.isEmpty()) {
+          throw new IllegalArgumentException("metric point tag value cannot be blank for " +
+                  "tag key: " + key + " " + getContextInfo(name, source, tags));
         }
         sb.append(' ');
         sb.append(sanitize(key));
@@ -442,7 +493,7 @@ public class Utils {
     }
   }
   
-  private static String sanitizeInternal(String s, boolean addQuotes) {
+  private static String sanitizeInternal(String s, boolean addQuotes, boolean ignoreSlash) {
     /*
      * Sanitize string of metric name, source and key of tags according to the rule of Wavefront proxy.
      */
@@ -467,7 +518,7 @@ public class Utils {
           isLegal = false;
         }
       }
-      if (cur == '/') {
+      if (cur == '/' && !ignoreSlash) {
         isLegal = false;
       }
       sb.append(isLegal ? cur : '-');
