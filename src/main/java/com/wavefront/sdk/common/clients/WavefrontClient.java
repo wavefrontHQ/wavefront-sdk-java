@@ -601,9 +601,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         LogMessageType.SEND_EVENTS_ERROR, LogMessageType.SEND_EVENTS_PERMISSIONS,
         LogMessageType.EVENTS_BUFFER_FULL);
     internalFlush(logsBuffer, Constants.WAVEFRONT_LOG_FORMAT, "logs", "logs",
-            logsDropped, logsReportErrors, logsDisabledStatusCode,
-            LogMessageType.SEND_LOGS_ERROR, LogMessageType.SEND_LOGS_PERMISSIONS,
-            LogMessageType.LOGS_BUFFER_FULL);
+        logsDropped, logsReportErrors, logsDisabledStatusCode,
+        LogMessageType.SEND_LOGS_ERROR, LogMessageType.SEND_LOGS_PERMISSIONS,
+        LogMessageType.LOGS_BUFFER_FULL);
   }
 
   private void internalFlush(LinkedBlockingQueue<String> buffer, String format,

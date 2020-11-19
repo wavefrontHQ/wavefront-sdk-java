@@ -119,8 +119,8 @@ public class Utils {
   }
 
   public static String logToLineData(String name, double value, @Nullable Long timestamp,
-                                        String source, @Nullable Map<String, String> tags,
-                                        String defaultSource) {
+                                     String source, @Nullable Map<String, String> tags,
+                                     String defaultSource) {
     if (source == null || source.isEmpty()) {
       source = defaultSource;
     }
