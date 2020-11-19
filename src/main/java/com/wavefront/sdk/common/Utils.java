@@ -125,7 +125,7 @@ public class Utils {
       source = defaultSource;
     }
     if (name == null || name.isEmpty()) {
-      throw new IllegalArgumentException("metrics name cannot be blank " +
+      throw new IllegalArgumentException("log name cannot be blank " +
               getContextInfo(name, source, tags));
     }
     if (source == null || source.isEmpty()) {
@@ -148,12 +148,12 @@ public class Utils {
         String key = tag.getKey();
         String val = tag.getValue();
         if (key == null || key.isEmpty()) {
-          throw new IllegalArgumentException("metric point tag key cannot be blank " +
+          throw new IllegalArgumentException("log label key cannot be blank " +
                   getContextInfo(name, source, tags));
         }
         if (val == null || val.isEmpty()) {
-          throw new IllegalArgumentException("metric point tag value cannot be blank for " +
-                  "tag key: " + key + " " + getContextInfo(name, source, tags));
+          throw new IllegalArgumentException("log label value cannot be blank for " +
+                  "log label key: " + key + " " + getContextInfo(name, source, tags));
         }
         sb.append(' ');
         sb.append(sanitize(key));

@@ -104,7 +104,7 @@ public class UtilsTest {
       logToLineData(null, 42422, 1493773500L, "localhost", tags, "defaultSource");
       fail();
     } catch (IllegalArgumentException e) {
-      assertTrue(e.getMessage().contains("metrics name cannot be blank"));
+      assertTrue(e.getMessage().contains("log name cannot be blank"));
       assertTrue(e.getMessage().contains("source=localhost"));
       assertTrue(e.getMessage().contains("logGroup=[group] tag_cluster=[cluster] tag_mirror=[mirror]"));
     }
@@ -112,7 +112,7 @@ public class UtilsTest {
       logToLineData("", 42422, 1493773500L, "localhost", tags, "defaultSource");
       fail();
     } catch (IllegalArgumentException e) {
-      assertTrue(e.getMessage().contains("metrics name cannot be blank"));
+      assertTrue(e.getMessage().contains("log name cannot be blank"));
       assertTrue(e.getMessage().contains("source=localhost"));
       assertTrue(e.getMessage().contains("logGroup=[group] tag_cluster=[cluster] tag_mirror=[mirror]"));
     }
@@ -129,7 +129,7 @@ public class UtilsTest {
       logToLineData("/mnt/logs/auth-log", 42422, 1493773500L, "localhost", tags, null);
       fail();
     } catch (IllegalArgumentException e) {
-      assertTrue(e.getMessage().contains("metric point tag key cannot be blank"));
+      assertTrue(e.getMessage().contains("log label key cannot be blank"));
       assertTrue(e.getMessage().contains("/mnt/logs/auth-log"));
       assertTrue(e.getMessage().contains("source=localhost"));
       assertTrue(e.getMessage().contains("logGroup=[group] tag_cluster=[cluster] tag_mirror=[mirror]"));
@@ -140,7 +140,7 @@ public class UtilsTest {
       logToLineData("/mnt/logs/auth-log", 42422, 1493773500L, "localhost", tags, null);
       fail();
     } catch (IllegalArgumentException e) {
-      assertTrue(e.getMessage().contains("metric point tag value cannot be blank for"));
+      assertTrue(e.getMessage().contains("log label value cannot be blank for"));
       assertTrue(e.getMessage().contains("emptyValue=[null]"));
       assertTrue(e.getMessage().contains("/mnt/logs/auth-log"));
       assertTrue(e.getMessage().contains("source=localhost"));
@@ -151,7 +151,7 @@ public class UtilsTest {
       logToLineData("/mnt/logs/auth-log", 42422, 1493773500L, "localhost", tags, null);
       fail();
     } catch (IllegalArgumentException e) {
-      assertTrue(e.getMessage().contains("metric point tag value cannot be blank for"));
+      assertTrue(e.getMessage().contains("log label value cannot be blank for"));
       assertTrue(e.getMessage().contains("emptyValue=[]"));
       assertTrue(e.getMessage().contains("/mnt/logs/auth-log"));
       assertTrue(e.getMessage().contains("source=localhost"));

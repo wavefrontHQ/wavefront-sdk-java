@@ -35,7 +35,6 @@ import static com.wavefront.sdk.common.Utils.histogramToLineData;
 import static com.wavefront.sdk.common.Utils.metricToLineData;
 import static com.wavefront.sdk.common.Utils.spanLogsToLineData;
 import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
-import static com.wavefront.sdk.common.Utils.logToLineData;
 
 /**
  * WavefrontProxyClient that sends data directly via TCP to the Wavefront Proxy Agent.
@@ -54,9 +53,6 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
 
   @Nullable
   private final ProxyConnectionHandler metricsProxyConnectionHandler;
-
-  @Nullable
-  private final ProxyConnectionHandler logsProxyConnectionHandler;
 
   @Nullable
   private final ProxyConnectionHandler histogramProxyConnectionHandler;
@@ -97,12 +93,6 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   private final WavefrontSdkDeltaCounter spanLogsInvalid;
   private final WavefrontSdkDeltaCounter spanLogsDropped;
 
-  // Internal log metrics
-  private final WavefrontSdkDeltaCounter logsDiscarded;
-  private final WavefrontSdkDeltaCounter logsValid;
-  private final WavefrontSdkDeltaCounter logsInvalid;
-  private final WavefrontSdkDeltaCounter logsDropped;
-
   // Flag to prevent sending after close() has been called
   private final AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -114,7 +104,6 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     private Integer metricsPort;
     private Integer distributionPort;
     private Integer tracingPort;
-    private Integer logsPort;
     private SocketFactory socketFactory = SocketFactory.getDefault();
     private int flushIntervalSeconds = 5;
 
@@ -135,11 +124,6 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
      */
     public Builder metricsPort(int metricsPort) {
       this.metricsPort = metricsPort;
-      return this;
-    }
-
-    public Builder logsPort(int logsPort) {
-      this.logsPort = logsPort;
       return this;
     }
 
@@ -223,15 +207,6 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
       uniqueId += builder.metricsPort + ":";
     }
 
-    if (builder.logsPort == null) {
-      logsProxyConnectionHandler = null;
-    } else {
-      logsProxyConnectionHandler = new ProxyConnectionHandler(
-              new InetSocketAddress(builder.proxyHostName, builder.logsPort),
-              builder.socketFactory, sdkMetricsRegistry, "logHandler");
-      uniqueId += builder.logsPort + ":";
-    }
-
     if (builder.distributionPort == null) {
       histogramProxyConnectionHandler = null;
     } else {
@@ -276,11 +251,6 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     spanLogsValid = sdkMetricsRegistry.newDeltaCounter("span_logs.valid");
     spanLogsInvalid = sdkMetricsRegistry.newDeltaCounter("span_logs.invalid");
     spanLogsDropped = sdkMetricsRegistry.newDeltaCounter("span_logs.dropped");
-
-    logsDiscarded = sdkMetricsRegistry.newDeltaCounter("logs.discarded");
-    logsValid = sdkMetricsRegistry.newDeltaCounter("logs.valid");
-    logsInvalid = sdkMetricsRegistry.newDeltaCounter("logs.invalid");
-    logsDropped = sdkMetricsRegistry.newDeltaCounter("logs.dropped");
   }
 
   @Override
@@ -321,34 +291,8 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   }
 
   @Override
-  public void sendLog(String name, double value, Long timestamp, String source, Map<String, String> tags)
-          throws IOException {
-    if (closed.get()) {
-      throw new IOException("attempt to send using closed sender");
-    }
-    if (logsProxyConnectionHandler == null) {
-      logsDiscarded.inc();
-      logger.warning("Can't send data to Wavefront. " +
-              "Please configure logs port for Wavefront proxy");
-      return;
-    }
-
-    String lineData;
-    try {
-      lineData = logToLineData(name, value, timestamp, source, tags, defaultSource);
-      logsValid.inc();
-    } catch (IllegalArgumentException e) {
-      logsInvalid.inc();
-      throw e;
-    }
-
-    try {
-      logsProxyConnectionHandler.sendData(lineData);
-    } catch (Exception e) {
-      logsDropped.inc();
-      logsProxyConnectionHandler.incrementFailureCount();
-      throw new IOException(e);
-    }
+  public void sendLog(String name, double value, Long timestamp, String source, Map<String, String> tags) {
+    throw new IllegalArgumentException("Sending logs using this method is not allowed");
   }
 
   @Override
