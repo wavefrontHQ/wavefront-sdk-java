@@ -291,6 +291,11 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
   }
 
   @Override
+  public void sendLog(String name, double value, Long timestamp, String source, Map<String, String> tags) {
+    throw new IllegalArgumentException("Sending logs using this method is not allowed");
+  }
+
+  @Override
   public void sendFormattedMetric(String point) throws IOException {
     if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
