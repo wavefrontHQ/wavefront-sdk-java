@@ -348,6 +348,7 @@ wavefrontSender.sendSpan("getAllUsers", 1552949776000L, 343, "localhost",
         "2f64e538-9457-11e8-9eb6-529269fb1459")).build(), null,
       ImmutableList.<Pair<String, String>>builder().
         add(new Pair<>("application", "Wavefront")).
+        add(new Pair<>("service", "istio")).
         add(new Pair<>("http.method", "GET")).build(), null);
 ```
 
