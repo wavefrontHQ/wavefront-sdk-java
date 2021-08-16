@@ -254,9 +254,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
    * to make a connection
    *
    * @return {@code this}
-   * @throws IllegalStateException
+   * @throws IllegalArgumentException
    */
-    public Builder validateEndpoint() throws IllegalStateException {
+    public Builder validateEndpoint() throws IllegalArgumentException {
       URL url = null;
 
       try {
