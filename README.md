@@ -196,7 +196,7 @@ WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(proxyURL);
 wfClientBuilder.messageSizeBytes(120);
 
 // This is the size of internal buffer beyond which data is dropped
-// Optional: Set this to override the default max queue size of 50,000
+// Optional: Set this to override the default max queue size of 500,000
 wfClientBuilder.maxQueueSize(100_000);
 
 // This is the max batch of data sent per flush interval
