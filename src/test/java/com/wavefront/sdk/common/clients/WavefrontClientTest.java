@@ -32,6 +32,7 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -152,8 +153,35 @@ public class WavefrontClientTest {
       String expectedBody = "!M " + timestamp + " #2 1.1 \"a-name\" source=\"a-source\"\n";
       mockBackend.verify(1, postRequestedFor(urlEqualTo("/report?f=histogram"))
           .withRequestBody(matching(expectedBody))
-          .withHeader("Content-Type", WireMock.equalTo("application/octet-stream"))
-      );
+          .withHeader("Content-Type", WireMock.equalTo("application/octet-stream")));
+    }
+
+    @Test
+    void canSendTracesToDifferentPort() {
+      WireMockServer mockTraceBackend = new WireMockServer(wireMockConfig().dynamicPort());
+      mockTraceBackend.stubFor(WireMock.post(urlPathMatching("/report")).willReturn(WireMock.ok()));
+      mockTraceBackend.start();
+      assertNotEquals(mockBackend.port(), mockTraceBackend.port());
+
+      WavefrontClient wfClient = new WavefrontClient.Builder(mockBackend.baseUrl())
+          .tracesPort(mockTraceBackend.port())
+          .includeSdkMetrics(false)
+          .build();
+      long timestamp = System.currentTimeMillis();
+
+      assertDoesNotThrow(() -> {
+        wfClient.sendMetric("a-name", 1.0, timestamp, "a-source", new HashMap<>());
+        wfClient.sendSpan("a-name", timestamp, 1138, "a-source",
+            UUID.fromString("01010101-0101-0101-0101-010101010101"),
+            UUID.fromString("00000000-0000-0000-0000-000000000001"),
+            null, null, null, null);
+        wfClient.flush();
+      });
+
+      mockBackend.verify(1, postRequestedFor(urlEqualTo("/report?f=wavefront")));
+      mockTraceBackend.verify(1, postRequestedFor(urlEqualTo("/report?f=trace")));
+
+      mockTraceBackend.stop();
     }
   }
 

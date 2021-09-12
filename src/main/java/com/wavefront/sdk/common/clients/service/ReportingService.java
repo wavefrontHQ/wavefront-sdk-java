@@ -24,8 +24,9 @@ import java.util.zip.GZIPOutputStream;
  */
 public class ReportingService implements ReportAPI {
 
-  private static final MessageSuppressingLogger MESSAGE_SUPPRESSING_LOGGER = new MessageSuppressingLogger(
-      Logger.getLogger(ReportingService.class.getCanonicalName()), 5, TimeUnit.MINUTES);
+  private static final MessageSuppressingLogger MESSAGE_SUPPRESSING_LOGGER =
+      new MessageSuppressingLogger(Logger.getLogger(ReportingService.class.getCanonicalName()),
+          5, TimeUnit.MINUTES);
 
   private final String token;
   private final URI uri;
@@ -35,8 +36,8 @@ public class ReportingService implements ReportAPI {
   private static final int BUFFER_SIZE = 4096;
   private static final int NO_HTTP_RESPONSE = -1;
 
-  public ReportingService(String server, @Nullable String token) {
-    this.uri = URI.create(server);
+  public ReportingService(URI uri, @Nullable String token) {
+    this.uri = uri;
     this.token = token;
   }
 
