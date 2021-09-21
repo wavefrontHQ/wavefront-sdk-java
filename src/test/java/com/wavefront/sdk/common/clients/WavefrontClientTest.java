@@ -1,7 +1,13 @@
 package com.wavefront.sdk.common.clients;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
+import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -9,15 +15,24 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.net.ServerSocket;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.matching;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -62,6 +77,112 @@ public class WavefrontClientTest {
 
   private String createString(int size) {
     return new String(new char[size]).replace("\0", "a");
+  }
+
+  @Nested
+  class WireMockTests {
+    WireMockServer mockBackend;
+
+    @BeforeEach
+    void setup() {
+      mockBackend = new WireMockServer(wireMockConfig().dynamicPort());
+      mockBackend.stubFor(WireMock.post(urlPathMatching("/report")).willReturn(WireMock.ok()));
+      mockBackend.start();
+    }
+
+    @AfterEach
+    void teardown() {
+      mockBackend.stop();
+    }
+
+    @Test
+    void sendMetric() {
+      WavefrontClient wfClient = new WavefrontClient.Builder(mockBackend.baseUrl())
+          .includeSdkMetrics(false)
+          .build();
+      long timestamp = System.currentTimeMillis();
+
+      assertDoesNotThrow(() -> {
+        wfClient.sendMetric("a-name", 1.0, timestamp, "a-source", new HashMap<>());
+        wfClient.flush();
+      });
+
+      String expectedBody = "\"a-name\" 1.0 " + timestamp + " source=\"a-source\"\n";
+      mockBackend.verify(1, postRequestedFor(urlEqualTo("/report?f=wavefront"))
+          .withRequestBody(matching(expectedBody))
+          .withHeader("Content-Type", WireMock.equalTo("application/octet-stream")));
+    }
+
+    @Test
+    void sendSpan() {
+      WavefrontClient wfClient = new WavefrontClient.Builder(mockBackend.baseUrl())
+          .includeSdkMetrics(false)
+          .build();
+      long timestamp = System.currentTimeMillis();
+      UUID traceId = UUID.fromString("01010101-0101-0101-0101-010101010101");
+      UUID spanId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
+      assertDoesNotThrow(() -> {
+        wfClient.sendSpan("a-name", timestamp, 1138, "a-source", traceId, spanId,
+            null, null, null, null);
+        wfClient.flush();
+      });
+
+      String expectedBody = "\"a-name\" source=\"a-source\" traceId=" + traceId + " spanId=" +
+          spanId + " " + timestamp + " 1138\n";
+      mockBackend.verify(1, postRequestedFor(urlEqualTo("/report?f=trace"))
+          .withRequestBody(matching(expectedBody))
+          .withHeader("Content-Type", WireMock.equalTo("application/octet-stream")));
+    }
+
+    @Test
+    void sendDistribution() {
+      WavefrontClient wfClient = new WavefrontClient.Builder(mockBackend.baseUrl())
+          .includeSdkMetrics(false)
+          .build();
+      long timestamp = System.currentTimeMillis();
+
+      assertDoesNotThrow(() -> {
+        wfClient.sendDistribution("a-name",
+            Collections.singletonList(new Pair<>(1.1, 2)),
+            Collections.singleton(HistogramGranularity.MINUTE),
+            timestamp, "a-source", null);
+        wfClient.flush();
+      });
+
+      String expectedBody = "!M " + timestamp + " #2 1.1 \"a-name\" source=\"a-source\"\n";
+      mockBackend.verify(1, postRequestedFor(urlEqualTo("/report?f=histogram"))
+          .withRequestBody(matching(expectedBody))
+          .withHeader("Content-Type", WireMock.equalTo("application/octet-stream")));
+    }
+
+    @Test
+    void canSendTracesToDifferentPort() {
+      WireMockServer mockTraceBackend = new WireMockServer(wireMockConfig().dynamicPort());
+      mockTraceBackend.stubFor(WireMock.post(urlPathMatching("/report")).willReturn(WireMock.ok()));
+      mockTraceBackend.start();
+      assertNotEquals(mockBackend.port(), mockTraceBackend.port());
+
+      WavefrontClient wfClient = new WavefrontClient.Builder(mockBackend.baseUrl())
+          .tracesPort(mockTraceBackend.port())
+          .includeSdkMetrics(false)
+          .build();
+      long timestamp = System.currentTimeMillis();
+
+      assertDoesNotThrow(() -> {
+        wfClient.sendMetric("a-name", 1.0, timestamp, "a-source", new HashMap<>());
+        wfClient.sendSpan("a-name", timestamp, 1138, "a-source",
+            UUID.fromString("01010101-0101-0101-0101-010101010101"),
+            UUID.fromString("00000000-0000-0000-0000-000000000001"),
+            null, null, null, null);
+        wfClient.flush();
+      });
+
+      mockBackend.verify(1, postRequestedFor(urlEqualTo("/report?f=wavefront")));
+      mockTraceBackend.verify(1, postRequestedFor(urlEqualTo("/report?f=trace")));
+
+      mockTraceBackend.stop();
+    }
   }
 
   @Nested
