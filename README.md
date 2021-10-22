@@ -318,19 +318,16 @@ wavefrontSender.sendDistribution("request.latency",
 
 #### Tracing Spans
 
+<!-- Commenting this section out for now. We need to uncomment this section after https://github.com/wavefrontHQ/wavefront-sdk-java/pull/201 is published.
 If you are directly using the Sender SDK to send data to Wavefront, you won’t see span-level RED metrics by default unless you use the Wavefront proxy and define a custom tracing port (`tracingPort`). See [Instrument Your Application with Wavefront Sender SDKs](https://docs.wavefront.com/tracing_instrumenting_frameworks.html#instrument-your-application-with-wavefront-sender-sdks) for details.
 
+-->
+
+
 ```java
-// Set up Wavefront Sender for proxy based ingestion
-WavefrontSender wavefrontSender = new WavefrontClient.Builder(proxyHost).
-        tracingPort(30001). // the same port as the customTracingListenerPorts configured in the wavefront proxy
-        metricsPort(metricsPort).
-        distributionPort(distributionPort).
-        messageSizeBytes(messageSizeInBytes).
-        batchSize(batchSize).
-        flushIntervalSeconds(flushIntervalSeconds).
-        maxQueueSize(queueSize).
-        build(); // Returns a WavefrontClient
+// Using the WavefrontClient.Builder directly with a url in the form of "http://your.proxy.load.blanacer:port"
+// to send data to proxies.
+WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(proxyURL);
 
 // Now send distributed tracing spans as below
  // Wavefront tracing span data format
