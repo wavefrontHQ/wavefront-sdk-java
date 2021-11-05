@@ -65,47 +65,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
-                <executions>
-                  <execution>
-                    <phase>package</phase>
-                    <goals>
-                      <goal>shade</goal>
-                    </goals>
-                    <configuration>
-                        <minimizeJar>true</minimizeJar>
-                        <artifactSet>
-                            <includes>
-                                <include>com.tdunning:t-digest</include>
-                                <include>com.google.guava</include>
-                            </includes>
-                        </artifactSet>
-                        <relocations>
-                            <relocation>
-                                <pattern>com.tdunning.math</pattern>
-                                <shadedPattern>com.wavefront.java_sdk.com.tdunning.math</shadedPattern>
-                            </relocation>
-                            <relocation>
-                                <pattern>com.google</pattern>
-                                <shadedPattern>com.wavefront.java_sdk.com.google</shadedPattern>
-                            </relocation>
-                        </relocations>
-                        <filters>
-                            <filter>
-                                <artifact>*:*</artifact>
-                                <excludes>
-                                    <exclude>META-INF/license/**</exclude>
-                                    <exclude>mozilla/**</exclude>
-                                </excludes>
-                            </filter>
-                        </filters>
-                    </configuration>
-                  </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.3</version>
                 <configuration>
