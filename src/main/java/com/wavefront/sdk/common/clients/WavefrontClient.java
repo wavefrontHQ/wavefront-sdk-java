@@ -619,7 +619,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       this.flush();
     } catch (Throwable ex) {
       logger.log(LogMessageType.FLUSH_ERROR.toString(), Level.WARNING,
-          "Unable to report to Wavefront cluster: " + Throwables.getRootCause(ex));
+          "Unable to report to Wavefront cluster ", Throwables.getRootCause(ex));
     }
   }
 
