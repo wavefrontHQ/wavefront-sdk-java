@@ -31,12 +31,14 @@ public class MessageDedupingLoggerTest {
     expect(mockLogger.getName()).andReturn("loggerName").anyTimes();
     replay(mockLogger);
     MessageDedupingLogger log = new MessageDedupingLogger(mockLogger, 1000, 0.1);
+
     reset(mockLogger);
     expect(mockLogger.getName()).andReturn("loggerName").anyTimes();
     Capture<LogRecord> logs = Capture.newInstance(CaptureType.ALL);
     mockLogger.log(capture(logs));
     expectLastCall().times(5);
     replay(mockLogger);
+
     log.severe("msg1");
     log.severe("msg1");
     log.warning("msg1");
@@ -52,6 +54,7 @@ public class MessageDedupingLoggerTest {
     log.log("msg3", Level.FINE, "message 3");
     log.log("msg5", Level.FINE, "message 5");
     log.log("msg5", Level.FINE, "message 5!");
+
     verify(mockLogger);
     assertEquals(5, logs.getValues().size());
     assertEquals("msg1", logs.getValues().get(0).getMessage());
@@ -63,5 +66,39 @@ public class MessageDedupingLoggerTest {
     assertEquals("msg4", logs.getValues().get(3).getMessage());
     assertEquals(Level.SEVERE, logs.getValues().get(3).getLevel());
     assertEquals("message 5", logs.getValues().get(4).getMessage());
+  }
+
+  @Test
+  public void testLoggingThrowables() {
+    Logger mockLogger = EasyMock.mock(Logger.class);
+    expect(mockLogger.getName()).andReturn("loggerName").anyTimes();
+    replay(mockLogger);
+    MessageDedupingLogger logger = new MessageDedupingLogger(mockLogger, 1000, 0.1);
+
+    reset(mockLogger);
+    expect(mockLogger.getName()).andReturn("loggerName").anyTimes();
+    Capture<LogRecord> capturedLogs = Capture.newInstance(CaptureType.ALL);
+    mockLogger.log(capture(capturedLogs));
+    expectLastCall().times(2);
+    replay(mockLogger);
+
+    Exception testException = new Exception("testing");
+    logger.log("key1", Level.WARNING, "error", testException);
+    logger.log("key1", Level.SEVERE, "error", testException);
+    logger.log("key2", Level.SEVERE, "error", testException);
+
+    verify(mockLogger);
+    assertEquals(2, capturedLogs.getValues().size());
+
+    LogRecord capLog1 = capturedLogs.getValues().get(0);
+    assertEquals("loggerName", capLog1.getLoggerName());
+    assertEquals("error", capLog1.getMessage());
+    assertEquals(Level.WARNING, capLog1.getLevel());
+
+    LogRecord capLog2 = capturedLogs.getValues().get(1);
+    assertEquals("loggerName", capLog2.getLoggerName());
+    assertEquals("error", capLog2.getMessage());
+    assertEquals(Level.SEVERE, capLog2.getLevel());
+    assertEquals(testException, capLog2.getThrown());
   }
 }

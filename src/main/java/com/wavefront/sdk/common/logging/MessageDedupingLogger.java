@@ -68,4 +68,26 @@ public class MessageDedupingLogger extends DelegatingLogger {
       log(new LogRecord(level, message));
     }
   }
+
+  /**
+   * Log a message, de-duplicating with the specified key.
+   *
+   * @param messageDedupingKey  String to dedupe the log by.
+   * @param level               Log level.
+   * @param message             String to write to log.
+   * @param thrown              Throwable associated with log message.
+   */
+  public void log(String messageDedupingKey, Level level, String message, Throwable thrown) {
+    LogRecord logRecord = new LogRecord(level, message);
+    logRecord.setThrown(thrown);
+    try {
+      if (Objects.requireNonNull(rateLimiterCache.get(messageDedupingKey)).tryAcquire()) {
+        log(logRecord);
+      }
+    } catch (ExecutionException e) {
+      // Log the message if we encounter an error fetching the rate limiter
+      log(logRecord);
+    }
+
+  }
 }
