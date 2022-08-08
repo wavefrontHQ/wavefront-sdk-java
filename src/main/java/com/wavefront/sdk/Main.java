@@ -98,6 +98,7 @@ public class Main {
         Arrays.asList(UUID.fromString(
             "2f64e538-9457-11e8-9eb6-529269fb1459")), null,
         Arrays.asList(new Pair<>("application", "Wavefront"),
+            new Pair<>("service", "test-spans"),
             new Pair<>("http.method", "GET")), null);
     System.out.println("Sent tracing span: 'getAllUsers' to proxy");
   }
