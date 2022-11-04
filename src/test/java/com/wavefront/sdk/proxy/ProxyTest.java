@@ -4,36 +4,58 @@ import com.wavefront.sdk.common.WavefrontSender;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
-import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ProxyTest {
-    private final int NUM_THREADS = 10;
-    private final int NUM_ITERATIONS = 1000;
+    private static final int NUM_THREADS = 10;
+    private static final int NUM_ITERATIONS = 1000;
+    private static final int THREAD_WAIT_ITERATIONS = 10;
+    private static final List<String> EXPECTED_METRIC_LINE =
+            Collections.singletonList("^\"dummy\" 1\\.0 [0-9]+ source=\"a-host\"$");
 
-    private final int THREAD_WAIT_ITERATIONS = 10;
+    private static class MockServer implements Runnable, Closeable {
+        public static final int MOCK_PROXY_PORT = 12345;
+        private ServerSocket s;
 
-    private final static Pattern linePattern = Pattern.compile("\"dummy\" 1\\.0 [0-9]+ source=\"dummy\"");
+        static MockServer start() throws InterruptedException {
+            MockServer server = new MockServer();
+            Thread thread = new Thread(server);
+            thread.setDaemon(false);
+            thread.start();
+            for (int i = 0; i < 10; i++) {
+                if (server.isBound())
+                    return server;
+                Thread.sleep(100);
+            }
+            fail("Timed out waiting for MockServer to bind on port " + MOCK_PROXY_PORT);
+            return null;
+        }
 
-    private final class MockServer implements Runnable {
         public void run() {
             try {
-                ServerSocket s = new ServerSocket(12345);
+                s = new ServerSocket(MOCK_PROXY_PORT);
+
                 Socket cs = s.accept();
                 BufferedReader in = new BufferedReader(new InputStreamReader(cs.getInputStream()));
                 int n = 0;
                 String line;
                 while ((line = in.readLine()) != null) {
-                    assertTrue(linePattern.matcher(line).matches(), "Unexpected data from sender");
+                    if (line.charAt(1) == '~' || line.charAt(2) == '~') {
+                        System.out.println("Ignoring internal metric: " + line);
+                        continue;
+                    }
+                    assertLinesMatch(EXPECTED_METRIC_LINE, Collections.singletonList(line));
                     n++;
                 }
                 assertEquals(NUM_ITERATIONS * NUM_THREADS, n, "Wrong number of messages received");
@@ -41,9 +63,18 @@ public class ProxyTest {
                 fail(e);
             }
         }
+
+        public boolean isBound() {
+            return (s != null) && s.isBound() && !s.isClosed();
+        }
+
+        @Override
+        public void close() throws IOException {
+            s.close();
+        }
     }
 
-    private static final Thread[] getAllThreads() {
+    private static Thread[] getAllThreads() {
         ThreadGroup rootGroup = Thread.currentThread().getThreadGroup();
         ThreadGroup parentGroup;
         while ((parentGroup = rootGroup.getParent()) != null) {
@@ -58,7 +89,7 @@ public class ProxyTest {
 
     @Test
     public void testProxyRoundtrip() {
-        try {
+        try (MockServer mockProxy = MockServer.start()) {
             // Take a snapshot of active threads before we start the client
             Thread[] threads = getAllThreads();
             Map<Long, Thread> tMap = new HashMap<>();
@@ -68,18 +99,16 @@ public class ProxyTest {
                 }
                 tMap.put(t.getId(), t);
             }
-            Thread server = new Thread(new MockServer());
-            server.setDaemon(false);
-            server.start();
+
             WavefrontProxyClient.Builder b = new WavefrontProxyClient.Builder("localhost");
-            b.metricsPort(12345);
-            final WavefrontSender s = b.build();
+            b.metricsPort(MockServer.MOCK_PROXY_PORT);
+            final WavefrontSender wfSender = b.build();
             final Semaphore semaphore = new Semaphore(0);
             for(int i = 0; i < NUM_THREADS; ++i) {
                 new Thread(() -> {
                     for (int j = 0; j < NUM_ITERATIONS; ++j) {
                         try {
-                            s.sendMetric("dummy", 1.0, System.currentTimeMillis(), "dummy", new HashMap<>());
+                            wfSender.sendMetric("dummy", 1.0, System.currentTimeMillis(), "a-host", Collections.emptyMap());
                         } catch(IOException e) {
                             fail(e);
                         }
@@ -88,8 +117,8 @@ public class ProxyTest {
                 }).start();
             }
 
-           semaphore.acquire(NUM_THREADS);
-            s.close();
+            semaphore.acquire(NUM_THREADS);
+            wfSender.close();
 
             // Wait for all new non-daemon threads to terminate (or timeout)
             int n = 0;
@@ -102,7 +131,7 @@ public class ProxyTest {
                     }
                     if (!tMap.containsKey(t.getId()) && !t.isDaemon()) {
                         ++newT;
-                        System.out.println("Non-daemon thread still running: " + t.toString() + ". Waiting for it to finish");
+                        System.out.println("Non-daemon thread still running: " + t + ". Waiting for it to finish");
                     }
                 }
                 if (newT > 0) {
@@ -115,10 +144,7 @@ public class ProxyTest {
                     break;
                 }
             }
-        } catch(IOException e) {
-            fail(e);
-        }
-        catch(InterruptedException e) {
+        } catch(IOException | InterruptedException e) {
             fail(e);
         }
     }
