@@ -443,6 +443,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     try {
       point = metricToLineData(name, value, timestamp, source, tags, defaultSource);
       pointsValid.inc();
+      logger.fine("sendMetric: " + point);
     } catch (IllegalArgumentException e) {
       pointsInvalid.inc();
       throw e;
@@ -466,6 +467,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       throw new IllegalArgumentException("point must be non-null and in WF data format");
     }
     pointsValid.inc();
+    logger.fine("sendFormattedMetric: " + point);
     String finalPoint = point.endsWith("\n") ? point : point + "\n";
 
     if (!metricsBuffer.offer(finalPoint)) {
@@ -490,6 +492,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       histograms = histogramToLineData(name, centroids, histogramGranularities, timestamp,
           source, tags, defaultSource);
       histogramsValid.inc();
+      logger.fine("sendDistribution: " + histograms);
     } catch (IllegalArgumentException e) {
       histogramsInvalid.inc();
       throw e;
@@ -514,6 +517,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     try {
       point = logToLineData(name, value, timestamp, source, tags, defaultSource);
       logsValid.inc();
+      logger.fine("sendLog: " + point);
     } catch (IllegalArgumentException e) {
       logsInvalid.inc();
       throw e;
@@ -549,6 +553,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
             defaultSource, true);
       }
       eventsValid.inc();
+      logger.fine("sendEvent: " + event);
     } catch (IllegalArgumentException e) {
       eventsInvalid.inc();
       throw e;
@@ -574,6 +579,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       span = tracingSpanToLineData(name, startMillis, durationMillis, source, traceId,
           spanId, parents, followsFrom, tags, spanLogs, defaultSource);
       spansValid.inc();
+      logger.fine("sendSpan: " + span);
     } catch (IllegalArgumentException e) {
       spansInvalid.inc();
       throw e;
@@ -606,6 +612,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     try {
       String spanLogsJson = spanLogsToLineData(traceId, spanId, spanLogs, span, spanSecondaryId);
       spanLogsValid.inc();
+      logger.fine("sendSpanLogs: " + spanLogsJson);
       if (!spanLogsBuffer.offer(spanLogsJson)) {
         spanLogsDropped.inc();
         logger.log(LogMessageType.SPANLOGS_BUFFER_FULL.toString(), Level.WARNING,
