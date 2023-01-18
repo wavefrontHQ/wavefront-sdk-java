@@ -449,8 +449,15 @@ public class Utils {
     return spanLogsToLineData(traceId, spanId, spanLogs, null);
   }
 
-  public static String spanLogsToLineData(UUID traceId, UUID spanId,
-                                          @NonNull List<SpanLog> spanLogs, @Nullable String span)
+  public static String spanLogsToLineData(
+          UUID traceId, UUID spanId, @NonNull List<SpanLog> spanLogs, @Nullable String span)
+      throws JsonProcessingException {
+    return spanLogsToLineData(traceId, spanId, spanLogs, span, null);
+  }
+
+  public static String spanLogsToLineData(
+          UUID traceId, UUID spanId, @NonNull List<SpanLog> spanLogs, @Nullable String span,
+          @Nullable String spanSecondaryId)
       throws JsonProcessingException {
     /*
      * Wavefront Span Log Data format
@@ -468,14 +475,16 @@ public class Utils {
      *                  "stack": "File \"example.py\", line 7, in \<module\>\ncaller()\nFile \"example.py\""
      *              }
      *          }
-     *      ]
+     *      ],
+     *      "span": ""\"GET /oops\" source=\"a-src\" traceId=....",
+     *      "_spanSecondaryId": "server"
      *  }
      */
 
     StringBuilder toReturn = new StringBuilder();
-    toReturn.append(JSON_PARSER.writeValueAsString(new SpanLogsDTO(traceId, spanId, spanLogs,
-        span)));
-    toReturn.append("\n");
+    SpanLogsDTO spanLogsDTO = new SpanLogsDTO(traceId, spanId, spanLogs, span, spanSecondaryId);
+    toReturn.append(JSON_PARSER.writeValueAsString(spanLogsDTO))
+            .append("\n");
     return toReturn.toString();
   }
 

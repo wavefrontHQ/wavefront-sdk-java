@@ -108,6 +108,14 @@ public final class Constants {
   public static final String SPAN_LOG_KEY = "_spanLogs";
 
   /**
+   * Tag key to uniquely identify an OpenZipkin Brave span when combined with Span Id. The tag value
+   * should be the span's kind (e.g. "client", "server", "producer", "consumer"). Should only be
+   * needed in scenarios where Span Id isn't guaranteed to be unique within a Trace (only known
+   * case is OpenZipkin Brave).
+   */
+  public static final String SPAN_SECONDARY_ID_KEY = "_spanSecondaryId";
+
+  /**
    * Tag key for defining a process identifier.
    */
   public static final String PROCESS_TAG_KEY = "pid";

@@ -722,7 +722,7 @@ public class UtilsTest {
     assertEquals("{\"traceId\":\"7b3bf470-9456-11e8-9eb6-529269fb1459\"," +
             "\"spanId\":\"0313bafe-9457-11e8-9eb6-529269fb1459\"," +
             "\"logs\":[{\"timestamp\":91616745187,\"fields\":{\"key1\":\"val1\"}}]," +
-            "\"span\":null}\n",
+            "\"span\":null,\"_spanSecondaryId\":null}\n",
         spanLogsToLineData(UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
             UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
             Arrays.asList(new SpanLog(91616745187L,
@@ -733,6 +733,85 @@ public class UtilsTest {
 
   @Test
   public void testSpanLogsToLineDataWithSpan() throws IOException {
+    String actual1 = spanLogsToLineData(
+            UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
+            UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
+            Arrays.asList(new SpanLog(91616745187L,
+                                      new HashMap<String, String>() {{
+                                        put("key1", "val1");
+                                      }})),
+            "\"getAllUsers\" source=\"localhost\" " +
+                    "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
+                    "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
+                    "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
+                    "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
+                    "\"application\"=\"Wavefront\" " +
+                    "\"http.method\"=\"GET\" 1493773500 343500\n");
+    assertEquals(
+            "{\"traceId\":\"7b3bf470-9456-11e8-9eb6-529269fb1459\"," +
+                    "\"spanId\":\"0313bafe-9457-11e8-9eb6-529269fb1459\"," +
+                    "\"logs\":[{\"timestamp\":91616745187,\"fields\":{\"key1\":\"val1\"}}]," +
+                    "\"span\":\"\\\"getAllUsers\\\" source=\\\"localhost\\\" " +
+                    "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
+                    "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
+                    "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
+                    "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
+                    "\\\"application\\\"=\\\"Wavefront\\\" \\\"http.method\\\"=\\\"GET\\\" " +
+                    "1493773500 343500\\n\"," +
+                    "\"_spanSecondaryId\":null" +
+                    "}\n",
+            actual1);
+
+    // source with colon
+    String actual2 = spanLogsToLineData(
+            UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
+            UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
+            Arrays.asList(new SpanLog(91616745187L,
+                                      new HashMap<String, String>() {{
+                                        put("key1", "val1");
+                                      }})),
+            "\"getAllUsers\" source=\"localhost:5050\" " +
+                    "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
+                    "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
+                    "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
+                    "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
+                    "\"application\"=\"Wavefront\" " +
+                    "\"http.method\"=\"GET\" 1493773500 343500\n");
+
+    assertEquals(
+            "{\"traceId\":\"7b3bf470-9456-11e8-9eb6-529269fb1459\"," +
+                    "\"spanId\":\"0313bafe-9457-11e8-9eb6-529269fb1459\"," +
+                    "\"logs\":[{\"timestamp\":91616745187,\"fields\":{\"key1\":\"val1\"}}]," +
+                    "\"span\":\"\\\"getAllUsers\\\" source=\\\"localhost:5050\\\" " +
+                    "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
+                    "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
+                    "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
+                    "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
+                    "\\\"application\\\"=\\\"Wavefront\\\" \\\"http.method\\\"=\\\"GET\\\" " +
+                    "1493773500 343500\\n\"," +
+                    "\"_spanSecondaryId\":null" +
+                    "}\n",
+            actual2);
+  }
+
+  @Test
+  public void testSpanLogsToLineDataWithSpanAndSecondaryId() throws IOException {
+    String actual = spanLogsToLineData(
+            UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
+            UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
+            Arrays.asList(new SpanLog(91616745187L,
+                                      new HashMap<String, String>() {{
+                                        put("key1", "val1");
+                                      }})),
+            "\"getAllUsers\" source=\"localhost\" " +
+                    "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
+                    "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
+                    "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
+                    "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
+                    "\"application\"=\"Wavefront\" " +
+                    "\"http.method\"=\"GET\" 1493773500 343500\n",
+            "server");
+
     assertEquals("{\"traceId\":\"7b3bf470-9456-11e8-9eb6-529269fb1459\"," +
             "\"spanId\":\"0313bafe-9457-11e8-9eb6-529269fb1459\"," +
             "\"logs\":[{\"timestamp\":91616745187,\"fields\":{\"key1\":\"val1\"}}]," +
@@ -742,46 +821,10 @@ public class UtilsTest {
               "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
               "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
               "\\\"application\\\"=\\\"Wavefront\\\" \\\"http.method\\\"=\\\"GET\\\" " +
-              "1493773500 343500\\n\"" +
+              "1493773500 343500\\n\"," +
+            "\"_spanSecondaryId\":\"server\"" +
             "}\n",
-        spanLogsToLineData(UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
-            UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
-            Arrays.asList(new SpanLog(91616745187L,
-                new HashMap<String, String>() {{
-                  put("key1", "val1");
-                }})),
-            "\"getAllUsers\" source=\"localhost\" " +
-                "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
-                "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
-                "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
-                "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
-                "\"application\"=\"Wavefront\" " +
-                "\"http.method\"=\"GET\" 1493773500 343500\n"));
-    // source with colon
-    assertEquals("{\"traceId\":\"7b3bf470-9456-11e8-9eb6-529269fb1459\"," +
-            "\"spanId\":\"0313bafe-9457-11e8-9eb6-529269fb1459\"," +
-            "\"logs\":[{\"timestamp\":91616745187,\"fields\":{\"key1\":\"val1\"}}]," +
-            "\"span\":\"\\\"getAllUsers\\\" source=\\\"localhost:5050\\\" " +
-            "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
-            "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
-            "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
-            "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
-            "\\\"application\\\"=\\\"Wavefront\\\" \\\"http.method\\\"=\\\"GET\\\" " +
-            "1493773500 343500\\n\"" +
-            "}\n",
-        spanLogsToLineData(UUID.fromString("7b3bf470-9456-11e8-9eb6-529269fb1459"),
-            UUID.fromString("0313bafe-9457-11e8-9eb6-529269fb1459"),
-            Arrays.asList(new SpanLog(91616745187L,
-                new HashMap<String, String>() {{
-                  put("key1", "val1");
-                }})),
-            "\"getAllUsers\" source=\"localhost:5050\" " +
-                "traceId=7b3bf470-9456-11e8-9eb6-529269fb1459 " +
-                "spanId=0313bafe-9457-11e8-9eb6-529269fb1459 " +
-                "parent=2f64e538-9457-11e8-9eb6-529269fb1459 " +
-                "followsFrom=5f64e538-9457-11e8-9eb6-529269fb1459 " +
-                "\"application\"=\"Wavefront\" " +
-                "\"http.method\"=\"GET\" 1493773500 343500\n"));
+                 actual);
   }
 
   @Test

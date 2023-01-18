@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.wavefront.sdk.common.Constants.SPAN_SECONDARY_ID_KEY;
 import static com.wavefront.sdk.common.Utils.eventToLineData;
 import static com.wavefront.sdk.common.Utils.getSemVerGauge;
 import static com.wavefront.sdk.common.Utils.histogramToLineData;
@@ -581,7 +582,12 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     if (tracingSpansBuffer.offer(span)) {
       // attempt span logs after span is sent.
       if (spanLogs != null && !spanLogs.isEmpty()) {
-        sendSpanLogs(traceId, spanId, spanLogs, span);
+        String spanSecondaryId = null;
+        if (tags != null) {
+          spanSecondaryId = tags.stream().filter(pair -> pair._1.equals(SPAN_SECONDARY_ID_KEY))
+                  .map(pair -> pair._2).findFirst().orElse(null);
+        }
+        sendSpanLogs(traceId, spanId, spanLogs, span, spanSecondaryId);
       }
     } else {
       spansDropped.inc();
@@ -594,10 +600,11 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
-  private void sendSpanLogs(UUID traceId, UUID spanId, List<SpanLog> spanLogs, String span) {
-    // attempt span logs
+  private void sendSpanLogs(
+          UUID traceId, UUID spanId, List<SpanLog> spanLogs, String span,
+          @Nullable String spanSecondaryId) {
     try {
-      String spanLogsJson = spanLogsToLineData(traceId, spanId, spanLogs, span);
+      String spanLogsJson = spanLogsToLineData(traceId, spanId, spanLogs, span, spanSecondaryId);
       spanLogsValid.inc();
       if (!spanLogsBuffer.offer(spanLogsJson)) {
         spanLogsDropped.inc();
