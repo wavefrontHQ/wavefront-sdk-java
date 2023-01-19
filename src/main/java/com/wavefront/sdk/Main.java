@@ -18,6 +18,9 @@ import java.util.UUID;
 /**
  * Driver class for ad-hoc experiments
  *
+ * Usage:
+ *  mvn compile exec:java -Dexec.mainClass=com.wavefront.sdk.Main -Dexec.args="https://demo.wavefront.com api-token"
+ *
  * @author Mori Bellamy (mori@wavefront.com).
  */
 public class Main {
@@ -36,7 +39,7 @@ public class Main {
     }};
     wavefrontSender.sendMetric("new-york.power.usage", 42422.0, null,
         "localhost", tags);
-    System.out.println("Sent metric: 'new-york.power.usage' to proxy");
+    System.out.println("Sent metric: 'new-york.power.usage'");
   }
 
   private static void sendDeltaCounter(WavefrontSender wavefrontSender)
@@ -53,7 +56,7 @@ public class Main {
     }};
     wavefrontSender.sendDeltaCounter("lambda.thumbnail.generate", 10,
         "lambda_thumbnail_service", tags);
-    System.out.println("Sent metric: 'lambda.thumbnail.generate' to proxy");
+    System.out.println("Sent metric: 'lambda.thumbnail.generate'");
   }
 
   private static void sendHistogram(WavefrontSender wavefrontSender)
@@ -75,7 +78,7 @@ public class Main {
     wavefrontSender.sendDistribution("request.latency",
         Arrays.asList(new Pair<>(30.0, 20), new Pair<>(5.1, 10)), histogramGranularities,
         null, "appServer1", tags);
-    System.out.println("Sent histogram: 'request.latency' to proxy");
+    System.out.println("Sent histogram: 'request.latency'");
   }
 
   private static void sendTracingSpan(WavefrontSender wavefrontSender)
@@ -100,7 +103,7 @@ public class Main {
         Arrays.asList(new Pair<>("application", "Wavefront"),
             new Pair<>("service", "test-spans"),
             new Pair<>("http.method", "GET")), null);
-    System.out.println("Sent tracing span: 'getAllUsers' to proxy");
+    System.out.println("Sent tracing span: 'getAllUsers'");
   }
 
   public static void main(String[] args) throws InterruptedException, IOException {
@@ -110,64 +113,51 @@ public class Main {
     String metricsPort = args.length < 4 ? null : args[3];
     String distributionPort = args.length < 5 ? null : args[4];
     String tracingPort = args.length < 6 ? null : args[5];
-    String wavefrontServerWithToken = args.length < 7 ? null : args[6];
-    String wavefrontProxyWithPort = args.length < 8 ? null : args[7];
+    String wavefrontProxyWithPort = args.length < 7 ? null : args[6];
 
-    // Proxy based ingestion
-    WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHost);
-    if (metricsPort != null) {
-      builder.metricsPort(Integer.parseInt(metricsPort));
-    }
-    if (distributionPort != null) {
-      builder.distributionPort(Integer.parseInt(distributionPort));
-    }
-    if (tracingPort != null) {
-      builder.tracingPort(Integer.parseInt(tracingPort));
-    }
-    WavefrontProxyClient wavefrontProxyClient = builder.build();
+    String wavefrontServerWithToken = wavefrontServer.substring(0, wavefrontServer.indexOf("://")+3) +
+            token + "@" + wavefrontServer.substring(wavefrontServer.indexOf("://")+3);
+    System.out.println("wavefrontServerWithToken = " + wavefrontServerWithToken);
 
-    // Direct Data Ingestion
-    WavefrontDirectIngestionClient wavefrontDirectIngestionClient =
-        new WavefrontDirectIngestionClient.Builder(wavefrontServer, token).build();
-
-    // Auto Client Negotiation
     WavefrontClientFactory wavefrontClientFactory = new WavefrontClientFactory();
-    if (wavefrontServerWithToken != null) {
-      wavefrontClientFactory.addClient(wavefrontServerWithToken);
+    wavefrontClientFactory.addClient(wavefrontServerWithToken);
+
+    // DEPRECATED Client: Direct Data Ingestion
+//    WavefrontDirectIngestionClient wavefrontDirectIngestionClient =
+//            new WavefrontDirectIngestionClient.Builder(wavefrontServer, token).build();
+//    wavefrontClientFactory.addClient(wavefrontDirectIngestionClient);
+
+    // DEPRECATED Client: Proxy based ingestion
+    if (proxyHost != null) {
+      WavefrontProxyClient.Builder builder = new WavefrontProxyClient.Builder(proxyHost);
+      if (metricsPort != null) {
+        builder.metricsPort(Integer.parseInt(metricsPort));
+      }
+      if (distributionPort != null) {
+        builder.distributionPort(Integer.parseInt(distributionPort));
+      }
+      if (tracingPort != null) {
+        builder.tracingPort(Integer.parseInt(tracingPort));
+      }
+      WavefrontProxyClient wavefrontProxyClient = builder.build();
+      wavefrontClientFactory.addClient(wavefrontProxyClient);
     }
+
     if (wavefrontProxyWithPort != null) {
       wavefrontClientFactory.addClient(wavefrontProxyWithPort);
     }
-
-    // Add existing senders
-    wavefrontClientFactory.addClient(wavefrontProxyClient);
-    wavefrontClientFactory.addClient(wavefrontDirectIngestionClient);
 
     // Get back a multi client sender
     WavefrontSender wavefrontClient = wavefrontClientFactory.getClient();
 
     while (true) {
-      // Send entities via Proxy
-      sendMetric(wavefrontProxyClient);
-      sendDeltaCounter(wavefrontProxyClient);
-      sendHistogram(wavefrontProxyClient);
-      sendTracingSpan(wavefrontProxyClient);
-      wavefrontProxyClient.flush();
-
-      // Send entities via Direct Ingestion
-      sendMetric(wavefrontDirectIngestionClient);
-      sendDeltaCounter(wavefrontDirectIngestionClient);
-      sendHistogram(wavefrontDirectIngestionClient);
-      sendTracingSpan(wavefrontDirectIngestionClient);
-
-      // Send entities via the Multi Proxy Client
       sendMetric(wavefrontClient);
       sendDeltaCounter(wavefrontClient);
       sendHistogram(wavefrontClient);
       sendTracingSpan(wavefrontClient);
       wavefrontClient.flush();
 
-      Thread.sleep(5000);
+      Thread.sleep(5_000);
     }
   }
 }
