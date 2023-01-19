@@ -6,6 +6,7 @@ import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 
+import com.wavefront.sdk.entities.tracing.SpanLog;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -15,21 +16,12 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.net.ServerSocket;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.matching;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
+import static org.easymock.EasyMock.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -133,6 +125,41 @@ public class WavefrontClientTest {
       mockBackend.verify(1, postRequestedFor(urlEqualTo("/report?f=trace"))
           .withRequestBody(matching(expectedBody))
           .withHeader("Content-Type", WireMock.equalTo("application/octet-stream")));
+    }
+
+    @Test
+    void sendSpanWithLogs() {
+      WavefrontClient wfClient = new WavefrontClient.Builder(mockBackend.baseUrl())
+              .includeSdkMetrics(false)
+              .build();
+      long timestamp = System.currentTimeMillis();
+      UUID traceId = UUID.fromString("01010101-0101-0101-0101-010101010101");
+      UUID spanId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+      List<Pair<String, String>> tags =
+              Collections.singletonList(Pair.of("_spanSecondaryId", "server"));
+      SpanLog spanLog =
+              new SpanLog(timestamp, Collections.singletonMap("exception", "ClassNotFound"));
+
+      assertDoesNotThrow(() -> {
+        wfClient.sendSpan("a-name", timestamp, 1138, "a-source", traceId, spanId,
+                          null, null, tags, Collections.singletonList(spanLog));
+        wfClient.flush();
+      });
+
+      String expectedSpanBody = "\"a-name\" source=\"a-source\" traceId=" + traceId + " spanId=" +
+              spanId + " \"_spanSecondaryId\"=\"server\" \"_spanLogs\"=\"true\" " + timestamp +
+              " 1138\n";
+      mockBackend.verify(1, postRequestedFor(urlEqualTo("/report?f=trace"))
+              .withRequestBody(matching(expectedSpanBody))
+              .withHeader("Content-Type", WireMock.equalTo("application/octet-stream")));
+
+      mockBackend.verify(1, postRequestedFor(urlEqualTo("/report?f=spanLogs"))
+              .withRequestBody(matchingJsonPath("$.traceId", equalTo("01010101-0101-0101-0101-010101010101")))
+              .withRequestBody(matchingJsonPath("$.spanId", equalTo("00000000-0000-0000-0000-000000000001")))
+              .withRequestBody(matchingJsonPath("$.logs", equalToJson("[{\"timestamp\":" + timestamp + ",\"fields\":{\"exception\":\"ClassNotFound\"}}]")))
+              .withRequestBody(matchingJsonPath("$.span", equalTo(expectedSpanBody)))
+              .withRequestBody(matchingJsonPath("$._spanSecondaryId", equalTo("server")))
+              .withHeader("Content-Type", WireMock.equalTo("application/octet-stream")));
     }
 
     @Test
