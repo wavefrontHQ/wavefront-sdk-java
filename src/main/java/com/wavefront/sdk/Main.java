@@ -2,6 +2,7 @@ package com.wavefront.sdk;
 
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.WavefrontSender;
+import com.wavefront.sdk.common.clients.WavefrontClient;
 import com.wavefront.sdk.common.clients.WavefrontClientFactory;
 import com.wavefront.sdk.direct.ingestion.WavefrontDirectIngestionClient;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
@@ -119,8 +120,11 @@ public class Main {
             token + "@" + wavefrontServer.substring(wavefrontServer.indexOf("://")+3);
     System.out.println("wavefrontServerWithToken = " + wavefrontServerWithToken);
 
+    WavefrontClient.Builder wfClientBuilder = new WavefrontClient.Builder(wavefrontServer, token);
+    WavefrontSender wavefrontSender = wfClientBuilder.build();
+
     WavefrontClientFactory wavefrontClientFactory = new WavefrontClientFactory();
-    wavefrontClientFactory.addClient(wavefrontServerWithToken);
+    wavefrontClientFactory.addClient(wavefrontSender);
 
     // DEPRECATED Client: Direct Data Ingestion
 //    WavefrontDirectIngestionClient wavefrontDirectIngestionClient =
