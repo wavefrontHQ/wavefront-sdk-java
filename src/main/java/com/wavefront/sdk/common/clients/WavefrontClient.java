@@ -146,7 +146,6 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private int tracesPort = -1;
     private int maxQueueSize = 500000;
     private int batchSize = 10000;
-    private long reportingServiceLogSuppressTimeSeconds = 300;
     private long flushInterval = 1;
     private TimeUnit flushIntervalTimeUnit = TimeUnit.SECONDS;
     private int messageSizeBytes = Integer.MAX_VALUE;
@@ -196,17 +195,6 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      */
     public Builder batchSize(int batchSize) {
       this.batchSize = batchSize;
-      return this;
-    }
-
-    /**
-     * Set the reportingService log suppression time in seconds. The logs will be suppressed until this time elapses.
-     *
-     * @param reportingServiceLogSuppressTimeSeconds
-     * @return {@code this}
-     */
-    public Builder reportingServiceLogSuppressTimeSeconds(long reportingServiceLogSuppressTimeSeconds) {
-      this.reportingServiceLogSuppressTimeSeconds = reportingServiceLogSuppressTimeSeconds;
       return this;
     }
 
@@ -366,8 +354,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     spanLogsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     eventsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     logsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
-    metricsReportingService = new ReportingService(builder.metricsUri, builder.token, builder.reportingServiceLogSuppressTimeSeconds);
-    tracesReportingService = new ReportingService(builder.tracesUri, builder.token, builder.reportingServiceLogSuppressTimeSeconds);
+    metricsReportingService = new ReportingService(builder.metricsUri, builder.token);
+    tracesReportingService = new ReportingService(builder.tracesUri, builder.token);
     scheduler = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("wavefrontClientSender").setDaemon(true));
     scheduler.scheduleAtFixedRate(this, 1, builder.flushInterval, builder.flushIntervalTimeUnit);
