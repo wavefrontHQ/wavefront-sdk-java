@@ -24,10 +24,9 @@ import java.util.zip.GZIPOutputStream;
  */
 public class ReportingService implements ReportAPI {
 
-  private static final MessageSuppressingLogger MESSAGE_SUPPRESSING_LOGGER =
-      new MessageSuppressingLogger(Logger.getLogger(ReportingService.class.getCanonicalName()),
-          5, TimeUnit.MINUTES);
-
+  // This logger is intended to be configurable in the WavefrontClient.Builder. Given that the invoker controls the
+  // configuration, this is not a static logger.
+  private final MessageSuppressingLogger messageSuppressingLogger;
   private final String token;
   private final URI uri;
 
@@ -36,9 +35,14 @@ public class ReportingService implements ReportAPI {
   private static final int BUFFER_SIZE = 4096;
   private static final int NO_HTTP_RESPONSE = -1;
 
-  public ReportingService(URI uri, @Nullable String token) {
+  public ReportingService(URI uri, @Nullable String token, long reportingServiceLogSuppressTimeSeconds) {
     this.uri = uri;
     this.token = token;
+    // Setting suppress time to 0 invalidates the cache used by the message suppressing logger and doesn't log anything.
+    // So defaulting to the minimum of 1 second.
+    reportingServiceLogSuppressTimeSeconds = reportingServiceLogSuppressTimeSeconds <= 0 ? 1 : reportingServiceLogSuppressTimeSeconds;
+    this.messageSuppressingLogger = new MessageSuppressingLogger(Logger.getLogger(
+            ReportingService.class.getCanonicalName()), reportingServiceLogSuppressTimeSeconds, TimeUnit.SECONDS);
   }
 
   @Override
@@ -67,7 +71,7 @@ public class ReportingService implements ReportAPI {
       }
       statusCode = urlConn.getResponseCode();
       readAndClose(urlConn.getInputStream());
-      MESSAGE_SUPPRESSING_LOGGER.reset(urlConn.getURL().toString());
+      messageSuppressingLogger.reset(urlConn.getURL().toString());
     } catch (IOException ex) {
       if (urlConn != null) {
         return safeGetResponseCodeAndClose(urlConn);
@@ -117,7 +121,7 @@ public class ReportingService implements ReportAPI {
 
       statusCode = urlConn.getResponseCode();
       readAndClose(urlConn.getInputStream());
-      MESSAGE_SUPPRESSING_LOGGER.reset(urlConn.getURL().toString());
+      messageSuppressingLogger.reset(urlConn.getURL().toString());
     } catch (IOException ex) {
       if (urlConn != null) {
         return safeGetResponseCodeAndClose(urlConn);
@@ -131,7 +135,7 @@ public class ReportingService implements ReportAPI {
     try {
       statusCode = urlConn.getResponseCode();
     } catch (IOException ex) {
-      MESSAGE_SUPPRESSING_LOGGER.log(urlConn.getURL().toString(), Level.SEVERE,
+      messageSuppressingLogger.log(urlConn.getURL().toString(), Level.SEVERE,
           "Unable to obtain status code from the Wavefront service at "
               + urlConn.getURL().toString() + " due to: " + ex);
       statusCode = NO_HTTP_RESPONSE;
@@ -140,7 +144,7 @@ public class ReportingService implements ReportAPI {
     try {
       readAndClose(urlConn.getErrorStream());
     } catch (IOException ex) {
-      MESSAGE_SUPPRESSING_LOGGER.log(urlConn.getURL().toString(), Level.SEVERE,
+      messageSuppressingLogger.log(urlConn.getURL().toString(), Level.SEVERE,
           "Unable to read and close error stream from the Wavefront service at "
               + urlConn.getURL().toString() + " due to: " + ex);
     }
