@@ -88,6 +88,11 @@ public final class Constants {
   public static final String CLUSTER_TAG_KEY = "cluster";
 
   /**
+   * Tag key for defining an origin.
+   */
+  public static final String ORIGIN_TAG_KEY = "origin";
+
+  /**
    * Tag key for defining a shard.
    */
   public static final String SHARD_TAG_KEY = "shard";
