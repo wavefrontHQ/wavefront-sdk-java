@@ -653,9 +653,9 @@ public class Utils {
    * {@code META-INF/}. The file should contain a line that specifies the project version as
    * "project.version".
    * Format of semantic version gauge value reported to Wavefront =
-   * <majorVersion>.<2-digit-minorVersion><2-digit-patchVersion>
+   * &lt;majorVersion&gt;.&lt;2-digit-minorVersion&gt;&lt;2-digit-patchVersion&gt;
    *
-   * Ex: v2.6.1 => 2.0601
+   * Ex: v2.6.1 =&gt; 2.0601
    *
    * @param artifactId
    * @return the version Gauge value for the given artifactId

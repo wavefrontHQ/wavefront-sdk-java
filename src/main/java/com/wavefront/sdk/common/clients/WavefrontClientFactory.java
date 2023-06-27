@@ -42,10 +42,10 @@ public class WavefrontClientFactory {
 
   /**
    * Adds a new WavefrontSender that will either forward points to a proxy or directly to a Wavefront service.
-   * <br />
-   * <strong>proxy ingestion:</strong> <i>proxy://your.proxy.com:port</i> <br />
-   * <strong>direct ingestion:</strong> <i>https://token@yourCluster.wavefront.com</i> <br />
-   * <br />
+   * <br>
+   * <strong>proxy ingestion:</strong> <i>proxy://your.proxy.com:port</i> <br>
+   * <strong>direct ingestion:</strong> <i>https://token@yourCluster.wavefront.com</i> <br>
+   * <br>
    *
    * @param url The URL of either yourCluster or your.proxy.com
    *
@@ -58,10 +58,10 @@ public class WavefrontClientFactory {
 
   /**
    * Adds a new WavefrontSender that will either forward points to a proxy or directly to a Wavefront service.
-   * <br />
-   * <strong>proxy ingestion:</strong> <i>proxy://your.proxy.com:port</i> <br />
-   * <strong>direct ingestion:</strong> <i>https://token@yourCluster.wavefront.com</i> <br />
-   * <br />
+   * <br>
+   * <strong>proxy ingestion:</strong> <i>proxy://your.proxy.com:port</i> <br>
+   * <strong>direct ingestion:</strong> <i>https://token@yourCluster.wavefront.com</i> <br>
+   * <br>
    *
    * @param url The URL of either yourCluster or your.proxy.com
    * @param batchSize The total metrics, histograms, spans, or span logs to send in a single flush
@@ -77,10 +77,10 @@ public class WavefrontClientFactory {
 
   /**
    * Adds a new WavefrontSender that will either forward points to a proxy or directly to a Wavefront service.
-   * <br />
-   * <strong>proxy ingestion:</strong> <i>proxy://your.proxy.com:port</i> <br />
-   * <strong>direct ingestion:</strong> <i>https://token@yourCluster.wavefront.com</i> <br />
-   * <br />
+   * <br>
+   * <strong>proxy ingestion:</strong> <i>proxy://your.proxy.com:port</i> <br>
+   * <strong>direct ingestion:</strong> <i>https://token@yourCluster.wavefront.com</i> <br>
+   * <br>
    *
    * @param url The URL of either yourCluster or your.proxy.com
    * @param batchSize The total metrics, histograms, spans, or span logs to send in a single flush
@@ -98,10 +98,10 @@ public class WavefrontClientFactory {
 
   /**
    * Adds a new WavefrontSender that will either forward points to a proxy or directly to a Wavefront service.
-   * <br />
-   * <strong>proxy ingestion:</strong> <i>proxy://your.proxy.com:port</i> <br />
-   * <strong>direct ingestion:</strong> <i>https://token@yourCluster.wavefront.com</i> <br />
-   * <br />
+   * <br>
+   * <strong>proxy ingestion:</strong> <i>proxy://your.proxy.com:port</i> <br>
+   * <strong>direct ingestion:</strong> <i>https://token@yourCluster.wavefront.com</i> <br>
+   * <br>
    *
    * @param url The URL of either yourCluster or your.proxy.com
    * @param batchSize The total metrics, histograms, spans, or span logs to send in a single flush
@@ -124,10 +124,10 @@ public class WavefrontClientFactory {
 
   /**
    * Adds a new WavefrontSender that will either forward points to a proxy or directly to a Wavefront service.
-   * <br />
-   * <strong>proxy ingestion:</strong> <i>proxy://your.proxy.com:port</i> <br />
-   * <strong>direct ingestion:</strong> <i>https://token@yourCluster.wavefront.com</i> <br />
-   * <br />
+   * <br>
+   * <strong>proxy ingestion:</strong> <i>proxy://your.proxy.com:port</i> <br>
+   * <strong>direct ingestion:</strong> <i>https://token@yourCluster.wavefront.com</i> <br>
+   * <br>
    *
    * @param url The URL of either yourCluster or your.proxy.com
    * @param batchSize The total metrics, histograms, spans, or span logs to send in a single flush
