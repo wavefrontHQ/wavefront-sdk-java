@@ -5,6 +5,7 @@ package com.wavefront.sdk.common.metrics;
  * was last recorded, and is prefixed with \u2206 (∆ - INCREMENT) or \u0394 (Δ - GREEK CAPITAL LETTER DELTA).
  *
  * @author Joanna Ko (joannak@vmware.com).
+ * @version $Id: $Id
  */
 public class WavefrontSdkDeltaCounter extends WavefrontSdkCounter {
 }

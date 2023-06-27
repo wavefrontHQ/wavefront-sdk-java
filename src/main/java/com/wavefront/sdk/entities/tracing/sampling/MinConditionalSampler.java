@@ -3,11 +3,12 @@ package com.wavefront.sdk.entities.tracing.sampling;
 import java.util.List;
 
 /**
- * This an extension of {@link CompositeSampler} that runs a pre-check to determine if a span is
+ * This an extension of {@link com.wavefront.sdk.entities.tracing.sampling.CompositeSampler} that runs a pre-check to determine if a span is
  * eligible for sampling. This implementation needs span to meet the minimum duration threshold
  * to be considered for sampling, otherwise span is discarded.
  *
  * @author Anil Kodali (akodali@vmware.com)
+ * @version $Id: $Id
  */
 public class MinConditionalSampler extends CompositeSampler{
 
@@ -26,6 +27,7 @@ public class MinConditionalSampler extends CompositeSampler{
     this.minimumDurationMillis = minimumDurationMillis;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean sample(String operationName, long traceId, long duration) {
     if (duration < this.minimumDurationMillis) {

@@ -24,6 +24,7 @@ import java.util.logging.Logger;
  * to listen for connection resets.
  *
  * @author Mori Bellamy (mori@wavefront.com).
+ * @version $Id: $Id
  */
 public class ReconnectingSocket {
   private static final Logger logger = Logger.getLogger(
@@ -53,10 +54,10 @@ public class ReconnectingSocket {
    *
    * @param host                The name of the remote host.
    * @param port                The remote port.
-   * @param socketFactory       The {@link SocketFactory} used to create the underlying socket.
-   * @param sdkMetricsRegistry  The {@link WavefrontSdkMetricsRegistry} for internal metrics.
+   * @param socketFactory       The {@link javax.net.SocketFactory} used to create the underlying socket.
+   * @param sdkMetricsRegistry  The {@link com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry} for internal metrics.
    * @param entityPrefix        A prefix for internal metrics pertaining to this instance.
-   * @throws IOException When we cannot open the remote socket.
+   * @throws java.io.IOException When we cannot open the remote socket.
    */
   public ReconnectingSocket(String host, int port, SocketFactory socketFactory,
                             WavefrontSdkMetricsRegistry sdkMetricsRegistry, String entityPrefix)
@@ -67,11 +68,11 @@ public class ReconnectingSocket {
   /**
    * Attempts to open a connected socket to the specified address.
    *
-   * @param address             The {@link InetSocketAddress} of the server to connect to.
-   * @param socketFactory       The {@link SocketFactory} used to create the underlying socket.
-   * @param sdkMetricsRegistry  The {@link WavefrontSdkMetricsRegistry} for internal metrics.
+   * @param address             The {@link java.net.InetSocketAddress} of the server to connect to.
+   * @param socketFactory       The {@link javax.net.SocketFactory} used to create the underlying socket.
+   * @param sdkMetricsRegistry  The {@link com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry} for internal metrics.
    * @param entityPrefix        A prefix for internal metrics pertaining to this instance.
-   * @throws IOException When we cannot open the remote socket.
+   * @throws java.io.IOException When we cannot open the remote socket.
    */
   public ReconnectingSocket(InetSocketAddress address, SocketFactory socketFactory,
                             WavefrontSdkMetricsRegistry sdkMetricsRegistry, String entityPrefix)
@@ -171,8 +172,9 @@ public class ReconnectingSocket {
    * Try to send the given message. On failure, reset and try again. If _that_ fails,
    * just rethrow the exception.
    *
-   * @throws Exception when a single retry is not enough to have a successful write to
+   * @throws java.lang.Exception when a single retry is not enough to have a successful write to
    * the remote host.
+   * @param message a {@link java.lang.String} object
    */
   public void write(String message) throws Exception {
     try {
@@ -204,6 +206,8 @@ public class ReconnectingSocket {
 
   /**
    * Flushes the outputStream best-effort. If that fails, we reset the connection.
+   *
+   * @throws java.io.IOException if any.
    */
   public void flush() throws IOException {
     try {
@@ -223,6 +227,11 @@ public class ReconnectingSocket {
     }
   }
 
+  /**
+   * <p>close.</p>
+   *
+   * @throws java.io.IOException if any.
+   */
   public void close() throws IOException {
     try {
       flush();

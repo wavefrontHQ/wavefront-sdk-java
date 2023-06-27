@@ -13,21 +13,36 @@ import java.util.concurrent.atomic.AtomicInteger;
  * troubleshooting.
  *
  * Created by vasily@wavefront.com on 3/16/17.
+ *
+ * @author goppegard
+ * @version $Id: $Id
  */
 public class NamedThreadFactory implements ThreadFactory {
   private final String threadNamePrefix;
   private final AtomicInteger counter = new AtomicInteger();
   private final AtomicBoolean isDaemon = new AtomicBoolean(false);
 
+  /**
+   * <p>Constructor for NamedThreadFactory.</p>
+   *
+   * @param threadNamePrefix a {@link java.lang.String} object
+   */
   public NamedThreadFactory(@NonNull String threadNamePrefix) {
     this.threadNamePrefix = threadNamePrefix;
   }
 
+  /**
+   * <p>setDaemon.</p>
+   *
+   * @param isDaemon a boolean
+   * @return a {@link com.wavefront.sdk.common.NamedThreadFactory} object
+   */
   public NamedThreadFactory setDaemon(boolean isDaemon) {
     this.isDaemon.set(isDaemon);
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Thread newThread(@NonNull Runnable r) {
     Thread toReturn = new Thread(r);

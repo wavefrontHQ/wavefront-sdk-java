@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
  * Class to define all java-sdk constants
  *
  * @author Sushant Dewan (sushant@wavefront.com).
+ * @version $Id: $Id
  */
 public final class Constants {
 

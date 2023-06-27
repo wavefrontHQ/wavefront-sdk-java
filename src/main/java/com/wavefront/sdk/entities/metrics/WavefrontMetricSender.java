@@ -12,6 +12,7 @@ import static com.wavefront.sdk.common.Constants.DELTA_PREFIX_2;
  * WavefrontMetricSender interface that sends a metric to Wavefront
  *
  * @author Sushant Dewan (sushant@wavefront.com).
+ * @version $Id: $Id
  */
 public interface WavefrontMetricSender {
 
@@ -26,7 +27,7 @@ public interface WavefrontMetricSender {
    * @param source    The source (or host) that's sending the metric. If null then assigned by
    *                  Wavefront.
    * @param tags      The tags associated with this metric.
-   * @throws IOException if there was an error sending the metric.
+   * @throws java.io.IOException if there was an error sending the metric.
    */
   void sendMetric(String name, double value, @Nullable Long timestamp, @Nullable String source,
                   @Nullable Map<String, String> tags) throws IOException;
@@ -36,7 +37,7 @@ public interface WavefrontMetricSender {
    * argument is expected to already be in Wavefront Data Format
    *
    * @param point a single metric, encoded in Wavefront Data Format
-   * @throws IOException if there was an error sending the metric.
+   * @throws java.io.IOException if there was an error sending the metric.
    */
   void sendFormattedMetric(String point) throws IOException;
 
@@ -52,7 +53,7 @@ public interface WavefrontMetricSender {
    * @param source    The source (or host) that's sending the metric. If null then assigned by
    *                  Wavefront.
    * @param tags      The tags associated with this metric.
-   * @throws IOException if there was an error sending the metric.
+   * @throws java.io.IOException if there was an error sending the metric.
    */
   default void sendDeltaCounter(String name, double value, @Nullable String source,
                                 @Nullable Map<String, String> tags) throws IOException {
@@ -78,7 +79,7 @@ public interface WavefrontMetricSender {
    * @param source    The source (or host) that's sending the metric. If null then assigned by
    *                  Wavefront.
    * @param tags      The tags associated with this metric.
-   * @throws IOException if there was an error sending the metric.
+   * @throws java.io.IOException if there was an error sending the metric.
    */
   default void sendDeltaCounter(String name, double value, @Nullable Long timestamp, @Nullable String source,
                                 @Nullable Map<String, String> tags) throws IOException {

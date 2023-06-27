@@ -4,6 +4,7 @@ package com.wavefront.sdk.entities.tracing.sampling;
  * The interface for sampling tracing spans.
  *
  * @author Vikram Raman (vikram@wavefront.com)
+ * @version $Id: $Id
  */
 public interface Sampler {
 

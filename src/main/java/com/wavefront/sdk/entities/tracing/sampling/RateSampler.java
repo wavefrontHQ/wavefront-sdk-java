@@ -5,6 +5,7 @@ package com.wavefront.sdk.entities.tracing.sampling;
  * performed per trace id. All spans for a sampled trace will be reported.
  *
  * @author Vikram Raman
+ * @version $Id: $Id
  */
 public class RateSampler implements Sampler {
 
@@ -23,6 +24,7 @@ public class RateSampler implements Sampler {
     setSamplingRate(samplingRate);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean sample(String operationName, long traceId, long duration) {
     return Math.abs(traceId % MOD_FACTOR) <= boundary;
@@ -40,6 +42,7 @@ public class RateSampler implements Sampler {
     return Math.abs(traceId % MOD_FACTOR) <= localBoundary;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean isEarly() {
     return true;

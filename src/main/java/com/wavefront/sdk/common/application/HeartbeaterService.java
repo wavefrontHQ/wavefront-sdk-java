@@ -30,6 +30,7 @@ import static com.wavefront.sdk.common.Constants.SHARD_TAG_KEY;
  * Service that periodically reports component heartbeats to Wavefront.
  *
  * @author Sushant Dewan (sushant@wavefront.com).
+ * @version $Id: $Id
  */
 public class HeartbeaterService implements Runnable, Closeable {
   private static final Logger logger = Logger.getLogger(
@@ -41,6 +42,14 @@ public class HeartbeaterService implements Runnable, Closeable {
   private final Set<Map<String, String>> customTagsSet =
       Collections.newSetFromMap(new ConcurrentHashMap<>());
 
+  /**
+   * <p>Constructor for HeartbeaterService.</p>
+   *
+   * @param wavefrontMetricSender a {@link com.wavefront.sdk.entities.metrics.WavefrontMetricSender} object
+   * @param applicationTags a {@link com.wavefront.sdk.common.application.ApplicationTags} object
+   * @param components a {@link java.util.List} object
+   * @param source a {@link java.lang.String} object
+   */
   public HeartbeaterService(WavefrontMetricSender wavefrontMetricSender,
                             ApplicationTags applicationTags,
                             List<String> components,
@@ -66,10 +75,16 @@ public class HeartbeaterService implements Runnable, Closeable {
     scheduler.scheduleAtFixedRate(this, 1, 300, TimeUnit.SECONDS);
   }
 
+  /**
+   * <p>reportCustomTags.</p>
+   *
+   * @param customTagsMap a {@link java.util.Map} object
+   */
   public void reportCustomTags(Map<String, String> customTagsMap) {
     customTagsSet.add(customTagsMap);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void run() {
     Iterator<Map<String, String>> iter = customTagsSet.iterator();
@@ -93,6 +108,7 @@ public class HeartbeaterService implements Runnable, Closeable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void close() {
     try {

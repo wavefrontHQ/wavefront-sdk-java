@@ -59,6 +59,7 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
  *
  * @author Vikram Raman (vikram@wavefront.com)
  * @author Mike McMahon (mike.mcmahon@wavefront.com)
+ * @version $Id: $Id
  */
 public class WavefrontClient implements WavefrontSender, Runnable {
 
@@ -202,7 +203,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     /**
      * Set the reportingService log suppression time in seconds. The logs will be suppressed until this time elapses.
      *
-     * @param reportingServiceLogSuppressTimeSeconds
+     * @param reportingServiceLogSuppressTimeSeconds value in seconds
      * @return {@code this}
      */
     public Builder reportingServiceLogSuppressTimeSeconds(long reportingServiceLogSuppressTimeSeconds) {
@@ -298,7 +299,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * to make a connection
      *
      * @return {@code this}
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException throws an Exception
      */
     public Builder validateEndpoint() throws IllegalArgumentException {
       URL url = null;
@@ -323,8 +324,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     /**
      * Creates a new client that flushes directly to a Proxy or Wavefront service.
      *
-     * return {@link WavefrontClient}
-     * @throws IllegalStateException
+     * @return {@link WavefrontClient}
+     * @throws IllegalStateException throws an Exception
      */
     public WavefrontClient build() {
       try {
@@ -439,11 +440,13 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     this.clientId = builder.server;
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getClientId() {
     return clientId;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
@@ -469,6 +472,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendFormattedMetric(String point) throws IOException {
     if (closed.get()) {
@@ -490,6 +494,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendDistribution(String name, List<Pair<Double, Integer>> centroids,
                                Set<HistogramGranularity> histogramGranularities,
@@ -519,6 +524,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendLog(String name, double value, Long timestamp, String source,
                       Map<String, String> tags) throws IOException {
@@ -544,6 +550,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendEvent(String name, long startMillis, long endMillis, @Nullable String source,
                         @Nullable Map<String, String> tags,
@@ -577,6 +584,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendSpan(String name, long startMillis, long durationMillis,
                        @Nullable String source, UUID traceId, UUID spanId,
@@ -639,6 +647,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void run() {
     try {
@@ -649,6 +658,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void flush() throws IOException {
     if (closed.get()) {
@@ -814,12 +824,14 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     return new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8));
   }
 
+  /** {@inheritDoc} */
   @Override
   public int getFailureCount() {
     return (int) (pointReportErrors.count() + histogramReportErrors.count() +
         spanReportErrors.count() + eventsReportErrors.count());
   }
 
+  /** {@inheritDoc} */
   @Override
   public synchronized void close() {
     if (!closed.compareAndSet(false, true)) {

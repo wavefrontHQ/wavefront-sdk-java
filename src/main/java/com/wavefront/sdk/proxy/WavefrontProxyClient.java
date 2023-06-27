@@ -41,9 +41,9 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
  * User should probably attempt to reconnect when exceptions are thrown from any methods.
  *
  * @deprecated This class will be removed in future versions in favor of
- * {@link WavefrontClientFactory} to construct Proxy and DirectDataIngestion senders.
- *
+ * {@link com.wavefront.sdk.common.clients.WavefrontClientFactory} to construct Proxy and DirectDataIngestion senders.
  * @author Sushant Dewan (sushant@wavefront.com).
+ * @version $Id: $Id
  */
 @Deprecated
 public class WavefrontProxyClient implements WavefrontSender, Runnable {
@@ -253,11 +253,13 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     spanLogsDropped = sdkMetricsRegistry.newDeltaCounter("span_logs.dropped");
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getClientId() {
     return clientId;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
@@ -290,11 +292,13 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendLog(String name, double value, Long timestamp, String source, Map<String, String> tags) {
     throw new IllegalArgumentException("Sending logs using this method is not allowed");
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendFormattedMetric(String point) throws IOException {
     if (closed.get()) {
@@ -323,6 +327,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendDistribution(String name, List<Pair<Double, Integer>> centroids,
                                Set<HistogramGranularity> histogramGranularities,
@@ -358,6 +363,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendSpan(String name, long startMillis, long durationMillis,
                        @Nullable String source, UUID traceId, UUID spanId,
@@ -419,6 +425,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendEvent(String name, long startMillis, long endMillis, @Nullable String source,
                         @Nullable Map<String, String> tags,
@@ -428,6 +435,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
         "deprecated WavefrontProxyClient. Please use WavefrontClient to send events.");
   }
 
+  /** {@inheritDoc} */
   @Override
   public void run() {
     try {
@@ -451,6 +459,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void flush() throws IOException {
     if (closed.get()) {
@@ -459,6 +468,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     this.flushNoCheck();
   }
 
+  /** {@inheritDoc} */
   @Override
   public int getFailureCount() {
     int failureCount = 0;
@@ -476,6 +486,7 @@ public class WavefrontProxyClient implements WavefrontSender, Runnable {
     return failureCount;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void close() {
     if (!closed.compareAndSet(false, true)) {

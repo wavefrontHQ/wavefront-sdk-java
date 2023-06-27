@@ -23,6 +23,7 @@ import java.util.UUID;
  *  mvn compile exec:java -Dexec.mainClass=com.wavefront.sdk.Main -Dexec.args="https://demo.wavefront.com api-token"
  *
  * @author Mori Bellamy (mori@wavefront.com).
+ * @version $Id: $Id
  */
 public class Main {
 
@@ -107,6 +108,13 @@ public class Main {
     System.out.println("Sent tracing span: 'getAllUsers'");
   }
 
+  /**
+   * <p>main.</p>
+   *
+   * @param args an array of {@link java.lang.String} objects
+   * @throws java.lang.InterruptedException if any.
+   * @throws java.io.IOException if any.
+   */
   public static void main(String[] args) throws InterruptedException, IOException {
     String wavefrontServer = args[0];
     String token = args[1];

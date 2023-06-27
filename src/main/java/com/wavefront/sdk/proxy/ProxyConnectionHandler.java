@@ -15,6 +15,7 @@ import java.net.InetSocketAddress;
  *
  * @author Clement Pang (clement@wavefront.com).
  * @author Vikram Raman (vikram@wavefront.com).
+ * @version $Id: $Id
  */
 @Deprecated
 public class ProxyConnectionHandler implements BufferFlusher, Closeable {
@@ -57,6 +58,7 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
     return reconnectingSocket != null;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int getFailureCount() {
     return (int)errors.count();
@@ -66,6 +68,7 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
     errors.inc();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void flush() throws IOException {
     if (isConnected()) {
@@ -73,6 +76,7 @@ public class ProxyConnectionHandler implements BufferFlusher, Closeable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public synchronized void close() throws IOException {
     if (isConnected()) {

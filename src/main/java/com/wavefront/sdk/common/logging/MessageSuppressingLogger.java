@@ -12,12 +12,15 @@ import java.util.logging.Logger;
  * A logger that suppresses log messages for a specified period of time.
  *
  * @author Shipeng Xie (xshipeng@vmware.com).
+ * @version $Id: $Id
  */
 public class MessageSuppressingLogger extends DelegatingLogger {
   private final Cache<String, Long> cache;
   private final long suppressMillis;
 
   /**
+   * <p>Constructor for MessageSuppressingLogger.</p>
+   *
    * @param delegate     Delegate logger.
    * @param suppressTime Time to suppress messages.
    * @param timeUnit     Time unit.
@@ -42,11 +45,14 @@ public class MessageSuppressingLogger extends DelegatingLogger {
 
   /**
    * Reset log suppressing for the specified key/log message.
+   *
+   * @param key a {@link java.lang.String} object
    */
   public void reset(String key) {
     cache.invalidate(key);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void log(Level level, String message) {
     cache.asMap().compute(message,

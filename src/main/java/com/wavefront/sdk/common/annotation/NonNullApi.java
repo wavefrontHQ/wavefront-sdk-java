@@ -16,6 +16,7 @@ import java.lang.annotation.Target;
  * sets the non-nullable semantics to the package.
  *
  * @author Tadaya Tsuyukubo
+ * @version $Id: $Id
  */
 @Target(ElementType.PACKAGE)
 @Retention(RetentionPolicy.RUNTIME)

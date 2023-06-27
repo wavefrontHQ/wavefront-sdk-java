@@ -4,6 +4,7 @@ package com.wavefront.sdk.common.metrics;
  * A gauge used for metrics that are internal to Wavefront SDKs.
  *
  * @author Han Zhang (zhanghan@vmware.com).
+ * @version $Id: $Id
  */
 @FunctionalInterface
 public interface WavefrontSdkGauge<T> extends WavefrontSdkMetric {
