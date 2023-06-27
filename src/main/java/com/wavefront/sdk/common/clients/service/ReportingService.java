@@ -21,6 +21,7 @@ import java.util.zip.GZIPOutputStream;
  * ReportingService that reports entities to Proxy or Wavefront services.
  *
  * @author Mike McMahon (mike.mcmahon@wavefront.com)
+ * @version $Id: $Id
  */
 public class ReportingService implements ReportAPI {
 
@@ -35,6 +36,13 @@ public class ReportingService implements ReportAPI {
   private static final int BUFFER_SIZE = 4096;
   private static final int NO_HTTP_RESPONSE = -1;
 
+  /**
+   * <p>Constructor for ReportingService.</p>
+   *
+   * @param uri a {@link java.net.URI} object
+   * @param token a {@link java.lang.String} object
+   * @param reportingServiceLogSuppressTimeSeconds a long
+   */
   public ReportingService(URI uri, @Nullable String token, long reportingServiceLogSuppressTimeSeconds) {
     this.uri = uri;
     this.token = token;
@@ -45,6 +53,7 @@ public class ReportingService implements ReportAPI {
             ReportingService.class.getCanonicalName()), reportingServiceLogSuppressTimeSeconds, TimeUnit.SECONDS);
   }
 
+  /** {@inheritDoc} */
   @Override
   public int send(String format, InputStream stream) {
     HttpURLConnection urlConn = null;
@@ -80,6 +89,7 @@ public class ReportingService implements ReportAPI {
     return statusCode;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int sendEvent(InputStream stream) {
     HttpURLConnection urlConn = null;
@@ -170,7 +180,7 @@ public class ReportingService implements ReportAPI {
    * @param server a server to report to
    * @param format the format of data to send
    * @return returns as properly formatted URL ending in /report?=format
-   * @throws MalformedURLException
+   * @throws java.net.MalformedURLException throws an Exception
    */
   @VisibleForTesting
   public static URL getReportingUrl(URI server, String format) throws MalformedURLException {
@@ -192,7 +202,7 @@ public class ReportingService implements ReportAPI {
    *
    * @param server a server to report to
    * @return returns as properly formatted URL ending in /api/v2/event
-   * @throws MalformedURLException
+   * @throws java.net.MalformedURLException throws an Exception
    */
   @VisibleForTesting
   public static URL getEventReportingUrl(URI server) throws MalformedURLException {

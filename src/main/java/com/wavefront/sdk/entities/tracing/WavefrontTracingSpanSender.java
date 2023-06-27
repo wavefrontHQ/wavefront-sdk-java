@@ -11,6 +11,7 @@ import java.util.UUID;
  * WavefrontTracingSpanSender interface that sends an open-tracing span to Wavefront
  *
  * @author Vikram Raman (vikram@wavefront.com).
+ * @version $Id: $Id
  */
 public interface WavefrontTracingSpanSender {
 
@@ -28,7 +29,7 @@ public interface WavefrontTracingSpanSender {
    * @param followsFrom         The list of preceding span IDs, can be null if this is a root span.
    * @param tags                The span tags associated with this span. Supports repeated tags.
    * @param spanLogs            The span logs associated with this span.
-   * @throws IOException        If there was an error sending the span.
+   * @throws java.io.IOException        If there was an error sending the span.
    */
   void sendSpan(String name, long startMillis, long durationMillis, @Nullable String source,
                 UUID traceId, UUID spanId, @Nullable List<UUID> parents,

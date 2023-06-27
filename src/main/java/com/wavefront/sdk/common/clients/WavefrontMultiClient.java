@@ -23,6 +23,7 @@ import java.util.logging.Logger;
  * User should probably attempt to reconnect when exceptions are thrown from any methods.
  *
  * @author Mike McMahon (mike.mcmahon@wavefront.com)
+ * @version $Id: $Id
  */
 public class WavefrontMultiClient implements WavefrontSender, Runnable {
   private static final Logger logger = Logger.getLogger(
@@ -60,6 +61,7 @@ public class WavefrontMultiClient implements WavefrontSender, Runnable {
     return wavefrontSenders.getOrDefault(clientId, null);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void flush() throws IOException {
     MultiClientIOException exceptions = new MultiClientIOException();
@@ -75,6 +77,7 @@ public class WavefrontMultiClient implements WavefrontSender, Runnable {
     exceptions.checkAndThrow();
   }
 
+  /** {@inheritDoc} */
   @Override
   public int getFailureCount() {
     int failureCount = 0;
@@ -98,6 +101,7 @@ public class WavefrontMultiClient implements WavefrontSender, Runnable {
     return failuresPerSender;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
@@ -115,6 +119,7 @@ public class WavefrontMultiClient implements WavefrontSender, Runnable {
     exceptions.checkAndThrow();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendLog(String name, double value, Long timestamp, String source, Map<String, String> tags)
           throws IOException {
@@ -131,6 +136,7 @@ public class WavefrontMultiClient implements WavefrontSender, Runnable {
     exceptions.checkAndThrow();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendFormattedMetric(String point) throws IOException {
     MultiClientIOException exceptions = new MultiClientIOException();
@@ -146,6 +152,7 @@ public class WavefrontMultiClient implements WavefrontSender, Runnable {
     exceptions.checkAndThrow();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendDistribution(String name, List<Pair<Double, Integer>> centroids,
                                Set<HistogramGranularity> histogramGranularities,
@@ -165,6 +172,7 @@ public class WavefrontMultiClient implements WavefrontSender, Runnable {
     exceptions.checkAndThrow();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendSpan(String name, long startMillis, long durationMillis,
                        @Nullable String source, UUID traceId, UUID spanId,
@@ -184,6 +192,7 @@ public class WavefrontMultiClient implements WavefrontSender, Runnable {
     exceptions.checkAndThrow();
   }
 
+  /** {@inheritDoc} */
   public void sendEvent(String name, long startMillis, long endMillis, @Nullable String source,
                         @Nullable Map<String, String> tags,
                         @Nullable Map<String, String> annotations)
@@ -201,6 +210,7 @@ public class WavefrontMultiClient implements WavefrontSender, Runnable {
     exceptions.checkAndThrow();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void close() throws IOException {
     MultiClientIOException exceptions = new MultiClientIOException();
@@ -216,6 +226,7 @@ public class WavefrontMultiClient implements WavefrontSender, Runnable {
     exceptions.checkAndThrow();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void run() {
     for (WavefrontSender client : wavefrontSenders.values()) {
@@ -223,6 +234,7 @@ public class WavefrontMultiClient implements WavefrontSender, Runnable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getClientId() {
     return "MultiClient";

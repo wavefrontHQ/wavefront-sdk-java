@@ -46,9 +46,9 @@ import static com.wavefront.sdk.common.Utils.tracingSpanToLineData;
  * Wavefront direct ingestion client that sends data directly to Wavefront cluster via the direct ingestion API.
  *
  * @deprecated This class will be removed in future versions in favor of
- * {@link WavefrontClientFactory} to construct Proxy and DirectDataIngestion senders.
- *
+ * {@link com.wavefront.sdk.common.clients.WavefrontClientFactory} to construct Proxy and DirectDataIngestion senders.
  * @author Vikram Raman (vikram@wavefront.com)
+ * @version $Id: $Id
  */
 @Deprecated
 public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable {
@@ -178,7 +178,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     /**
      * Creates a new client that connects directly to a given Wavefront service.
      *
-     * return {@link WavefrontDirectIngestionClient}
+     * @return {@link WavefrontDirectIngestionClient}
      */
     public WavefrontDirectIngestionClient build() {
       return new WavefrontDirectIngestionClient(this);
@@ -252,11 +252,13 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     this.clientId = builder.server;
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getClientId() {
     return clientId;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
@@ -281,11 +283,13 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendLog(String name, double value, Long timestamp, String source, Map<String, String> tags) {
     throw new IllegalArgumentException("Sending logs using this method is not allowed");
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendFormattedMetric(String point) throws IOException {
     if (closed.get()) {
@@ -306,6 +310,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendDistribution(String name, List<Pair<Double, Integer>> centroids,
                                Set<HistogramGranularity> histogramGranularities,
@@ -333,6 +338,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendSpan(String name, long startMillis, long durationMillis,
                        @Nullable String source, UUID traceId, UUID spanId,
@@ -387,6 +393,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     }
   }
 
+  /** {@inheritDoc} */
   public void sendEvent(String name, long startMillis, long endMillis, @Nullable String source,
                         @Nullable Map<String, String> tags,
                         @Nullable Map<String, String> annotations)
@@ -395,6 +402,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
         "deprecated WavefrontDirectIngestionClient. Please use WavefrontClient to send events.");
   }
 
+  /** {@inheritDoc} */
   @Override
   public void run() {
     try {
@@ -405,6 +413,7 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void flush() throws IOException {
     if (closed.get()) {
@@ -538,12 +547,14 @@ public class WavefrontDirectIngestionClient implements WavefrontSender, Runnable
     return new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8));
   }
 
+  /** {@inheritDoc} */
   @Override
   public int getFailureCount() {
     return (int) (pointReportErrors.count() + histogramReportErrors.count() +
         spanReportErrors.count());
   }
 
+  /** {@inheritDoc} */
   @Override
   public synchronized void close() {
     if (!closed.compareAndSet(false, true)) {

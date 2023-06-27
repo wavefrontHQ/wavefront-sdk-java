@@ -21,6 +21,7 @@ import java.util.logging.Logger;
  * Metrics registry used to send internal SDK metrics to Wavefront.
  *
  * @author Han Zhang (zhanghan@vmware.com).
+ * @version $Id: $Id
  */
 public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
   private static final Logger logger = Logger.getLogger(
@@ -113,8 +114,8 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
 
     /**
      * If this is set to false the sender will never actually send metrics and will simply flush metrics
-     * @param sendSdkMetrics
-     * @return
+     * @param sendSdkMetrics boolean
+     * @return {@code this}
      */
     public Builder sendSdkMetrics(boolean sendSdkMetrics) {
       this.sendSdkMetrics = sendSdkMetrics;
@@ -148,6 +149,7 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void run() {
     long timestamp = System.currentTimeMillis();
@@ -174,6 +176,7 @@ public class WavefrontSdkMetricsRegistry implements Runnable, Closeable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void close() {
     if (sendSdkMetrics) {

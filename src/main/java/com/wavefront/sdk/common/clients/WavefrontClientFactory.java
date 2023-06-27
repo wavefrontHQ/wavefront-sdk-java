@@ -13,6 +13,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * <p>WavefrontClientFactory class.</p>
+ *
+ * @author goppegard
+ * @version $Id: $Id
+ */
 public class WavefrontClientFactory {
   private static final Logger log = Logger.getLogger(WavefrontClientFactory.class.getCanonicalName());
 
@@ -28,9 +34,7 @@ public class WavefrontClientFactory {
    * forward points to a proxy or directly to a Wavefront service.
    *
    * @param sender the sender to add to this factory
-   *
-   * @return
-   * Returns {@link WavefrontClientFactory} so that more clients may be initialized
+   * @return a {@link com.wavefront.sdk.common.clients.WavefrontClientFactory} object
    */
   public WavefrontClientFactory addClient(WavefrontSender sender) {
     if (!existingClient(sender.getClientId())) {
@@ -48,9 +52,7 @@ public class WavefrontClientFactory {
    * <br>
    *
    * @param url The URL of either yourCluster or your.proxy.com
-   *
-   * @return
-   * Returns {@link WavefrontClientFactory} so that more clients may be initialized
+   * @return a {@link com.wavefront.sdk.common.clients.WavefrontClientFactory} object
    */
   public WavefrontClientFactory addClient(String url) {
     return addClient(url, null, null, null, null);
@@ -67,8 +69,8 @@ public class WavefrontClientFactory {
    * @param batchSize The total metrics, histograms, spans, or span logs to send in a single flush
    * @param maxQueueSize The total metrics, histograms, spans, or span logs to queue internally before dropping data
    * @param flushIntervalSeconds  How often to flush data upstream
-   * @return
-   * Returns {@link WavefrontClientFactory} so that more clients may be initialized
+   * @param messageSizeInBytes a {@link java.lang.Integer} object
+   * @return a {@link com.wavefront.sdk.common.clients.WavefrontClientFactory} object
    */
   public WavefrontClientFactory addClient(String url, @Nullable Integer batchSize, @Nullable Integer maxQueueSize,
                                           @Nullable Integer flushIntervalSeconds, @Nullable Integer messageSizeInBytes) {
@@ -87,8 +89,8 @@ public class WavefrontClientFactory {
    * @param maxQueueSize The total metrics, histograms, spans, or span logs to queue internally before dropping data
    * @param flushIntervalSeconds  How often to flush data upstream
    * @param includeSdkMetrics Whether or not to include the internal SDK Metrics
-   * @return
-   * Returns {@link WavefrontClientFactory} so that more clients may be initialized
+   * @param messageSizeInBytes a {@link java.lang.Integer} object
+   * @return a {@link com.wavefront.sdk.common.clients.WavefrontClientFactory} object
    */
   public WavefrontClientFactory addClient(String url, @Nullable Integer batchSize, @Nullable Integer maxQueueSize,
                                           @Nullable Integer flushIntervalSeconds, @Nullable Integer messageSizeInBytes,
@@ -109,8 +111,8 @@ public class WavefrontClientFactory {
    * @param flushIntervalSeconds  How often to flush data upstream
    * @param includeSdkMetrics Whether or not to include the internal SDK Metrics
    * @param sdkMetricTags a map of tags to include on the internal sdk metrics if included
-   * @return
-   * Returns {@link WavefrontClientFactory} so that more clients may be initialized
+   * @param messageSizeInBytes a {@link java.lang.Integer} object
+   * @return a {@link com.wavefront.sdk.common.clients.WavefrontClientFactory} object
    */
   public WavefrontClientFactory addClient(String url, @Nullable Integer batchSize,
                                           @Nullable Integer maxQueueSize,
@@ -136,7 +138,8 @@ public class WavefrontClientFactory {
    * @param flushIntervalTimeUnit Time unit of the flush interval
    * @param includeSdkMetrics Whether or not to include the internal SDK Metrics
    * @param sdkMetricTags a map of tags to include on the internal sdk metrics if included
-   * @return {@link WavefrontClientFactory} so that more clients may be initialized
+   * @return {@link com.wavefront.sdk.common.clients.WavefrontClientFactory} so that more clients may be initialized
+   * @param messageSizeInBytes a {@link java.lang.Integer} object
    */
   public WavefrontClientFactory addClient(String url, @Nullable Integer batchSize,
                                           @Nullable Integer maxQueueSize,
@@ -173,8 +176,9 @@ public class WavefrontClientFactory {
   }
 
   /**
+   * <p>getClient.</p>
    *
-   * @return {@link WavefrontClient} or {@link WavefrontMultiClient}
+   * @return {@link com.wavefront.sdk.common.clients.WavefrontClient} or {@link com.wavefront.sdk.common.clients.WavefrontMultiClient}
    */
   public WavefrontSender getClient() {
     if (clients.size() == 0) {

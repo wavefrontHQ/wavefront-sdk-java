@@ -9,6 +9,7 @@ import java.util.Map;
  * WavefrontEventSender interface that sends an event to Wavefront
  *
  * @author Sushant Dewan (sushant@wavefront.com).
+ * @version $Id: $Id
  */
 public interface WavefrontEventSender {
 
@@ -23,7 +24,7 @@ public interface WavefrontEventSender {
    *                       by Wavefront.
    * @param tags           The tags associated with this event.
    * @param annotations    The annotations (details, type, severity, e.g.) associated with this event
-   * @throws IOException   if there was an error sending the event.
+   * @throws java.io.IOException   if there was an error sending the event.
    */
   void sendEvent(String name, long startMillis, long endMillis, @Nullable String source,
                  @Nullable Map<String, String> tags,

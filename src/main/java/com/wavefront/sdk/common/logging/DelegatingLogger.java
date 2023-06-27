@@ -8,11 +8,14 @@ import java.util.logging.Logger;
  * Base class for delegating loggers.
  *
  * @author vasily@wavefront.com
+ * @version $Id: $Id
  */
 public abstract class DelegatingLogger extends Logger {
   protected final Logger delegate;
 
   /**
+   * <p>Constructor for DelegatingLogger.</p>
+   *
    * @param delegate     Delegate logger.
    */
   public DelegatingLogger(Logger delegate) {
@@ -20,16 +23,11 @@ public abstract class DelegatingLogger extends Logger {
     this.delegate = delegate;
   }
 
-  /**
-   * @param level   log level.
-   * @param message string to write to log.
-   */
+  /** {@inheritDoc} */
   @Override
   public abstract void log(Level level, String message);
 
-  /**
-   * @param logRecord log record to write to log.
-   */
+  /** {@inheritDoc} */
   @Override
   public void log(LogRecord logRecord) {
     logRecord.setLoggerName(delegate.getName());

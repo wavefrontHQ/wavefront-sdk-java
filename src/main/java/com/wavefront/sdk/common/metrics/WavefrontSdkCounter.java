@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * A counter used for metrics that are internal to Wavefront SDKs.
  *
  * @author Han Zhang (zhanghan@vmware.com).
+ * @version $Id: $Id
  */
 public class WavefrontSdkCounter implements WavefrontSdkMetric {
   private final AtomicLong count;

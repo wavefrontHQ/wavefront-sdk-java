@@ -21,6 +21,7 @@ import static com.wavefront.sdk.common.Constants.SHARD_TAG_KEY;
  * Metadata about your application represented as tags in Wavefront.
  *
  * @author Sushant Dewan (sushant@wavefront.com).
+ * @version $Id: $Id
  */
 public class ApplicationTags {
   private final String application;

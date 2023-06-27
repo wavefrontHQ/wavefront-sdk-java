@@ -4,6 +4,7 @@ package com.wavefront.sdk.entities.tracing.sampling;
  * Sampler that allows spans above a given duration in milliseconds to be reported.
  *
  * @author Vikram Raman
+ * @version $Id: $Id
  */
 public class DurationSampler implements Sampler {
 
@@ -18,11 +19,13 @@ public class DurationSampler implements Sampler {
     setDuration(duration);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean sample(String operationName, long traceId, long duration) {
     return duration > this.duration;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean isEarly() {
     return false;

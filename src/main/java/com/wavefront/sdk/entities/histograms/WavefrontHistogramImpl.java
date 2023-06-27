@@ -26,6 +26,7 @@ import static java.lang.Double.NaN;
  * Wavefront implementation of a histogram
  *
  * @author Sushant Dewan (sushant@wavefront.com).
+ * @version $Id: $Id
  */
 public class WavefrontHistogramImpl {
   /**
@@ -83,22 +84,45 @@ public class WavefrontHistogramImpl {
         return sharedBinsInstance;
   });
 
+  /**
+   * <p>Constructor for WavefrontHistogramImpl.</p>
+   */
   public WavefrontHistogramImpl() {
     this(System::currentTimeMillis);
   }
 
+  /**
+   * <p>Constructor for WavefrontHistogramImpl.</p>
+   *
+   * @param clockMillis a {@link java.util.function.Supplier} object
+   */
   public WavefrontHistogramImpl(Supplier<Long> clockMillis) {
     this.clockMillis = clockMillis;
   }
 
+  /**
+   * <p>update.</p>
+   *
+   * @param value a int
+   */
   public void update(int value) {
     update((double) value);
   }
 
+  /**
+   * <p>update.</p>
+   *
+   * @param value a long
+   */
   public void update(long value) {
     update((double) value);
   }
 
+  /**
+   * <p>update.</p>
+   *
+   * @param value a double
+   */
   public void update(double value) {
     getCurrentBin().distribution.add(value);
   }
@@ -120,6 +144,8 @@ public class WavefrontHistogramImpl {
   }
 
   /**
+   * <p>getCount.</p>
+   *
    * @return returns the number of values in the distribution.
    */
   public long getCount() {
@@ -133,6 +159,8 @@ public class WavefrontHistogramImpl {
   }
 
   /**
+   * <p>getMax.</p>
+   *
    * @return returns the maximum value in the distribution.
    * Returns NaN if the distribution is empty.
    */
@@ -148,6 +176,8 @@ public class WavefrontHistogramImpl {
   }
 
   /**
+   * <p>getMin.</p>
+   *
    * @return returns the minimum value in the distribution.
    * Returns NaN if the distribution is empty.
    */
@@ -163,6 +193,8 @@ public class WavefrontHistogramImpl {
   }
 
   /**
+   * <p>getMean.</p>
+   *
    * @return returns the mean of the values in the distribution.
    * Returns NaN if the distribution is empty.
    */
@@ -182,6 +214,8 @@ public class WavefrontHistogramImpl {
   }
 
   /**
+   * <p>getSum.</p>
+   *
    * @return returns the sum of the values in the distribution.
    */
   public double getSum() {
@@ -189,6 +223,7 @@ public class WavefrontHistogramImpl {
   }
 
   /**
+   * <p>stdDev.</p>
    *
    * @return returns the stdDev of the values in the distribution
    */
@@ -230,7 +265,7 @@ public class WavefrontHistogramImpl {
    * from the aggregated bins, thereby changing the state of the system and preventing data from
    * being flushed more than once.
    *
-   * @return returns a list of distributions, each a {@link Distribution} holding a timestamp
+   * @return returns a list of distributions, each a {@link com.wavefront.sdk.entities.histograms.WavefrontHistogramImpl.Distribution} holding a timestamp
    * as well as a list of centroids. Each centroid is a tuple containing the centroid value and
    * count.
    */
@@ -286,7 +321,9 @@ public class WavefrontHistogramImpl {
   }
 
   /**
-   * @return returns a statistical {@link Snapshot} of the histogram distribution.
+   * <p>getSnapshot.</p>
+   *
+   * @return returns a statistical {@link com.wavefront.sdk.entities.histograms.WavefrontHistogramImpl.Snapshot} of the histogram distribution.
    */
   public Snapshot getSnapshot() {
     final TDigest snapshot = new AVLTreeDigest(ACCURACY);

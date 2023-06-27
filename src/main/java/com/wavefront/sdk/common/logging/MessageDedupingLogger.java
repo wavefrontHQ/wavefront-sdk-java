@@ -16,12 +16,15 @@ import java.util.logging.Logger;
  * A logger that suppresses identical messages for a specified period of time.
  *
  * @author Han Zhang (zhanghan@vmware.com)
+ * @version $Id: $Id
  */
 @SuppressWarnings("UnstableApiUsage")
 public class MessageDedupingLogger extends DelegatingLogger {
   private final LoadingCache<String, RateLimiter> rateLimiterCache;
 
   /**
+   * <p>Constructor for MessageDedupingLogger.</p>
+   *
    * @param delegate     Delegate logger.
    * @param maximumSize  max number of unique messages that can exist in the cache
    * @param rateLimit    rate limit (per second per each unique message)
@@ -39,6 +42,7 @@ public class MessageDedupingLogger extends DelegatingLogger {
         });
   }
 
+  /** {@inheritDoc} */
   @Override
   public void log(Level level, String message) {
     try {

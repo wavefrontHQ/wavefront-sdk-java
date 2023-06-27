@@ -12,8 +12,14 @@ import java.io.Closeable;
  * An uber WavefrontSender that abstracts various atom senders along with flushing and closing logic
  *
  * @author Sushant Dewan (sushant@wavefront.com).
+ * @version $Id: $Id
  */
 public interface WavefrontSender extends WavefrontMetricSender, WavefrontHistogramSender,
     WavefrontTracingSpanSender, WavefrontEventSender, WavefrontLogSender, BufferFlusher, Closeable {
+  /**
+   * <p>getClientId.</p>
+   *
+   * @return a {@link java.lang.String} object
+   */
   String getClientId();
 }

@@ -16,9 +16,10 @@ import java.util.zip.GZIPOutputStream;
  * DataIngester service that reports entities to Wavefront
  *
  * This class will be removed in future versions in favor of
- *  {@link WavefrontClientFactory} to construct Proxy and DirectDataIngestion senders.
+ *  {@link com.wavefront.sdk.common.clients.WavefrontClientFactory} to construct Proxy and DirectDataIngestion senders.
  *
  * @author Sushant Dewan (sushant@wavefront.com).
+ * @version $Id: $Id
  */
 @Deprecated
 public class DataIngesterService implements DataIngesterAPI {
@@ -37,6 +38,7 @@ public class DataIngesterService implements DataIngesterAPI {
       this.uri = URI.create(server);
   }
 
+  /** {@inheritDoc} */
   @Override
   public int report(String format, InputStream stream) {
     /*

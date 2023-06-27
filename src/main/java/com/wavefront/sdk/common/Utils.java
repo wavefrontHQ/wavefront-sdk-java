@@ -32,6 +32,7 @@ import static com.wavefront.sdk.common.Constants.VERSION;
  * Common Util methods
  *
  * @author Sushant Dewan (sushant@wavefront.com).
+ * @version $Id: $Id
  */
 public class Utils {
 
@@ -40,18 +41,43 @@ public class Utils {
 
   private static final ObjectMapper JSON_PARSER = new ObjectMapper();
 
+  /**
+   * <p>sanitize.</p>
+   *
+   * @param s a {@link java.lang.String} object
+   * @return a {@link java.lang.String} object
+   */
   public static String sanitize(String s) {
     return sanitizeInternal(s, true, false);
   }
 
+  /**
+   * <p>sanitize.</p>
+   *
+   * @param s a {@link java.lang.String} object
+   * @param ignoreSlash a boolean
+   * @return a {@link java.lang.String} object
+   */
   public static String sanitize(String s, boolean ignoreSlash) {
     return sanitizeInternal(s, true, ignoreSlash);
   }
 
+  /**
+   * <p>sanitizeWithoutQuotes.</p>
+   *
+   * @param s a {@link java.lang.String} object
+   * @return a {@link java.lang.String} object
+   */
   public static String sanitizeWithoutQuotes(String s) {
     return sanitizeInternal(s, false, false);
   }
 
+  /**
+   * <p>sanitizeValue.</p>
+   *
+   * @param s a {@link java.lang.String} object
+   * @return a {@link java.lang.String} object
+   */
   public static String sanitizeValue(String s) {
     /*
      * Sanitize string of tags value, etc.
@@ -64,6 +90,17 @@ public class Utils {
     return "\"" + res.replace("\n", "\\n") + "\"";
   }
 
+  /**
+   * <p>metricToLineData.</p>
+   *
+   * @param name a {@link java.lang.String} object
+   * @param value a double
+   * @param timestamp a {@link java.lang.Long} object
+   * @param source a {@link java.lang.String} object
+   * @param tags a {@link java.util.Map} object
+   * @param defaultSource a {@link java.lang.String} object
+   * @return a {@link java.lang.String} object
+   */
   public static String metricToLineData(String name, double value, @Nullable Long timestamp,
                                         String source, @Nullable Map<String, String> tags,
                                         String defaultSource) {
@@ -118,6 +155,17 @@ public class Utils {
     return sb.toString();
   }
 
+  /**
+   * <p>logToLineData.</p>
+   *
+   * @param name a {@link java.lang.String} object
+   * @param value a double
+   * @param timestamp a {@link java.lang.Long} object
+   * @param source a {@link java.lang.String} object
+   * @param tags a {@link java.util.Map} object
+   * @param defaultSource a {@link java.lang.String} object
+   * @return a {@link java.lang.String} object
+   */
   public static String logToLineData(String name, double value, @Nullable Long timestamp,
                                      String source, @Nullable Map<String, String> tags,
                                      String defaultSource) {
@@ -165,6 +213,18 @@ public class Utils {
     return sb.toString();
   }
 
+  /**
+   * <p>histogramToLineData.</p>
+   *
+   * @param name a {@link java.lang.String} object
+   * @param centroids a {@link java.util.List} object
+   * @param histogramGranularities a {@link java.util.Set} object
+   * @param timestamp a {@link java.lang.Long} object
+   * @param source a {@link java.lang.String} object
+   * @param tags a {@link java.util.Map} object
+   * @param defaultSource a {@link java.lang.String} object
+   * @return a {@link java.lang.String} object
+   */
   public static String histogramToLineData(String name, List<Pair<Double, Integer>> centroids,
                                            Set<HistogramGranularity> histogramGranularities,
                                            @Nullable Long timestamp, String source,
@@ -232,6 +292,22 @@ public class Utils {
     return sb.toString();
   }
 
+  /**
+   * <p>tracingSpanToLineData.</p>
+   *
+   * @param name a {@link java.lang.String} object
+   * @param startMillis a long
+   * @param durationMillis a long
+   * @param source a {@link java.lang.String} object
+   * @param traceId a {@link java.util.UUID} object
+   * @param spanId a {@link java.util.UUID} object
+   * @param parents a {@link java.util.List} object
+   * @param followsFrom a {@link java.util.List} object
+   * @param tags a {@link java.util.List} object
+   * @param spanLogs a {@link java.util.List} object
+   * @param defaultSource a {@link java.lang.String} object
+   * @return a {@link java.lang.String} object
+   */
   public static String tracingSpanToLineData(String name, long startMillis, long durationMillis,
                                              String source, UUID traceId, UUID spanId,
                                              @Nullable List<UUID> parents,
@@ -314,6 +390,20 @@ public class Utils {
     return sb.toString();
   }
 
+  /**
+   * <p>eventToLineData.</p>
+   *
+   * @param name a {@link java.lang.String} object
+   * @param startMillis a long
+   * @param endMillis a long
+   * @param source a {@link java.lang.String} object
+   * @param tags a {@link java.util.Map} object
+   * @param annotations a {@link java.util.Map} object
+   * @param defaultSource a {@link java.lang.String} object
+   * @param jsonify a boolean
+   * @return a {@link java.lang.String} object
+   * @throws com.fasterxml.jackson.core.JsonProcessingException if any.
+   */
   public static String eventToLineData(String name, long startMillis, long endMillis,
                                        @Nullable String source, @Nullable Map<String, String> tags,
                                        @Nullable Map<String, String> annotations,
@@ -444,17 +534,47 @@ public class Utils {
     return sb.toString();
   }
 
+  /**
+   * <p>spanLogsToLineData.</p>
+   *
+   * @param traceId a {@link java.util.UUID} object
+   * @param spanId a {@link java.util.UUID} object
+   * @param spanLogs a {@link java.util.List} object
+   * @return a {@link java.lang.String} object
+   * @throws com.fasterxml.jackson.core.JsonProcessingException if any.
+   */
   public static String spanLogsToLineData(UUID traceId, UUID spanId, @NonNull List<SpanLog> spanLogs)
       throws JsonProcessingException {
     return spanLogsToLineData(traceId, spanId, spanLogs, null);
   }
 
+  /**
+   * <p>spanLogsToLineData.</p>
+   *
+   * @param traceId a {@link java.util.UUID} object
+   * @param spanId a {@link java.util.UUID} object
+   * @param spanLogs a {@link java.util.List} object
+   * @param span a {@link java.lang.String} object
+   * @return a {@link java.lang.String} object
+   * @throws com.fasterxml.jackson.core.JsonProcessingException if any.
+   */
   public static String spanLogsToLineData(
           UUID traceId, UUID spanId, @NonNull List<SpanLog> spanLogs, @Nullable String span)
       throws JsonProcessingException {
     return spanLogsToLineData(traceId, spanId, spanLogs, span, null);
   }
 
+  /**
+   * <p>spanLogsToLineData.</p>
+   *
+   * @param traceId a {@link java.util.UUID} object
+   * @param spanId a {@link java.util.UUID} object
+   * @param spanLogs a {@link java.util.List} object
+   * @param span a {@link java.lang.String} object
+   * @param spanSecondaryId a {@link java.lang.String} object
+   * @return a {@link java.lang.String} object
+   * @throws com.fasterxml.jackson.core.JsonProcessingException if any.
+   */
   public static String spanLogsToLineData(
           UUID traceId, UUID spanId, @NonNull List<SpanLog> spanLogs, @Nullable String span,
           @Nullable String spanSecondaryId)
@@ -488,6 +608,11 @@ public class Utils {
     return toReturn.toString();
   }
 
+  /**
+   * <p>shutdownExecutorAndWait.</p>
+   *
+   * @param tpe a {@link java.util.concurrent.ExecutorService} object
+   */
   public static void shutdownExecutorAndWait(ExecutorService tpe) {
     tpe.shutdown();
     try {
@@ -604,7 +729,7 @@ public class Utils {
    * Return the resource at the given resource path in the resource directory
    * {@code META-INF/}.
    *
-   * @param pathToResource
+   * @param pathToResource a {@link java.lang.String} object
    * @return the resource at the given path, if exists.
    */
   public static Optional<ResourceBundle> getResource(String pathToResource) {
@@ -628,7 +753,7 @@ public class Utils {
    * {@code META-INF/}. The file should contain a line that specifies the project version as
    * "project.version".
    *
-   * @param artifactId
+   * @param artifactId a {@link java.lang.String} object
    * @return the version for the given artifactId
    */
   public static Optional<String> getVersion(String artifactId) {
@@ -657,7 +782,7 @@ public class Utils {
    *
    * Ex: v2.6.1 =&gt; 2.0601
    *
-   * @param artifactId
+   * @param artifactId a {@link java.lang.String} object
    * @return the version Gauge value for the given artifactId
    */
   public static double getSemVerGauge(String artifactId) {
@@ -670,6 +795,12 @@ public class Utils {
     return 0.0D;
   }
 
+  /**
+   * <p>convertSemVerToGauge.</p>
+   *
+   * @param version a {@link java.lang.String} object
+   * @return a double
+   */
   public static double convertSemVerToGauge(String version) {
     if (version != null && !version.isEmpty()) {
       Matcher semVerMatcher = SEMVER_PATTERN.matcher(version);
