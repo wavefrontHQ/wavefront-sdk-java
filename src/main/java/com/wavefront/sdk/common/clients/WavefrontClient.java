@@ -11,7 +11,7 @@ import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.NonNull;
 import com.wavefront.sdk.common.annotation.Nullable;
-import com.wavefront.sdk.common.clients.service.ReportingService;
+import com.wavefront.sdk.common.clients.service.*;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
@@ -141,6 +141,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     // Required parameters
     private final String server;
     private final String token;
+    private final String cspClientId;
+    private final String cspClientSecret;
 
     // Optional parameters
     private int metricsPort = -1;
@@ -165,8 +167,35 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param token  A valid API token with direct ingestion permissions
      */
     public Builder(String server, @Nullable String token) {
+      this(server, token, null, null);
+    }
+
+    /**
+     * Create a new WavefrontClient.Builder
+     *
+     * @param server A server URL of the form "https://clusterName.wavefront.com" or
+     *               "http://internal.proxy.com:port"
+     * @param token  A valid API token with direct ingestion permissions
+     * @param cspClientId  TODO
+     * @param cspClientSecret  TODO
+     */
+    public Builder(String server, @Nullable String token, @Nullable String cspClientId, @Nullable String cspClientSecret) {
       this.server = server;
       this.token = token;
+      this.cspClientId = cspClientId;
+      this.cspClientSecret = cspClientSecret;
+    }
+
+    /**
+     * Create a new WavefrontClient.Builder
+     *
+     * @param server A server URL of the form "https://clusterName.wavefront.com" or
+     *               "http://internal.proxy.com:port"
+     * @param cspClientId  TODO
+     * @param cspClientSecret  TODO
+     */
+    public Builder(String server, @Nullable String cspClientId, @Nullable String cspClientSecret) {
+      this(server, null, cspClientId, cspClientSecret);
     }
 
     /**
@@ -175,7 +204,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param proxyServer A server URL of the the form "http://internal.proxy.com:port"
      */
     public Builder(String proxyServer) {
-      this(proxyServer, null);
+      this(proxyServer, null, null, null);
     }
 
     /**
@@ -359,6 +388,24 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
     defaultSource = tempSource;
 
+    TokenService tokenService = null;
+
+    if (builder.token != null && !builder.token.equals("")) {
+      tokenService = new WavefrontTokenService(builder.token);
+    }
+
+    // TODO if they set one or the other, log?
+    if (builder.cspClientId != null && !builder.cspClientId.equals("") && builder.cspClientSecret != null && !builder.cspClientSecret.equals("")) {
+      // TODO URL
+      tokenService = new CSPTokenService("", builder.cspClientId, builder.cspClientSecret);
+    }
+
+    if (tokenService == null) {
+
+      // NOOP LOGS
+      tokenService = new NoopTokenService();
+    }
+
     batchSize = builder.batchSize;
     messageSizeBytes = builder.messageSizeBytes;
     metricsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
@@ -367,8 +414,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     spanLogsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     eventsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
     logsBuffer = new LinkedBlockingQueue<>(builder.maxQueueSize);
-    metricsReportingService = new ReportingService(builder.metricsUri, builder.token, builder.reportingServiceLogSuppressTimeSeconds);
-    tracesReportingService = new ReportingService(builder.tracesUri, builder.token, builder.reportingServiceLogSuppressTimeSeconds);
+    metricsReportingService = new ReportingService(builder.metricsUri, tokenService, builder.reportingServiceLogSuppressTimeSeconds);
+    tracesReportingService = new ReportingService(builder.tracesUri, tokenService, builder.reportingServiceLogSuppressTimeSeconds);
     scheduler = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory("wavefrontClientSender").setDaemon(true));
     scheduler.scheduleAtFixedRate(this, 1, builder.flushInterval, builder.flushIntervalTimeUnit);
