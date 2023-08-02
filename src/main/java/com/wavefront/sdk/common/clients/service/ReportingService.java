@@ -3,6 +3,7 @@ package com.wavefront.sdk.common.clients.service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.wavefront.sdk.common.Constants;
+import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.common.logging.MessageSuppressingLogger;
 
@@ -29,6 +30,8 @@ public class ReportingService implements ReportAPI {
   // This logger is intended to be configurable in the WavefrontClient.Builder. Given that the invoker controls the
   // configuration, this is not a static logger.
   private final MessageSuppressingLogger messageSuppressingLogger;
+
+  // TODO - tests for diff kinds of TokenService
   private final TokenService tokenService;
   private final URI uri;
 
@@ -70,7 +73,7 @@ public class ReportingService implements ReportAPI {
 
       String token = tokenService.getToken();
 
-      if (token != null && !token.equals("")) {
+      if (!Utils.isNullOrEmpty(token)) {
         urlConn.addRequestProperty("Authorization", "Bearer " + token);
       }
 
@@ -108,7 +111,7 @@ public class ReportingService implements ReportAPI {
 
       String token = tokenService.getToken();
 
-      if (token != null && !token.equals("")) {
+      if (!Utils.isNullOrEmpty(token)) {
         urlConn.addRequestProperty("Authorization", "Bearer " + token);
       }
       urlConn.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);

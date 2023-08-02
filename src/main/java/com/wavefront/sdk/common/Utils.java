@@ -832,4 +832,8 @@ public class Utils {
     }
     return 0.0D;
   }
+
+  public static boolean isNullOrEmpty(final String string) {
+    return string == null || string.isEmpty();
+  }
 }

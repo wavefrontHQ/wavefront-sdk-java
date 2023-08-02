@@ -141,6 +141,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     // Required parameters
     private final String server;
     private final String token;
+    private final String cspBaseUrl;
     private final String cspClientId;
     private final String cspClientSecret;
 
@@ -159,6 +160,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private URI metricsUri;
     private URI tracesUri;
 
+    // TODO - tests for diff kinds of TokenService
+    // TODO - tests for diff kinds of TokenService
+
     /**
      * Create a new WavefrontClient.Builder
      *
@@ -167,7 +171,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param token  A valid API token with direct ingestion permissions
      */
     public Builder(String server, @Nullable String token) {
-      this(server, token, null, null);
+      this(server, token, null, null, null);
     }
 
     /**
@@ -179,9 +183,10 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param cspClientId  TODO
      * @param cspClientSecret  TODO
      */
-    public Builder(String server, @Nullable String token, @Nullable String cspClientId, @Nullable String cspClientSecret) {
+    public Builder(String server, @Nullable String token, @Nullable String cspBaseUrl, @Nullable String cspClientId, @Nullable String cspClientSecret) {
       this.server = server;
       this.token = token;
+      this.cspBaseUrl = cspBaseUrl;
       this.cspClientId = cspClientId;
       this.cspClientSecret = cspClientSecret;
     }
@@ -195,7 +200,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param cspClientSecret  TODO
      */
     public Builder(String server, @Nullable String cspClientId, @Nullable String cspClientSecret) {
-      this(server, null, cspClientId, cspClientSecret);
+      this(server, null, null, cspClientId, cspClientSecret);
     }
 
     /**
@@ -204,7 +209,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param proxyServer A server URL of the the form "http://internal.proxy.com:port"
      */
     public Builder(String proxyServer) {
-      this(proxyServer, null, null, null);
+      this(proxyServer, null, null, null, null);
     }
 
     /**
@@ -390,18 +395,17 @@ public class WavefrontClient implements WavefrontSender, Runnable {
 
     TokenService tokenService = null;
 
-    if (builder.token != null && !builder.token.equals("")) {
+    if (!Utils.isNullOrEmpty(builder.token)) {
       tokenService = new WavefrontTokenService(builder.token);
     }
 
     // TODO if they set one or the other, log?
-    if (builder.cspClientId != null && !builder.cspClientId.equals("") && builder.cspClientSecret != null && !builder.cspClientSecret.equals("")) {
+    if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
       // TODO URL
-      tokenService = new CSPTokenService("", builder.cspClientId, builder.cspClientSecret);
+      tokenService = new CSPTokenService(builder.cspBaseUrl, builder.cspClientId, builder.cspClientSecret);
     }
 
     if (tokenService == null) {
-
       // NOOP LOGS
       tokenService = new NoopTokenService();
     }
