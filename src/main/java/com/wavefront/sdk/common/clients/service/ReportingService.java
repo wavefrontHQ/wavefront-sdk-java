@@ -1,10 +1,9 @@
 package com.wavefront.sdk.common.clients.service;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.Utils;
-import com.wavefront.sdk.common.annotation.Nullable;
+import com.wavefront.sdk.common.clients.service.token.TokenService;
 import com.wavefront.sdk.common.logging.MessageSuppressingLogger;
 
 import java.io.IOException;
@@ -31,7 +30,6 @@ public class ReportingService implements ReportAPI {
   // configuration, this is not a static logger.
   private final MessageSuppressingLogger messageSuppressingLogger;
 
-  // TODO - tests for diff kinds of TokenService
   private final TokenService tokenService;
   private final URI uri;
 

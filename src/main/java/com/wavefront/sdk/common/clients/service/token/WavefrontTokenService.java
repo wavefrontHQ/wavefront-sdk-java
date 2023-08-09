@@ -1,4 +1,4 @@
-package com.wavefront.sdk.common.clients.service;
+package com.wavefront.sdk.common.clients.service.token;
 
 public class WavefrontTokenService implements TokenService {
 

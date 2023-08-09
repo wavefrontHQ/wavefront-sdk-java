@@ -1,9 +1,9 @@
 package com.wavefront.sdk.common.clients;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
@@ -11,7 +11,11 @@ import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.NonNull;
 import com.wavefront.sdk.common.annotation.Nullable;
-import com.wavefront.sdk.common.clients.service.*;
+import com.wavefront.sdk.common.clients.service.ReportingService;
+import com.wavefront.sdk.common.clients.service.token.CSPServerToServerTokenService;
+import com.wavefront.sdk.common.clients.service.token.NoopTokenService;
+import com.wavefront.sdk.common.clients.service.token.TokenService;
+import com.wavefront.sdk.common.clients.service.token.WavefrontTokenService;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import com.wavefront.sdk.common.metrics.WavefrontSdkMetricsRegistry;
@@ -137,6 +141,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   // Flag to prevent sending after close() has been called
   private final AtomicBoolean closed = new AtomicBoolean(false);
 
+  private final TokenService tokenService;
+
   public static class Builder {
     // Required parameters
     private final String server;
@@ -160,9 +166,6 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private URI metricsUri;
     private URI tracesUri;
 
-    // TODO - tests for diff kinds of TokenService
-    // TODO - tests for diff kinds of TokenService
-
     /**
      * Create a new WavefrontClient.Builder
      *
@@ -180,8 +183,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param server A server URL of the form "https://clusterName.wavefront.com" or
      *               "http://internal.proxy.com:port"
      * @param token  A valid API token with direct ingestion permissions
-     * @param cspClientId  TODO
-     * @param cspClientSecret  TODO
+     * @param cspBaseUrl  A server URL that points to the CSP service
+     * @param cspClientId  Client ID for CSP
+     * @param cspClientSecret  Client Secret for CSP
      */
     public Builder(String server, @Nullable String token, @Nullable String cspBaseUrl, @Nullable String cspClientId, @Nullable String cspClientSecret) {
       this.server = server;
@@ -196,17 +200,18 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      *
      * @param server A server URL of the form "https://clusterName.wavefront.com" or
      *               "http://internal.proxy.com:port"
-     * @param cspClientId  TODO
-     * @param cspClientSecret  TODO
+     * @param cspBaseUrl  A server URL that points to the CSP service
+     * @param cspClientId  Client ID for CSP
+     * @param cspClientSecret  Client Secret for CSP
      */
-    public Builder(String server, @Nullable String cspClientId, @Nullable String cspClientSecret) {
-      this(server, null, null, cspClientId, cspClientSecret);
+    public Builder(String server, @Nullable String cspBaseUrl, @Nullable String cspClientId, @Nullable String cspClientSecret) {
+      this(server, null, cspBaseUrl, cspClientId, cspClientSecret);
     }
 
     /**
      * Create a new WavefrontClient.Builder
      *
-     * @param proxyServer A server URL of the the form "http://internal.proxy.com:port"
+     * @param proxyServer A server URL of the form "http://internal.proxy.com:port"
      */
     public Builder(String proxyServer) {
       this(proxyServer, null, null, null, null);
@@ -393,21 +398,22 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
     defaultSource = tempSource;
 
-    TokenService tokenService = null;
-
     if (!Utils.isNullOrEmpty(builder.token)) {
       tokenService = new WavefrontTokenService(builder.token);
-    }
-
-    // TODO if they set one or the other, log?
-    if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
-      // TODO URL
-      tokenService = new CSPTokenService(builder.cspBaseUrl, builder.cspClientId, builder.cspClientSecret);
-    }
-
-    if (tokenService == null) {
+    } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
+      tokenService = new CSPServerToServerTokenService(builder.cspBaseUrl, builder.cspClientId, builder.cspClientSecret);
+    } else {
       // NOOP LOGS
       tokenService = new NoopTokenService();
+    }
+
+    switch (tokenService.getClass().getSimpleName()) {
+      case "CSPServerToServerTokenService":
+        logger.log(Level.INFO, "The Wavefront SDK will use CSP authentication when communicating with the Wavefront Backend for Direct Ingestion.");
+      case "WavefrontTokenService":
+        logger.log(Level.INFO, "The Wavefront SDK will use an API TOKEN when communicating with the Wavefront Backend for Direct Ingestion.");
+      case "NoopTokenService":
+        logger.log(Level.INFO, "The Wavefront SDK will communicate with a Wavefront Proxy.");
     }
 
     batchSize = builder.batchSize;
@@ -495,6 +501,10 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   @Override
   public String getClientId() {
     return clientId;
+  }
+
+  public TokenService getTokenService() {
+    return tokenService;
   }
 
   /** {@inheritDoc} */
@@ -753,6 +763,14 @@ public class WavefrontClient implements WavefrontSender, Runnable {
                              LogMessageType permissionsMessageType,
                              LogMessageType bufferFullMessageType)
       throws IOException {
+
+    String tokenIdentifier = "";
+    if (tokenService.getClass().equals(CSPServerToServerTokenService.class)) {
+      tokenIdentifier = "CSP ACCESS TOKEN";
+    } else if (tokenService.getClass().equals(WavefrontTokenService.class)) {
+      tokenIdentifier = "API TOKEN";
+    }
+
     ReportingService entityReportingService;
     switch (format) {
       case Constants.WAVEFRONT_SPAN_LOG_FORMAT:
@@ -778,7 +796,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         switch (featureDisabledReason) {
           case 401:
             logger.log(permissionsMessageType.toString(), Level.SEVERE,
-                "Please verify that your API Token is correct! All " + entityType + " will be " +
+                "Please verify that your " + tokenIdentifier + " is correct! All " + entityType + " will be " +
                     "discarded until the service is restarted.");
             break;
           case 403:
@@ -808,7 +826,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
             case 401:
               logger.log(permissionsMessageType.toString(), Level.SEVERE,
                   "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
-                      "Please verify that your API Token is correct! All " + entityType + " will " +
+                      "Please verify that your " + tokenIdentifier + " is correct! All " + entityType + " will " +
                       "be discarded until the service is restarted.");
               featureDisabledStatusCode.set(statusCode);
               dropped.inc(items.size());

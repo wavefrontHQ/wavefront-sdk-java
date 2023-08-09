@@ -1,4 +1,4 @@
-package com.wavefront.sdk.common.clients.service;
+package com.wavefront.sdk.common.clients.service.token;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,47 +13,56 @@ import java.util.Base64;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 
-public class CSPServerToServerTokenService implements TokenService {
+public class CSPServerToServerTokenService implements TokenService, Runnable {
+  private static final Logger log = Logger.getLogger(CSPServerToServerTokenService.class.getCanonicalName());
+
   private final static String OAUTH_PATH = "/csp/gateway/am/api/auth/authorize";
-  private final static int CONNECT_TIMEOUT = 30_000;
-  private final static int READ_TIMEOUT = 10_000;
   private final static int TEN_MINUTES = 600;
   private final static int THIRTY_SECONDS = 30;
   private final static int THREE_MINUTES = 180;
 
   private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("csp-server-to-server-token-service"));
   private final ObjectMapper mapper = new ObjectMapper();
+  private final AtomicBoolean tokenReady = new AtomicBoolean(false);
 
   private final String cspBaseURL;
   private final String cspClientId;
   private final String cspClientSecret;
 
+  private final int connectTimeoutMillis;
+  private final int readTimeoutMillis;
   private String cspAccessToken;
-  private boolean firstRun = false;
 
   public CSPServerToServerTokenService(final String cspBaseURL, final String cspClientId, final String cspClientSecret) {
     this.cspBaseURL = cspBaseURL;
     this.cspClientId = cspClientId;
     this.cspClientSecret = cspClientSecret;
+    this.connectTimeoutMillis = 30_000;
+    this.readTimeoutMillis = 10_000;
   }
 
-  // TODO - schedule threads?
-  // TODO - error handling
-  // TODO - tests
+  public CSPServerToServerTokenService(final String cspBaseURL, final String cspClientId, final String cspClientSecret, final int connectTimeoutMillis, final int readTimeoutMillis) {
+    this.cspBaseURL = cspBaseURL;
+    this.cspClientId = cspClientId;
+    this.cspClientSecret = cspClientSecret;
+    this.connectTimeoutMillis = connectTimeoutMillis;
+    this.readTimeoutMillis = readTimeoutMillis;
+  }
 
   @Override
-  public String getToken() {
+  public synchronized String getToken() {
     // First access gets the token and is blocking, which schedules the next token fetch.
-    if (!firstRun) {
+    if (!tokenReady.get()) {
       run();
-      firstRun = true;
+      tokenReady.set(true);
     }
 
     return cspAccessToken;
   }
 
-  // TODO - CLEANUP
   private String getCSPToken() {
     HttpURLConnection urlConn = null;
 
@@ -69,8 +78,8 @@ public class CSPServerToServerTokenService implements TokenService {
       urlConn.addRequestProperty("Authorization", "Basic " + buildHttpBasicToken(cspClientId, cspClientSecret));
       urlConn.setRequestProperty("Content-Length", Integer.toString(postData.length));
 
-      urlConn.setConnectTimeout(CONNECT_TIMEOUT);
-      urlConn.setReadTimeout(READ_TIMEOUT);
+      urlConn.setConnectTimeout(connectTimeoutMillis);
+      urlConn.setReadTimeout(readTimeoutMillis);
 
       //Send request
       final DataOutputStream wr = new DataOutputStream (urlConn.getOutputStream());
@@ -82,35 +91,45 @@ public class CSPServerToServerTokenService implements TokenService {
 
       if (statusCode == 200) {
         try {
-          final CSPResponse parsedResponse = mapper.readValue(urlConn.getInputStream(), CSPResponse.class);
+          final CSPAuthorizeResponse parsedResponse = mapper.readValue(urlConn.getInputStream(), CSPAuthorizeResponse.class);
 
-          System.out.println(parsedResponse.accessToken);
-          System.out.println(parsedResponse.scope);
-          System.out.println(parsedResponse.expiresIn);
+          // TODO - make sure direct ingestion is enabled in scopes?
 
+          // Schedule token refresh in the future
           executor.schedule(this::run, getThreadDelay(parsedResponse.expiresIn), TimeUnit.SECONDS);
 
           return parsedResponse.accessToken;
         } catch (JsonProcessingException e) {
-          e.printStackTrace();
+          log.info("The request to CSP returned invalid json. Please restart your app.");
+
+          return "INVALID_TOKEN";
+        }
+      } else {
+        log.info("The request to CSP returned: " + statusCode);
+
+        if (statusCode >= 500 && statusCode < 600) {
+          log.info("The Wavefront SDK will try to reauthenticate with CSP on the next request.");
+          tokenReady.set(false);
 
           return null;
         }
+
+        // Anything not 5xx will return INVALID_TOKEN
+        return "INVALID_TOKEN";
       }
 
     } catch (IOException ex) {
-      System.out.println("WOOOA SAD");
-      if (urlConn != null) {
-        // return safeGetResponseCodeAndClose(urlConn);
-      }
-    }
+      // Connection Problem
+      log.warning("Error connecting to CSP: " + ex.getLocalizedMessage());
 
-    System.out.println("WOOOA NOOOO");
-    return null;
+      log.info("The Wavefront SDK will try to reauthenticate with CSP on the next request.");
+      tokenReady.set(false);
+
+      return null;
+    }
   }
 
   private int getThreadDelay(final int expiresIn) {
-    // TODO - what times make the most sense?
     if (expiresIn < TEN_MINUTES) {
       return expiresIn - THIRTY_SECONDS;
     }
@@ -118,7 +137,7 @@ public class CSPServerToServerTokenService implements TokenService {
     return expiresIn - THREE_MINUTES;
   }
 
-  private void run() {
+  public synchronized void run() {
     this.cspAccessToken = getCSPToken();
   }
 

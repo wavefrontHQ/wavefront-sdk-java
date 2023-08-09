@@ -3,6 +3,9 @@ package com.wavefront.sdk.common.clients;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.common.clients.service.token.CSPServerToServerTokenService;
+import com.wavefront.sdk.common.clients.service.token.NoopTokenService;
+import com.wavefront.sdk.common.clients.service.token.WavefrontTokenService;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
 
@@ -22,10 +25,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.easymock.EasyMock.*;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for the {@link WavefrontClient} class
@@ -214,6 +214,28 @@ public class WavefrontClientTest {
 
   @Nested
   class Builder {
+
+    @Test
+    public void tokenServiceClassTest() {
+      WavefrontClient wfClient = new WavefrontClient.Builder("", "TOKEN")
+              .build();
+      assertNotNull(wfClient);
+      assertNotNull(wfClient.getTokenService());
+      assertEquals(wfClient.getTokenService().getClass().getSimpleName(), WavefrontTokenService.class.getSimpleName());
+
+      wfClient = new WavefrontClient.Builder("")
+              .build();
+      assertNotNull(wfClient);
+      assertNotNull(wfClient.getTokenService());
+      assertEquals(wfClient.getTokenService().getClass().getSimpleName(), NoopTokenService.class.getSimpleName());
+
+      wfClient = new WavefrontClient.Builder("", "cspBaseUrl", "cspClientId", "cspClientSecret")
+              .build();
+      assertNotNull(wfClient);
+      assertNotNull(wfClient.getTokenService());
+      assertEquals(wfClient.getTokenService().getClass().getSimpleName(), CSPServerToServerTokenService.class.getSimpleName());
+    }
+
     @Nested
     class ValidateEndpoint {
       @Test
