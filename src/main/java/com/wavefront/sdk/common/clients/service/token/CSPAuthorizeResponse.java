@@ -8,6 +8,7 @@ public class CSPResponse {
   @JsonProperty("token_type")
   public String tokenType;
 
+  // This is a timestamp
   @JsonProperty("expires_in")
   public int expiresIn;
 
