@@ -136,11 +136,19 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
   }
 
   private int getThreadDelay(final int expiresIn) {
+    int retVal;
+
     if (expiresIn < TEN_MINUTES) {
-      return expiresIn - THIRTY_SECONDS;
+      retVal = expiresIn - THIRTY_SECONDS;
+    } else {
+      retVal = expiresIn - THREE_MINUTES;
     }
 
-    return expiresIn - THREE_MINUTES;
+    if (retVal <= 0) {
+      retVal = 60;
+    }
+
+    return retVal;
   }
 
   public synchronized void run() {
