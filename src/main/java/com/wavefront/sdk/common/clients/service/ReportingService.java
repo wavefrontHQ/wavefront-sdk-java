@@ -1,6 +1,7 @@
 package com.wavefront.sdk.common.clients.service;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.common.clients.service.token.TokenService;
@@ -41,8 +42,8 @@ public class ReportingService implements ReportAPI {
   /**
    * <p>Constructor for ReportingService.</p>
    *
-   * @param uri a {@link java.net.URI} object
-   * @param tokenService a {@link TokenService} object
+   * @param uri                                    a {@link java.net.URI} object
+   * @param tokenService                           a {@link TokenService} object
    * @param reportingServiceLogSuppressTimeSeconds a long
    */
   public ReportingService(URI uri, TokenService tokenService, long reportingServiceLogSuppressTimeSeconds) {
@@ -56,7 +57,9 @@ public class ReportingService implements ReportAPI {
             ReportingService.class.getCanonicalName()), reportingServiceLogSuppressTimeSeconds, TimeUnit.SECONDS);
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public int send(String format, InputStream stream) {
     HttpURLConnection urlConn = null;
@@ -96,7 +99,9 @@ public class ReportingService implements ReportAPI {
     return statusCode;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public int sendEvent(InputStream stream) {
     HttpURLConnection urlConn = null;

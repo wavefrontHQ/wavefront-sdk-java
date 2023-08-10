@@ -1,6 +1,7 @@
 package com.wavefront.sdk.common.clients.service.token;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class CSPAuthorizeResponse {
   @JsonProperty("id_token")
   public String idToken;

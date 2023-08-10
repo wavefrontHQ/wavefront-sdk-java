@@ -854,7 +854,9 @@ public class UtilsTest {
   @Test
   public void testIsNullOrEmpty() {
     assertTrue(Utils.isNullOrEmpty(null));
+
     assertTrue(Utils.isNullOrEmpty(""));
+
     assertFalse(Utils.isNullOrEmpty("hello"));
   }
 

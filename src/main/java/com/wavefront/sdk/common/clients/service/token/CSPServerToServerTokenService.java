@@ -70,8 +70,8 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
   private String getCSPToken() {
     HttpURLConnection urlConn = null;
 
-    final String urlParameters  = "grant_type=client_credentials";
-    final byte[] postData = urlParameters.getBytes( StandardCharsets.UTF_8 );
+    final String urlParameters = "grant_type=client_credentials";
+    final byte[] postData = urlParameters.getBytes(StandardCharsets.UTF_8);
 
     try {
       final URL url = new URL(cspBaseURL + OAUTH_PATH);
@@ -86,7 +86,7 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
       urlConn.setReadTimeout(readTimeoutMillis);
 
       //Send request
-      final DataOutputStream wr = new DataOutputStream (urlConn.getOutputStream());
+      final DataOutputStream wr = new DataOutputStream(urlConn.getOutputStream());
       wr.write(postData);
       wr.flush();
       wr.close();

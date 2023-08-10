@@ -1,9 +1,9 @@
 package com.wavefront.sdk.common.clients;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.NamedThreadFactory;
 import com.wavefront.sdk.common.Pair;
@@ -161,7 +161,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private TimeUnit flushIntervalTimeUnit = TimeUnit.SECONDS;
     private int messageSizeBytes = Integer.MAX_VALUE;
     private boolean includeSdkMetrics = true;
-    private Map<String, String> tags = Maps.newHashMap();
+    private final Map<String, String> tags = Maps.newHashMap();
 
     private URI metricsUri;
     private URI tracesUri;
@@ -180,12 +180,12 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     /**
      * Create a new WavefrontClient.Builder
      *
-     * @param server A server URL of the form "https://clusterName.wavefront.com" or
-     *               "http://internal.proxy.com:port"
-     * @param token  A valid API token with direct ingestion permissions
-     * @param cspBaseUrl  A server URL that points to the CSP service
-     * @param cspClientId  Client ID for CSP
-     * @param cspClientSecret  Client Secret for CSP
+     * @param server          A server URL of the form "https://clusterName.wavefront.com" or
+     *                        "http://internal.proxy.com:port"
+     * @param token           A valid API token with direct ingestion permissions
+     * @param cspBaseUrl      A server URL that points to the CSP service
+     * @param cspClientId     Client ID for CSP
+     * @param cspClientSecret Client Secret for CSP
      */
     public Builder(String server, @Nullable String token, @Nullable String cspBaseUrl, @Nullable String cspClientId, @Nullable String cspClientSecret) {
       this.server = server;
@@ -198,11 +198,11 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     /**
      * Create a new WavefrontClient.Builder
      *
-     * @param server A server URL of the form "https://clusterName.wavefront.com" or
-     *               "http://internal.proxy.com:port"
-     * @param cspBaseUrl  A server URL that points to the CSP service
-     * @param cspClientId  Client ID for CSP
-     * @param cspClientSecret  Client Secret for CSP
+     * @param server          A server URL of the form "https://clusterName.wavefront.com" or
+     *                        "http://internal.proxy.com:port"
+     * @param cspBaseUrl      A server URL that points to the CSP service
+     * @param cspClientId     Client ID for CSP
+     * @param cspClientSecret Client Secret for CSP
      */
     public Builder(String server, @Nullable String cspBaseUrl, @Nullable String cspClientId, @Nullable String cspClientSecret) {
       this(server, null, cspBaseUrl, cspClientId, cspClientSecret);
@@ -313,6 +313,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
 
     /**
      * Set the tags to apply to the internal SDK metrics
+     *
      * @param tags a map of point tags to apply to the internal sdk metrics
      * @return {@code this}
      */
@@ -371,7 +372,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         this.metricsUri = buildUri(this.server, this.metricsPort);
         this.tracesUri = buildUri(this.server, this.tracesPort);
       } catch (URISyntaxException e) {
-          throw new IllegalStateException(e);
+        throw new IllegalStateException(e);
       }
 
       return new WavefrontClient(this);
@@ -384,7 +385,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       }
 
       return new URI(uri.getScheme(), null, uri.getHost(), port, uri.getPath(), uri.getQuery(),
-            uri.getFragment());
+          uri.getFragment());
     }
   }
 
@@ -497,7 +498,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     this.clientId = builder.server;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public String getClientId() {
     return clientId;
@@ -507,7 +510,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     return tokenService;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void sendMetric(String name, double value, @Nullable Long timestamp,
                          @Nullable String source, @Nullable Map<String, String> tags)
@@ -533,7 +538,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void sendFormattedMetric(String point) throws IOException {
     if (closed.get()) {
@@ -555,7 +562,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void sendDistribution(String name, List<Pair<Double, Integer>> centroids,
                                Set<HistogramGranularity> histogramGranularities,
@@ -585,10 +594,12 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void sendLog(String name, double value, Long timestamp, String source,
-                      Map<String, String> tags) throws IOException {
+      Map<String, String> tags) throws IOException {
     if (closed.get()) {
       throw new IOException("attempt to send using closed sender");
     }
@@ -611,7 +622,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void sendEvent(String name, long startMillis, long endMillis, @Nullable String source,
                         @Nullable Map<String, String> tags,
@@ -645,7 +658,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void sendSpan(String name, long startMillis, long durationMillis,
                        @Nullable String source, UUID traceId, UUID spanId,
@@ -672,7 +687,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         String spanSecondaryId = null;
         if (tags != null) {
           spanSecondaryId = tags.stream().filter(pair -> pair._1.equals(SPAN_SECONDARY_ID_KEY))
-                  .map(pair -> pair._2).findFirst().orElse(null);
+              .map(pair -> pair._2).findFirst().orElse(null);
         }
         sendSpanLogs(traceId, spanId, spanLogs, span, spanSecondaryId);
       }
@@ -708,7 +723,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void run() {
     try {
@@ -719,7 +736,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void flush() throws IOException {
     if (closed.get()) {
@@ -893,14 +912,18 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     return new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8));
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public int getFailureCount() {
     return (int) (pointReportErrors.count() + histogramReportErrors.count() +
         spanReportErrors.count() + eventsReportErrors.count());
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public synchronized void close() {
     if (!closed.compareAndSet(false, true)) {
@@ -928,13 +951,13 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   /**
    * Dequeue and return a batch of at most N items from buffer (where N = batchSize), broken into
    * chunks where each chunk has at most M bytes of data (where M = messageSizeBytes).
-   *
+   * <p>
    * Visible for testing.
    *
-   * @param buffer            The buffer queue to retrieve items from.
-   * @param batchSize         The maximum number of items to retrieve from the buffer.
-   * @param messageSizeBytes  The maximum number of bytes in each chunk.
-   * @param dropped           A counter counting the number of items that are dropped.
+   * @param buffer           The buffer queue to retrieve items from.
+   * @param batchSize        The maximum number of items to retrieve from the buffer.
+   * @param messageSizeBytes The maximum number of bytes in each chunk.
+   * @param dropped          A counter counting the number of items that are dropped.
    * @return A batch of items retrieved from buffer.
    */
   static List<List<String>> getBatch(LinkedBlockingQueue<String> buffer, int batchSize,
