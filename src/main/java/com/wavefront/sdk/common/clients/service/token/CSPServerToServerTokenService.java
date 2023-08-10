@@ -3,18 +3,22 @@ package com.wavefront.sdk.common.clients.service.token;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wavefront.sdk.common.NamedThreadFactory;
+import com.wavefront.sdk.common.Utils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class CSPServerToServerTokenService implements TokenService, Runnable {
   private static final Logger log = Logger.getLogger(CSPServerToServerTokenService.class.getCanonicalName());
@@ -93,10 +97,12 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
         try {
           final CSPAuthorizeResponse parsedResponse = mapper.readValue(urlConn.getInputStream(), CSPAuthorizeResponse.class);
 
-          // TODO - make sure direct ingestion is enabled in scopes?
+          if (!hasDirectIngestScope(parsedResponse.scope)) {
+            log.warning("The CSP response did not find any scope matching 'aoa:directDataIngestion' which is required for Wavefront direct ingestion.");
+          }
 
           // Schedule token refresh in the future
-          executor.schedule(this::run, getThreadDelay(parsedResponse.expiresIn), TimeUnit.SECONDS);
+          executor.schedule(this, getThreadDelay(parsedResponse.expiresIn), TimeUnit.SECONDS);
 
           return parsedResponse.accessToken;
         } catch (JsonProcessingException e) {
@@ -139,6 +145,18 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
 
   public synchronized void run() {
     this.cspAccessToken = getCSPToken();
+  }
+
+  private static List<String> parseScopes(final String scope) {
+    return Arrays.stream(scope.split("\\s")).collect(Collectors.toList());
+  }
+
+  public static boolean hasDirectIngestScope(final String scopeList) {
+    if (!Utils.isNullOrEmpty(scopeList)) {
+      return parseScopes(scopeList).stream().anyMatch(s -> s.contains("aoa:directDataIngestion"));
+    }
+
+    return false;
   }
 
   private String buildHttpBasicToken(final String cspClientId, final String cspClientSecret) {

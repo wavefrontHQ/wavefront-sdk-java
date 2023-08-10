@@ -8,11 +8,26 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static com.wavefront.sdk.common.clients.service.token.CSPServerToServerTokenService.hasDirectIngestScope;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CSPServerToServerTokenServiceTest {
+
+  @Test
+  public void testHasDirectIngestScope() {
+    final String uuid = UUID.randomUUID().toString();
+
+    final String scopeString = "external/" + uuid + "/*/aoa:directDataIngestion external/" + uuid + "/aoa:directDataIngestion csp:org_member";
+
+    assertTrue(hasDirectIngestScope(scopeString));
+    assertFalse(hasDirectIngestScope("no direct data ingestion scope"));
+    assertFalse(hasDirectIngestScope(""));
+    assertFalse(hasDirectIngestScope(null));
+  }
 
   @Nested
   class WireMockTests {
