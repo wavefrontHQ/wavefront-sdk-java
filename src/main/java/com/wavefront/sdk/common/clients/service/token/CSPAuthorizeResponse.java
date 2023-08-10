@@ -8,7 +8,7 @@ public class CSPAuthorizeResponse {
   @JsonProperty("token_type")
   public String tokenType;
 
-  // This is a timestamp
+  // This is in seconds
   @JsonProperty("expires_in")
   public int expiresIn;
 
