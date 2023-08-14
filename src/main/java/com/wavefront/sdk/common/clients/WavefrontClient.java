@@ -187,7 +187,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param cspClientId     Client ID for CSP
      * @param cspClientSecret Client Secret for CSP
      */
-    public Builder(String server, @Nullable String token, @Nullable String cspBaseUrl, @Nullable String cspClientId, @Nullable String cspClientSecret) {
+    private Builder(String server, @Nullable String token, @Nullable String cspBaseUrl, @Nullable String cspClientId, @Nullable String cspClientSecret) {
       this.server = server;
       this.token = token;
       this.cspBaseUrl = cspBaseUrl;
@@ -411,10 +411,13 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     switch (tokenService.getClass().getSimpleName()) {
       case "CSPServerToServerTokenService":
         logger.log(Level.INFO, "The Wavefront SDK will use CSP authentication when communicating with the Wavefront Backend for Direct Ingestion.");
+        break;
       case "WavefrontTokenService":
         logger.log(Level.INFO, "The Wavefront SDK will use an API TOKEN when communicating with the Wavefront Backend for Direct Ingestion.");
+        break;
       case "NoopTokenService":
         logger.log(Level.INFO, "The Wavefront SDK will communicate with a Wavefront Proxy.");
+      break;
     }
 
     batchSize = builder.batchSize;

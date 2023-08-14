@@ -70,6 +70,8 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
   private String getCSPToken() {
     HttpURLConnection urlConn = null;
 
+    log.info("Attempting to get a CSP token");
+
     final String urlParameters = "grant_type=client_credentials";
     final byte[] postData = urlParameters.getBytes(StandardCharsets.UTF_8);
 
@@ -96,6 +98,8 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
       if (statusCode == 200) {
         try {
           final CSPAuthorizeResponse parsedResponse = mapper.readValue(urlConn.getInputStream(), CSPAuthorizeResponse.class);
+
+          log.info("A CSP token has been received.");
 
           if (!hasDirectIngestScope(parsedResponse.scope)) {
             log.warning("The CSP response did not find any scope matching 'aoa:directDataIngestion' which is required for Wavefront direct ingestion.");
