@@ -165,7 +165,7 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
 
   public static boolean hasDirectIngestScope(final String scopeList) {
     if (!Utils.isNullOrEmpty(scopeList)) {
-      return parseScopes(scopeList).stream().anyMatch(s -> s.contains("aoa:directDataIngestion"));
+      return parseScopes(scopeList).stream().anyMatch(s -> s.contains("aoa:directDataIngestion") || s.contains("aoa/*") || s.contains("aoa:*"));
     }
 
     return false;
