@@ -106,8 +106,6 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
             log.warning("The CSP response did not find any scope matching 'aoa:directDataIngestion' which is required for Wavefront direct ingestion.");
           }
 
-          log.info("A CSP token has been received.");
-
           // Schedule token refresh in the future
           int threadDelay = getThreadDelay(parsedResponse.expiresIn);
 

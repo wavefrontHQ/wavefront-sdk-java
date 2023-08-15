@@ -144,12 +144,14 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   private final TokenService tokenService;
 
   public static class Builder {
+    private static final String CSP_DEFAULT_BASE_URL = "https://console.cloud.vmware.com/";
     // Required parameters
     private final String server;
     private final String token;
-    private final String cspBaseUrl;
     private final String cspClientId;
     private final String cspClientSecret;
+
+    private String cspBaseUrl;
 
     // Optional parameters
     private int metricsPort = -1;
@@ -200,12 +202,11 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      *
      * @param server          A server URL of the form "https://clusterName.wavefront.com" or
      *                        "http://internal.proxy.com:port"
-     * @param cspBaseUrl      A server URL that points to the CSP service
      * @param cspClientId     Client ID for CSP
      * @param cspClientSecret Client Secret for CSP
      */
-    public Builder(String server, @Nullable String cspBaseUrl, @Nullable String cspClientId, @Nullable String cspClientSecret) {
-      this(server, null, cspBaseUrl, cspClientId, cspClientSecret);
+    public Builder(String server, @Nullable String cspClientId, @Nullable String cspClientSecret) {
+      this(server, null, CSP_DEFAULT_BASE_URL, cspClientId, cspClientSecret);
     }
 
     /**
@@ -225,6 +226,11 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      */
     public Builder maxQueueSize(int maxQueueSize) {
       this.maxQueueSize = maxQueueSize;
+      return this;
+    }
+
+    public Builder cspBaseUrl(final String cspBaseUrl) {
+      this.cspBaseUrl = cspBaseUrl;
       return this;
     }
 
