@@ -27,6 +27,7 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
   private final static int TEN_MINUTES = 600;
   private final static int THIRTY_SECONDS = 30;
   private final static int THREE_MINUTES = 180;
+  private static int DEFAULT_THREAD_DELAY = 60;
 
   private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("csp-server-to-server-token-service"));
   private final ObjectMapper mapper = new ObjectMapper();
@@ -105,8 +106,14 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
             log.warning("The CSP response did not find any scope matching 'aoa:directDataIngestion' which is required for Wavefront direct ingestion.");
           }
 
+          log.info("A CSP token has been received.");
+
           // Schedule token refresh in the future
-          executor.schedule(this, getThreadDelay(parsedResponse.expiresIn), TimeUnit.SECONDS);
+          int threadDelay = getThreadDelay(parsedResponse.expiresIn);
+
+          log.info("Will schedule the CSP token to be refreshed in: " + threadDelay + " seconds");
+
+          executor.schedule(this, threadDelay, TimeUnit.SECONDS);
 
           return parsedResponse.accessToken;
         } catch (JsonProcessingException e) {
@@ -149,7 +156,7 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
     }
 
     if (retVal <= 0) {
-      retVal = 60;
+      retVal = DEFAULT_THREAD_DELAY;
     }
 
     return retVal;
