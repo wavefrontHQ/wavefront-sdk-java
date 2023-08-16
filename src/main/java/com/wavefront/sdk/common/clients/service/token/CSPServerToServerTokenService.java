@@ -71,8 +71,6 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
   private String getCSPToken() {
     HttpURLConnection urlConn = null;
 
-    log.info("Attempting to get a CSP token");
-
     final String urlParameters = "grant_type=client_credentials";
     final byte[] postData = urlParameters.getBytes(StandardCharsets.UTF_8);
 
@@ -100,8 +98,6 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
         try {
           final CSPAuthorizeResponse parsedResponse = mapper.readValue(urlConn.getInputStream(), CSPAuthorizeResponse.class);
 
-          log.info("A CSP token has been received.");
-
           if (!hasDirectIngestScope(parsedResponse.scope)) {
             log.warning("The CSP response did not find any scope matching 'aoa:directDataIngestion' which is required for Wavefront direct ingestion.");
           }
@@ -109,18 +105,18 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
           // Schedule token refresh in the future
           int threadDelay = getThreadDelay(parsedResponse.expiresIn);
 
-          log.info("Will schedule the CSP token to be refreshed in: " + threadDelay + " seconds");
+          log.info("A CSP token has been received. Will schedule the CSP token to be refreshed in: " + threadDelay + " seconds");
 
           executor.schedule(this, threadDelay, TimeUnit.SECONDS);
 
           return parsedResponse.accessToken;
         } catch (JsonProcessingException e) {
-          log.info("The request to CSP returned invalid json. Please restart your app.");
+          log.severe("The request to CSP returned invalid json. Please restart your app.");
 
           return "INVALID_TOKEN";
         }
       } else {
-        log.info("The request to CSP returned: " + statusCode);
+        log.warning("The request to CSP returned: " + statusCode);
 
         if (statusCode >= 500 && statusCode < 600) {
           log.info("The Wavefront SDK will try to reauthenticate with CSP on the next request.");

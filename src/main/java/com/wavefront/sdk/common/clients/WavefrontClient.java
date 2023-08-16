@@ -410,7 +410,6 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
       tokenService = new CSPServerToServerTokenService(builder.cspBaseUrl, builder.cspClientId, builder.cspClientSecret);
     } else {
-      // NOOP LOGS
       tokenService = new NoopTokenService();
     }
 
