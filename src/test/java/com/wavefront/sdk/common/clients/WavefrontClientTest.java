@@ -245,7 +245,7 @@ public class WavefrontClientTest {
       assertNotNull(wfClient.getTokenService());
       assertEquals(wfClient.getTokenService().getClass().getSimpleName(), NoopTokenService.class.getSimpleName());
 
-      wfClient = new WavefrontClient.Builder("", "cspBaseUrl", "cspClientId", "cspClientSecret")
+      wfClient = new WavefrontClient.Builder("", "cspClientId", "cspClientSecret")
               .build();
       assertNotNull(wfClient);
       assertNotNull(wfClient.getTokenService());
