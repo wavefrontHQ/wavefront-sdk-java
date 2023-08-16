@@ -17,6 +17,7 @@ import java.util.UUID;
 import static com.wavefront.sdk.common.Utils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -848,6 +849,15 @@ public class UtilsTest {
     assertEquals(1.0010D, Utils.convertSemVerToGauge("1.0.10"));
 
     assertEquals(1.1010D, Utils.convertSemVerToGauge("1.10.10"));
+  }
+
+  @Test
+  public void testIsNullOrEmpty() {
+    assertTrue(Utils.isNullOrEmpty(null));
+
+    assertTrue(Utils.isNullOrEmpty(""));
+
+    assertFalse(Utils.isNullOrEmpty("hello"));
   }
 
 }

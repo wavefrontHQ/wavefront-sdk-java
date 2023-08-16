@@ -1,8 +1,10 @@
 package com.wavefront.sdk.common.clients.service;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import com.wavefront.sdk.common.Constants;
-import com.wavefront.sdk.common.annotation.Nullable;
+import com.wavefront.sdk.common.Utils;
+import com.wavefront.sdk.common.clients.service.token.TokenService;
 import com.wavefront.sdk.common.logging.MessageSuppressingLogger;
 
 import java.io.IOException;
@@ -28,7 +30,8 @@ public class ReportingService implements ReportAPI {
   // This logger is intended to be configurable in the WavefrontClient.Builder. Given that the invoker controls the
   // configuration, this is not a static logger.
   private final MessageSuppressingLogger messageSuppressingLogger;
-  private final String token;
+
+  private final TokenService tokenService;
   private final URI uri;
 
   private static final int CONNECT_TIMEOUT_MILLIS = 30000;
@@ -39,13 +42,14 @@ public class ReportingService implements ReportAPI {
   /**
    * <p>Constructor for ReportingService.</p>
    *
-   * @param uri a {@link java.net.URI} object
-   * @param token a {@link java.lang.String} object
+   * @param uri                                    a {@link java.net.URI} object
+   * @param tokenService                           a {@link TokenService} object
    * @param reportingServiceLogSuppressTimeSeconds a long
    */
-  public ReportingService(URI uri, @Nullable String token, long reportingServiceLogSuppressTimeSeconds) {
+  public ReportingService(URI uri, TokenService tokenService, long reportingServiceLogSuppressTimeSeconds) {
     this.uri = uri;
-    this.token = token;
+    this.tokenService = tokenService;
+
     // Setting suppress time to 0 invalidates the cache used by the message suppressing logger and doesn't log anything.
     // So defaulting to the minimum of 1 second.
     reportingServiceLogSuppressTimeSeconds = reportingServiceLogSuppressTimeSeconds <= 0 ? 1 : reportingServiceLogSuppressTimeSeconds;
@@ -53,7 +57,9 @@ public class ReportingService implements ReportAPI {
             ReportingService.class.getCanonicalName()), reportingServiceLogSuppressTimeSeconds, TimeUnit.SECONDS);
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public int send(String format, InputStream stream) {
     HttpURLConnection urlConn = null;
@@ -65,9 +71,13 @@ public class ReportingService implements ReportAPI {
       urlConn.setRequestMethod("POST");
       urlConn.addRequestProperty("Content-Type", "application/octet-stream");
       urlConn.addRequestProperty("Content-Encoding", "gzip");
-      if (token != null && !token.equals("")) {
+
+      String token = tokenService.getToken();
+
+      if (!Utils.isNullOrEmpty(token)) {
         urlConn.addRequestProperty("Authorization", "Bearer " + token);
       }
+
       urlConn.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
       urlConn.setReadTimeout(READ_TIMEOUT_MILLIS);
 
@@ -89,7 +99,9 @@ public class ReportingService implements ReportAPI {
     return statusCode;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public int sendEvent(InputStream stream) {
     HttpURLConnection urlConn = null;
@@ -100,7 +112,9 @@ public class ReportingService implements ReportAPI {
       urlConn.setDoOutput(true);
       urlConn.setRequestMethod("POST");
 
-      if (token != null && !token.equals("")) {
+      String token = tokenService.getToken();
+
+      if (!Utils.isNullOrEmpty(token)) {
         urlConn.addRequestProperty("Authorization", "Bearer " + token);
       }
       urlConn.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);

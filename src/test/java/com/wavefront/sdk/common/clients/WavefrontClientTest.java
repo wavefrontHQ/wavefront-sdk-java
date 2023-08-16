@@ -3,10 +3,13 @@ package com.wavefront.sdk.common.clients;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.wavefront.sdk.common.Pair;
+import com.wavefront.sdk.common.clients.service.token.CSPServerToServerTokenService;
+import com.wavefront.sdk.common.clients.service.token.NoopTokenService;
+import com.wavefront.sdk.common.clients.service.token.WavefrontTokenService;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
-
 import com.wavefront.sdk.entities.tracing.SpanLog;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -16,15 +19,28 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.net.ServerSocket;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.matching;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.easymock.EasyMock.*;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -214,6 +230,28 @@ public class WavefrontClientTest {
 
   @Nested
   class Builder {
+
+    @Test
+    public void tokenServiceClassTest() {
+      WavefrontClient wfClient = new WavefrontClient.Builder("", "TOKEN")
+              .build();
+      assertNotNull(wfClient);
+      assertNotNull(wfClient.getTokenService());
+      assertEquals(wfClient.getTokenService().getClass().getSimpleName(), WavefrontTokenService.class.getSimpleName());
+
+      wfClient = new WavefrontClient.Builder("")
+              .build();
+      assertNotNull(wfClient);
+      assertNotNull(wfClient.getTokenService());
+      assertEquals(wfClient.getTokenService().getClass().getSimpleName(), NoopTokenService.class.getSimpleName());
+
+      wfClient = new WavefrontClient.Builder("", "cspClientId", "cspClientSecret")
+              .build();
+      assertNotNull(wfClient);
+      assertNotNull(wfClient.getTokenService());
+      assertEquals(wfClient.getTokenService().getClass().getSimpleName(), CSPServerToServerTokenService.class.getSimpleName());
+    }
+
     @Nested
     class ValidateEndpoint {
       @Test
