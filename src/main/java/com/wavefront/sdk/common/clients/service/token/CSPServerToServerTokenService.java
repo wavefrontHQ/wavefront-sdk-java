@@ -116,7 +116,7 @@ public class CSPServerToServerTokenService implements TokenService, Runnable {
           return "INVALID_TOKEN";
         }
       } else {
-        log.warning("The request to CSP returned: " + statusCode);
+        log.severe("The request to CSP for a token failed with HTTP code: " + statusCode + ".");
 
         if (statusCode >= 500 && statusCode < 600) {
           log.info("The Wavefront SDK will try to reauthenticate with CSP on the next request.");
