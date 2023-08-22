@@ -6,31 +6,28 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-public class CSPServerToServerTokenService extends CSPTokenService {
+public class CSPUserTokenService extends CSPTokenService {
 //  log = Logger.getLogger(CSPServerToServerTokenService.class.getCanonicalName());
-  private final static String OAUTH_PATH = "/csp/gateway/am/api/auth/authorize";
+  private final static String OAUTH_PATH = "/csp/gateway/am/api/auth/api-tokens/authorize";
 
   private final String cspBaseURL;
-  private final String cspClientId;
-  private final String cspClientSecret;
+  private final String apiToken;
 
-  public CSPServerToServerTokenService(final String cspBaseURL, final String cspClientId, final String cspClientSecret) {
+  public CSPUserTokenService(final String cspBaseURL, final String apiToken) {
     this.cspBaseURL = cspBaseURL;
-    this.cspClientId = cspClientId;
-    this.cspClientSecret = cspClientSecret;
+    this.apiToken = apiToken;
   }
 
-  public CSPServerToServerTokenService(final String cspBaseURL, final String cspClientId, final String cspClientSecret, final int connectTimeoutMillis, final int readTimeoutMillis) {
+  public CSPUserTokenService(final String cspBaseURL, final String apiToken, final int connectTimeoutMillis, final int readTimeoutMillis) {
     super(connectTimeoutMillis, readTimeoutMillis);
     this.cspBaseURL = cspBaseURL;
-    this.cspClientId = cspClientId;
-    this.cspClientSecret = cspClientSecret;
+    this.apiToken = apiToken;
   }
 
   protected String getCSPToken() {
     HttpURLConnection urlConn = null;
 
-    final String urlParameters = "grant_type=client_credentials";
+    final String urlParameters = "grant_type=api_token&refresh_token="+apiToken;
     final byte[] postData = urlParameters.getBytes(StandardCharsets.UTF_8);
 
     try {
@@ -39,7 +36,7 @@ public class CSPServerToServerTokenService extends CSPTokenService {
       urlConn.setDoOutput(true);
       urlConn.setRequestMethod("POST");
       urlConn.addRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-      urlConn.addRequestProperty("Authorization", "Basic " + buildHttpBasicToken(cspClientId, cspClientSecret));
+      urlConn.addRequestProperty("Accept", "application/json");
       urlConn.setRequestProperty("Content-Length", Integer.toString(postData.length));
 
       urlConn.setConnectTimeout(connectTimeoutMillis);
