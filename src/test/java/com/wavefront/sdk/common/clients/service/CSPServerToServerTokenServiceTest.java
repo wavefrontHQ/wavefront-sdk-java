@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import com.wavefront.sdk.common.clients.service.token.CSPServerToServerTokenService;
+import com.wavefront.sdk.common.clients.service.token.CSPTokenService;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,7 +76,7 @@ class CSPServerToServerTokenServiceTest {
 
       CSPServerToServerTokenService cspServerToServerTokenService = new CSPServerToServerTokenService(mockBackend.baseUrl(), "N/A", "N/A");
 
-      Field field = CSPServerToServerTokenService.class.getDeclaredField("DEFAULT_THREAD_DELAY");
+      Field field = CSPTokenService.class.getDeclaredField("DEFAULT_THREAD_DELAY");;
       field.setAccessible(true);
       field.set(cspServerToServerTokenService, 1);
 
