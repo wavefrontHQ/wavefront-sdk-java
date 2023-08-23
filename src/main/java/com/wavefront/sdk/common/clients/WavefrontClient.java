@@ -13,6 +13,7 @@ import com.wavefront.sdk.common.annotation.NonNull;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.common.clients.service.ReportingService;
 import com.wavefront.sdk.common.clients.service.token.CSPServerToServerTokenService;
+import com.wavefront.sdk.common.clients.service.token.CSPUserTokenService;
 import com.wavefront.sdk.common.clients.service.token.NoopTokenService;
 import com.wavefront.sdk.common.clients.service.token.TokenService;
 import com.wavefront.sdk.common.clients.service.token.WavefrontTokenService;
@@ -152,6 +153,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private final String cspClientSecret;
 
     private String cspBaseUrl;
+    private String cspToken;
 
     // Optional parameters
     private int metricsPort = -1;
@@ -341,6 +343,19 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
 
     /**
+     * Set the provided token to be used for CSP User Authentication.
+     *
+     * @return {@code this}
+     */
+    public Builder useCSPToken() {
+      if (Utils.isNullOrEmpty(this.cspBaseUrl)) {
+        this.cspBaseUrl = CSP_DEFAULT_BASE_URL;
+      }
+      this.cspToken = this.token;
+      return this;
+    }
+
+    /**
      * For a given server endpoint, validate according to RFC 2396 and attempt
      * to make a connection
      *
@@ -405,10 +420,12 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
     defaultSource = tempSource;
 
-    if (!Utils.isNullOrEmpty(builder.token)) {
+    if (!Utils.isNullOrEmpty(builder.token) && Utils.isNullOrEmpty(builder.cspToken)) {
       tokenService = new WavefrontTokenService(builder.token);
     } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
       tokenService = new CSPServerToServerTokenService(builder.cspBaseUrl, builder.cspClientId, builder.cspClientSecret);
+    } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspToken)) {
+      tokenService = new CSPUserTokenService(builder.cspBaseUrl, builder.cspToken);
     } else {
       tokenService = new NoopTokenService();
     }
@@ -416,6 +433,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     switch (tokenService.getClass().getSimpleName()) {
       case "CSPServerToServerTokenService":
         logger.log(Level.INFO, "The Wavefront SDK will use CSP authentication when communicating with the Wavefront Backend for Direct Ingestion.");
+        break;
+      case "CSPUserTokenService":
+        logger.log(Level.INFO, "The Wavefront SDK will use CSP User Token authentication when communicating with the Wavefront Backend for Direct Ingestion.");
         break;
       case "WavefrontTokenService":
         logger.log(Level.INFO, "The Wavefront SDK will use an API TOKEN when communicating with the Wavefront Backend for Direct Ingestion.");
@@ -792,7 +812,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       throws IOException {
 
     String tokenIdentifier = "";
-    if (tokenService.getClass().equals(CSPServerToServerTokenService.class)) {
+    if (tokenService.getClass().equals(CSPServerToServerTokenService.class) || tokenService.getClass().equals(CSPUserTokenService.class) ) {
       tokenIdentifier = "CSP ACCESS TOKEN";
     } else if (tokenService.getClass().equals(WavefrontTokenService.class)) {
       tokenIdentifier = "API TOKEN";

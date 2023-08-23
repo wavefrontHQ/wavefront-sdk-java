@@ -25,21 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CSPServerToServerTokenServiceTest {
 
-  @Test
-  public void testHasDirectIngestScope() {
-    final String uuid = UUID.randomUUID().toString();
-
-    final String scopeString = "external/" + uuid + "/*/aoa:directDataIngestion external/" + uuid + "/aoa:directDataIngestion csp:org_member";
-
-    assertTrue(hasDirectIngestScope(scopeString));
-    assertFalse(hasDirectIngestScope("no direct data ingestion scope"));
-    assertFalse(hasDirectIngestScope(""));
-    assertFalse(hasDirectIngestScope(null));
-    assertTrue(hasDirectIngestScope("aoa/*"));
-    assertTrue(hasDirectIngestScope("some aoa/*"));
-    assertTrue(hasDirectIngestScope("aoa:*"));
-    assertTrue(hasDirectIngestScope("some aoa:*"));
-  }
+  public static final String AUTH_PATH = "/csp/gateway/am/api/auth/authorize";
 
   @Nested
   class WireMockTests {
@@ -60,7 +46,7 @@ class CSPServerToServerTokenServiceTest {
 
     @Test
     void testCSPReturnsAccessToken() {
-      mockBackend.stubFor(WireMock.post(urlPathMatching("/csp/gateway/am/api/auth/authorize")).willReturn(WireMock.ok(MOCK_RESPONSE)));
+      mockBackend.stubFor(WireMock.post(urlPathMatching(AUTH_PATH)).willReturn(WireMock.ok(MOCK_RESPONSE)));
       mockBackend.start();
 
       CSPServerToServerTokenService cspServerToServerTokenService = new CSPServerToServerTokenService(mockBackend.baseUrl(), "N/A", "N/A");
@@ -70,8 +56,8 @@ class CSPServerToServerTokenServiceTest {
 
     @Test
     void testCSPMultipleAccessTokens() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
-      createWireMockStubWithStates("/csp/gateway/am/api/auth/authorize", Scenario.STARTED, "second", MOCK_RESPONSE);
-      createWireMockStubWithStates("/csp/gateway/am/api/auth/authorize", "second", "third", MOCK_RESPONSE2);
+      createWireMockStubWithStates(AUTH_PATH, Scenario.STARTED, "second", MOCK_RESPONSE);
+      createWireMockStubWithStates(AUTH_PATH, "second", "third", MOCK_RESPONSE2);
       mockBackend.start();
 
       CSPServerToServerTokenService cspServerToServerTokenService = new CSPServerToServerTokenService(mockBackend.baseUrl(), "N/A", "N/A");
@@ -88,7 +74,7 @@ class CSPServerToServerTokenServiceTest {
 
     @Test
     void testCSPReturns401() {
-      mockBackend.stubFor(WireMock.post(urlPathMatching("/csp/gateway/am/api/auth/authorize")).willReturn(WireMock.unauthorized()));
+      mockBackend.stubFor(WireMock.post(urlPathMatching(AUTH_PATH)).willReturn(WireMock.unauthorized()));
       mockBackend.start();
 
       CSPServerToServerTokenService cspServerToServerTokenService = new CSPServerToServerTokenService(mockBackend.baseUrl(), "N/A", "N/A");
@@ -97,7 +83,7 @@ class CSPServerToServerTokenServiceTest {
 
     @Test
     void testCSPReturns500() {
-      mockBackend.stubFor(WireMock.post(urlPathMatching("/csp/gateway/am/api/auth/authorize")).willReturn(WireMock.serverError()));
+      mockBackend.stubFor(WireMock.post(urlPathMatching(AUTH_PATH)).willReturn(WireMock.serverError()));
       mockBackend.start();
 
       CSPServerToServerTokenService cspServerToServerTokenService = new CSPServerToServerTokenService(mockBackend.baseUrl(), "N/A", "N/A");
@@ -106,7 +92,7 @@ class CSPServerToServerTokenServiceTest {
 
     @Test
     void testCSPConnectionError() {
-      mockBackend.stubFor(WireMock.post(urlPathMatching("/csp/gateway/am/api/auth/authorize")).willReturn(WireMock.serverError()));
+      mockBackend.stubFor(WireMock.post(urlPathMatching(AUTH_PATH)).willReturn(WireMock.serverError()));
       mockBackend.setGlobalFixedDelay(5_000);
       mockBackend.start();
 

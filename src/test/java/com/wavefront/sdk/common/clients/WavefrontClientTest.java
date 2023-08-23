@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.clients.service.token.CSPServerToServerTokenService;
+import com.wavefront.sdk.common.clients.service.token.CSPUserTokenService;
 import com.wavefront.sdk.common.clients.service.token.NoopTokenService;
 import com.wavefront.sdk.common.clients.service.token.WavefrontTokenService;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
@@ -250,6 +251,12 @@ public class WavefrontClientTest {
       assertNotNull(wfClient);
       assertNotNull(wfClient.getTokenService());
       assertEquals(wfClient.getTokenService().getClass().getSimpleName(), CSPServerToServerTokenService.class.getSimpleName());
+
+      wfClient = new WavefrontClient.Builder("", "TOKEN")
+              .useCSPToken().build();
+      assertNotNull(wfClient);
+      assertNotNull(wfClient.getTokenService());
+      assertEquals(wfClient.getTokenService().getClass().getSimpleName(), CSPUserTokenService.class.getSimpleName());
     }
 
     @Nested

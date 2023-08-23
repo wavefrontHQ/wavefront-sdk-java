@@ -30,23 +30,6 @@ class CSPUserTokenServiceTest {
 
   public static final String AUTH_PATH = "/csp/gateway/am/api/auth/api-tokens/authorize";
 
-  //TODO Move up to abstract test
-  @Test
-  public void testHasDirectIngestScope() {
-    final String uuid = UUID.randomUUID().toString();
-
-    final String scopeString = "external/" + uuid + "/*/aoa:directDataIngestion external/" + uuid + "/aoa:directDataIngestion csp:org_member";
-
-    assertTrue(hasDirectIngestScope(scopeString));
-    assertFalse(hasDirectIngestScope("no direct data ingestion scope"));
-    assertFalse(hasDirectIngestScope(""));
-    assertFalse(hasDirectIngestScope(null));
-    assertTrue(hasDirectIngestScope("aoa/*"));
-    assertTrue(hasDirectIngestScope("some aoa/*"));
-    assertTrue(hasDirectIngestScope("aoa:*"));
-    assertTrue(hasDirectIngestScope("some aoa:*"));
-  }
-
   @Nested
   class WireMockTests {
     WireMockServer mockBackend;
