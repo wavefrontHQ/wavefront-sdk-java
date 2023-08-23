@@ -253,7 +253,7 @@ public class WavefrontClientTest {
       assertEquals(wfClient.getTokenService().getClass().getSimpleName(), CSPServerToServerTokenService.class.getSimpleName());
 
       wfClient = new WavefrontClient.Builder("", "TOKEN")
-              .useCSPToken().build();
+              .useTokenForCSP().build();
       assertNotNull(wfClient);
       assertNotNull(wfClient.getTokenService());
       assertEquals(wfClient.getTokenService().getClass().getSimpleName(), CSPUserTokenService.class.getSimpleName());

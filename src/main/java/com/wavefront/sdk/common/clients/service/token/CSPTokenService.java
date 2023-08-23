@@ -85,7 +85,7 @@ public abstract class CSPTokenService implements TokenService, Runnable {
     this.cspAccessToken = getCSPToken();
   }
 
-  protected String executeAndParseToken(HttpURLConnection urlConn, byte[] postData) throws IOException {
+  protected String requestAndParseToken(HttpURLConnection urlConn, byte[] postData) throws IOException {
     //Send request
     final DataOutputStream wr = new DataOutputStream(urlConn.getOutputStream());
     wr.write(postData);

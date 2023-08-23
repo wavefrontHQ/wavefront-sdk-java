@@ -42,7 +42,7 @@ public class CSPUserTokenService extends CSPTokenService {
       urlConn.setConnectTimeout(connectTimeoutMillis);
       urlConn.setReadTimeout(readTimeoutMillis);
 
-      return executeAndParseToken(urlConn, postData);
+      return requestAndParseToken(urlConn, postData);
 
     } catch (IOException ex) {
       // Connection Problem

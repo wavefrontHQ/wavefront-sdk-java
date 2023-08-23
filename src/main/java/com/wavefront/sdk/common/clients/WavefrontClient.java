@@ -153,7 +153,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private final String cspClientSecret;
 
     private String cspBaseUrl;
-    private String cspToken;
+    private String cspUserToken;
 
     // Optional parameters
     private int metricsPort = -1;
@@ -347,11 +347,11 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      *
      * @return {@code this}
      */
-    public Builder useCSPToken() {
+    public Builder useTokenForCSP() {
       if (Utils.isNullOrEmpty(this.cspBaseUrl)) {
         this.cspBaseUrl = CSP_DEFAULT_BASE_URL;
       }
-      this.cspToken = this.token;
+      this.cspUserToken = this.token;
       return this;
     }
 
@@ -420,12 +420,12 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
     defaultSource = tempSource;
 
-    if (!Utils.isNullOrEmpty(builder.token) && Utils.isNullOrEmpty(builder.cspToken)) {
+    if (!Utils.isNullOrEmpty(builder.token) && Utils.isNullOrEmpty(builder.cspUserToken)) {
       tokenService = new WavefrontTokenService(builder.token);
     } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
       tokenService = new CSPServerToServerTokenService(builder.cspBaseUrl, builder.cspClientId, builder.cspClientSecret);
-    } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspToken)) {
-      tokenService = new CSPUserTokenService(builder.cspBaseUrl, builder.cspToken);
+    } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspUserToken)) {
+      tokenService = new CSPUserTokenService(builder.cspBaseUrl, builder.cspUserToken);
     } else {
       tokenService = new NoopTokenService();
     }
