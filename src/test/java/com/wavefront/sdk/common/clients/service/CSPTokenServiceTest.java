@@ -33,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CSPTokenServiceTest {
 
-  @Nested
   class CSPServerTokenTests {
     public static final String SERVER_AUTH_PATH = "/csp/gateway/am/api/auth/authorize";
     public static final String USER_AUTH_PATH = "/csp/gateway/am/api/auth/api-tokens/authorize";
@@ -67,7 +66,7 @@ class CSPTokenServiceTest {
     @Test
     void testCSPMultipleAccessTokens() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
       createWireMockStubWithStates(SERVER_AUTH_PATH, Scenario.STARTED, "second", MOCK_RESPONSE);
-      createWireMockStubWithStates(SERVER_AUTH_PATH, "second", "third", MOCK_RESPONSE2);
+      createWireMockStubWithFinalState(SERVER_AUTH_PATH, "second", MOCK_RESPONSE2);
       mockBackend.start();
 
       CSPTokenService cspTokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(mockBackend.baseUrl(), "N/A", "N/A"));
@@ -127,6 +126,15 @@ class CSPTokenServiceTest {
           .inScenario("csp")
           .whenScenarioStateIs(currentState)
           .willSetStateTo(nextState)
+          .willReturn(aResponse()
+              .withStatus(200)
+              .withBody(responseBody)));
+    }
+
+    private void createWireMockStubWithFinalState(final String url, final String currentState, final String responseBody) {
+      mockBackend.stubFor(post(urlEqualTo(url))
+          .inScenario("csp")
+          .whenScenarioStateIs(currentState)
           .willReturn(aResponse()
               .withStatus(200)
               .withBody(responseBody)));

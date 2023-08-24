@@ -146,7 +146,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   private final TokenService tokenService;
 
   public static class Builder {
-    private static final String CSP_DEFAULT_BASE_URL = "https://console-stg.cloud.vmware.com/";
+    private static final String CSP_DEFAULT_BASE_URL = "https://console.cloud.vmware.com/";
     // Required parameters
     private final String server;
     private final String token;
@@ -420,7 +420,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
           "Unable to resolve local host name. Source will default to 'unknown'");
     }
     defaultSource = tempSource;
-    // TODO Clean up logic with checking CSP User Token
+
     if (!Utils.isNullOrEmpty(builder.token) && Utils.isNullOrEmpty(builder.cspUserToken)) {
       tokenService = new WavefrontTokenService(builder.token);
     } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
