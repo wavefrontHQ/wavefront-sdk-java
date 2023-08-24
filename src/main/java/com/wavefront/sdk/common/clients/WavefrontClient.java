@@ -12,8 +12,9 @@ import com.wavefront.sdk.common.WavefrontSender;
 import com.wavefront.sdk.common.annotation.NonNull;
 import com.wavefront.sdk.common.annotation.Nullable;
 import com.wavefront.sdk.common.clients.service.ReportingService;
-import com.wavefront.sdk.common.clients.service.token.CSPServerToServerTokenService;
-import com.wavefront.sdk.common.clients.service.token.CSPUserTokenService;
+import com.wavefront.sdk.common.clients.service.token.CSPServerTokenURLConnectionFactory;
+import com.wavefront.sdk.common.clients.service.token.CSPTokenService;
+import com.wavefront.sdk.common.clients.service.token.CSPUserTokenURLConnectionFactory;
 import com.wavefront.sdk.common.clients.service.token.NoopTokenService;
 import com.wavefront.sdk.common.clients.service.token.TokenService;
 import com.wavefront.sdk.common.clients.service.token.WavefrontTokenService;
@@ -145,7 +146,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   private final TokenService tokenService;
 
   public static class Builder {
-    private static final String CSP_DEFAULT_BASE_URL = "https://console.cloud.vmware.com/";
+    private static final String CSP_DEFAULT_BASE_URL = "https://console-stg.cloud.vmware.com/";
     // Required parameters
     private final String server;
     private final String token;
@@ -419,13 +420,13 @@ public class WavefrontClient implements WavefrontSender, Runnable {
           "Unable to resolve local host name. Source will default to 'unknown'");
     }
     defaultSource = tempSource;
-
+    // TODO Clean up logic with checking CSP User Token
     if (!Utils.isNullOrEmpty(builder.token) && Utils.isNullOrEmpty(builder.cspUserToken)) {
       tokenService = new WavefrontTokenService(builder.token);
     } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
-      tokenService = new CSPServerToServerTokenService(builder.cspBaseUrl, builder.cspClientId, builder.cspClientSecret);
+      tokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(builder.cspBaseUrl,builder.cspClientId, builder.cspClientSecret));
     } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspUserToken)) {
-      tokenService = new CSPUserTokenService(builder.cspBaseUrl, builder.cspUserToken);
+      tokenService = new CSPTokenService(new CSPUserTokenURLConnectionFactory(builder.cspBaseUrl, builder.cspUserToken));
     } else {
       tokenService = new NoopTokenService();
     }
@@ -812,7 +813,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       throws IOException {
 
     String tokenIdentifier = "";
-    if (tokenService.getClass().equals(CSPServerToServerTokenService.class) || tokenService.getClass().equals(CSPUserTokenService.class) ) {
+    if (tokenService.getClass().equals(CSPTokenService.class)) {
       tokenIdentifier = "CSP ACCESS TOKEN";
     } else if (tokenService.getClass().equals(WavefrontTokenService.class)) {
       tokenIdentifier = "API TOKEN";
