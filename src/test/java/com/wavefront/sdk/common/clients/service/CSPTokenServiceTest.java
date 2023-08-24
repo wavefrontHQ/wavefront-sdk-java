@@ -115,8 +115,7 @@ class CSPTokenServiceTest {
 
     @Test
     void testCSPConnectionError() {
-      mockBackend.stubFor(WireMock.post(urlPathMatching(SERVER_AUTH_PATH)).willReturn(WireMock.serverError()));
-      mockBackend.setGlobalFixedDelay(5_000);
+      mockBackend.stubFor(WireMock.post(urlPathMatching(SERVER_AUTH_PATH)).willReturn(WireMock.serverError().withFixedDelay(5_000)));
       mockBackend.start();
 
       CSPTokenService cspTokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(mockBackend.baseUrl(), "N/A", "N/A", 100, 100));

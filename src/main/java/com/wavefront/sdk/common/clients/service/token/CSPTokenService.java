@@ -96,8 +96,9 @@ public class CSPTokenService implements TokenService, Runnable {
           return null;
         }
 
+        log.warning("Received 4xx Status and setting token to INVALID_TOKEN.");
         // Anything not 5xx will return INVALID_TOKEN
-        return "INVALID_TOKEN";
+        return INVALID_TOKEN;
       }
 
     } catch (IOException ex) {
