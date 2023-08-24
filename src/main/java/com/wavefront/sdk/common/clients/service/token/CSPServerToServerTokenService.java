@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class CSPServerToServerTokenService extends CSPTokenService {
-//  log = Logger.getLogger(CSPServerToServerTokenService.class.getCanonicalName());
   private final static String OAUTH_PATH = "/csp/gateway/am/api/auth/authorize";
 
   private final String cspBaseURL;

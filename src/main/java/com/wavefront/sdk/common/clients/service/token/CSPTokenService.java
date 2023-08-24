@@ -8,6 +8,7 @@ import com.wavefront.sdk.common.Utils;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -20,20 +21,17 @@ import java.util.stream.Collectors;
 public abstract class CSPTokenService implements TokenService, Runnable {
 
 
-  protected final static int TEN_MINUTES = 600;
-  protected final static int THIRTY_SECONDS = 30;
-  protected final static int THREE_MINUTES = 180;
-  protected static int DEFAULT_THREAD_DELAY = 60;
-  // TODO Have logger output correct class name for child classes
+  protected static Duration DEFAULT_THREAD_DELAY = Duration.ofSeconds(60);
   protected static Logger log = Logger.getLogger(CSPTokenService.class.getCanonicalName());
   protected final AtomicBoolean tokenReady = new AtomicBoolean(false);
   protected final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("csp-token-service"));
-  protected final ObjectMapper mapper = new ObjectMapper();
+  protected final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
   protected int connectTimeoutMillis = 30_000;
   protected int readTimeoutMillis = 10_000;
   protected String cspAccessToken;
 
-  public CSPTokenService() {}
+  public CSPTokenService() {
+  }
 
   public CSPTokenService(int connectTimeoutMillis, int readTimeoutMillis) {
     this.connectTimeoutMillis = connectTimeoutMillis;
@@ -61,20 +59,20 @@ public abstract class CSPTokenService implements TokenService, Runnable {
 
   abstract protected String getCSPToken();
 
-  protected int getThreadDelay(final int expiresIn) {
-    int retVal;
+  protected Duration getThreadDelay(final Duration expiresIn) {
+    Duration delay;
 
-    if (expiresIn < TEN_MINUTES) {
-      retVal = expiresIn - THIRTY_SECONDS;
+    if (expiresIn.compareTo(Duration.ofMinutes(10)) < 0) {
+      delay = expiresIn.minusSeconds(30);
     } else {
-      retVal = expiresIn - THREE_MINUTES;
+      delay = expiresIn.minusMinutes(3);
     }
 
-    if (retVal <= 0) {
-      retVal = DEFAULT_THREAD_DELAY;
+    if (delay.isZero() || delay.isNegative()) {
+      delay = DEFAULT_THREAD_DELAY;
     }
 
-    return retVal;
+    return delay;
   }
 
   private static List<String> parseScopes(final String scope) {
@@ -103,11 +101,11 @@ public abstract class CSPTokenService implements TokenService, Runnable {
         }
 
         // Schedule token refresh in the future
-        int threadDelay = getThreadDelay(parsedResponse.expiresIn);
+        Duration threadDelay = getThreadDelay(parsedResponse.expiresIn);
 
         log.info("A CSP token has been received. Will schedule the CSP token to be refreshed in: " + threadDelay + " seconds");
 
-        executor.schedule(this, threadDelay, TimeUnit.SECONDS);
+        executor.schedule(this, threadDelay.getSeconds(), TimeUnit.SECONDS);
 
         return parsedResponse.accessToken;
       } catch (JsonProcessingException e) {

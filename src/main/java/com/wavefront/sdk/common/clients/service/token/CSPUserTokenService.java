@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 public class CSPUserTokenService extends CSPTokenService {
-//  log = Logger.getLogger(CSPServerToServerTokenService.class.getCanonicalName());
   private final static String OAUTH_PATH = "/csp/gateway/am/api/auth/api-tokens/authorize";
 
   private final String cspBaseURL;
@@ -27,7 +25,7 @@ public class CSPUserTokenService extends CSPTokenService {
   protected String getCSPToken() {
     HttpURLConnection urlConn = null;
 
-    final String urlParameters = "grant_type=api_token&refresh_token="+apiToken;
+    final String urlParameters = "grant_type=api_token&refresh_token=" + apiToken;
     final byte[] postData = urlParameters.getBytes(StandardCharsets.UTF_8);
 
     try {
@@ -53,10 +51,5 @@ public class CSPUserTokenService extends CSPTokenService {
 
       return null;
     }
-  }
-
-  private String buildHttpBasicToken(final String cspClientId, final String cspClientSecret) {
-    final String encodeMe = cspClientId + ":" + cspClientSecret;
-    return Base64.getEncoder().encodeToString(encodeMe.getBytes());
   }
 }

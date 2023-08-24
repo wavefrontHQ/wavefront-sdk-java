@@ -1,6 +1,9 @@
 package com.wavefront.sdk.common.clients.service.token;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.time.Duration;
 
 public class CSPAuthorizeResponse {
   @JsonProperty("id_token")
@@ -11,7 +14,8 @@ public class CSPAuthorizeResponse {
 
   // This is in seconds
   @JsonProperty("expires_in")
-  public int expiresIn;
+  @JsonFormat(pattern="SECONDS")
+  public Duration expiresIn;
 
   public String scope;
 

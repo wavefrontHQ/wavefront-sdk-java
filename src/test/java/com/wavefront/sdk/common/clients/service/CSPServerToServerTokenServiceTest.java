@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.time.Duration;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -64,7 +65,7 @@ class CSPServerToServerTokenServiceTest {
 
       Field field = CSPTokenService.class.getDeclaredField("DEFAULT_THREAD_DELAY");;
       field.setAccessible(true);
-      field.set(cspServerToServerTokenService, 1);
+      field.set(cspServerToServerTokenService, Duration.ofSeconds(1));
 
       assertNotNull(cspServerToServerTokenService);
       assertEquals(cspServerToServerTokenService.getToken(), "accessToken");
