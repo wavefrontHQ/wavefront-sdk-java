@@ -10,4 +10,9 @@ public class NoopTokenService implements TokenService {
   public String getToken() {
     return "";
   }
+
+  @Override
+  public String getType() {
+    return "NOOP Token";
+  }
 }

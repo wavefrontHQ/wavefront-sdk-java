@@ -3,7 +3,7 @@ package com.wavefront.sdk.common.clients;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.wavefront.sdk.common.Pair;
-import com.wavefront.sdk.common.clients.service.token.CSPServerToServerTokenService;
+import com.wavefront.sdk.common.clients.service.token.CSPTokenService;
 import com.wavefront.sdk.common.clients.service.token.NoopTokenService;
 import com.wavefront.sdk.common.clients.service.token.WavefrontTokenService;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
@@ -237,19 +237,25 @@ public class WavefrontClientTest {
               .build();
       assertNotNull(wfClient);
       assertNotNull(wfClient.getTokenService());
-      assertEquals(wfClient.getTokenService().getClass().getSimpleName(), WavefrontTokenService.class.getSimpleName());
+      assertEquals(WavefrontTokenService.class.getSimpleName(), wfClient.getTokenService().getClass().getSimpleName());
 
       wfClient = new WavefrontClient.Builder("")
               .build();
       assertNotNull(wfClient);
       assertNotNull(wfClient.getTokenService());
-      assertEquals(wfClient.getTokenService().getClass().getSimpleName(), NoopTokenService.class.getSimpleName());
+      assertEquals(NoopTokenService.class.getSimpleName(), wfClient.getTokenService().getClass().getSimpleName());
 
       wfClient = new WavefrontClient.Builder("", "cspClientId", "cspClientSecret")
               .build();
       assertNotNull(wfClient);
       assertNotNull(wfClient.getTokenService());
-      assertEquals(wfClient.getTokenService().getClass().getSimpleName(), CSPServerToServerTokenService.class.getSimpleName());
+      assertEquals(CSPTokenService.class.getSimpleName(), wfClient.getTokenService().getClass().getSimpleName());
+
+      wfClient = new WavefrontClient.Builder("", "TOKEN")
+              .useTokenForCSP().build();
+      assertNotNull(wfClient);
+      assertNotNull(wfClient.getTokenService());
+      assertEquals(CSPTokenService.class.getSimpleName(), wfClient.getTokenService().getClass().getSimpleName());
     }
 
     @Nested
