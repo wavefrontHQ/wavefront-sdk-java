@@ -812,13 +812,6 @@ public class WavefrontClient implements WavefrontSender, Runnable {
                              LogMessageType bufferFullMessageType)
       throws IOException {
 
-    String tokenIdentifier = "";
-    if (tokenService.getClass().equals(CSPTokenService.class)) {
-      tokenIdentifier = "CSP ACCESS TOKEN";
-    } else if (tokenService.getClass().equals(WavefrontTokenService.class)) {
-      tokenIdentifier = "API TOKEN";
-    }
-
     ReportingService entityReportingService;
     switch (format) {
       case Constants.WAVEFRONT_SPAN_LOG_FORMAT:
@@ -844,7 +837,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         switch (featureDisabledReason) {
           case 401:
             logger.log(permissionsMessageType.toString(), Level.SEVERE,
-                "Please verify that your " + tokenIdentifier + " is correct! All " + entityType + " will be " +
+                "Please verify that your " + tokenService.getType() + " is correct! All " + entityType + " will be " +
                     "discarded until the service is restarted.");
             break;
           case 403:
@@ -874,7 +867,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
             case 401:
               logger.log(permissionsMessageType.toString(), Level.SEVERE,
                   "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
-                      "Please verify that your " + tokenIdentifier + " is correct! All " + entityType + " will " +
+                      "Please verify that your " + tokenService.getType() + " is correct! All " + entityType + " will " +
                       "be discarded until the service is restarted.");
               featureDisabledStatusCode.set(statusCode);
               dropped.inc(items.size());
