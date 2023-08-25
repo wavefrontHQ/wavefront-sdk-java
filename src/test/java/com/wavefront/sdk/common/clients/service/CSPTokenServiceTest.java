@@ -24,6 +24,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -46,6 +47,23 @@ class CSPTokenServiceTest {
     mockBackend.stop();
     List<LoggedRequest> allUnmatchedRequests = mockBackend.findAllUnmatchedRequests();
     assertTrue(allUnmatchedRequests.isEmpty());
+  }
+
+  @Test
+  public void testHasDirectIngestScope() {
+    final String scopeString = "external/<uuid>/*/aoa:directDataIngestion external/<uuid>/aoa:directDataIngestion csp:org_member";
+
+    assertTrue(CSPTokenService.hasDirectIngestScope(scopeString));
+    assertFalse(CSPTokenService.hasDirectIngestScope("no direct data ingestion scope"));
+    assertFalse(CSPTokenService.hasDirectIngestScope(""));
+    assertFalse(CSPTokenService.hasDirectIngestScope(null));
+    assertTrue(CSPTokenService.hasDirectIngestScope("aoa/*"));
+    assertTrue(CSPTokenService.hasDirectIngestScope("some aoa/*"));
+    assertTrue(CSPTokenService.hasDirectIngestScope("aoa:*"));
+    assertTrue(CSPTokenService.hasDirectIngestScope("some aoa:*"));
+    assertTrue(CSPTokenService.hasDirectIngestScope("ALL_PERMISSIONS"));
+    assertTrue(CSPTokenService.hasDirectIngestScope("aoa:metric ALL_PERMISSIONS aoa:log"));
+    assertFalse(CSPTokenService.hasDirectIngestScope("NO_PERMISSIONS"));
   }
 
   @Test
