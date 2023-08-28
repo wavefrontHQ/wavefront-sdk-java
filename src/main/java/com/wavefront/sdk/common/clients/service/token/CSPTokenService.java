@@ -27,7 +27,6 @@ public class CSPTokenService implements TokenService, Runnable {
   private String cspAccessToken;
   private CSPURLConnectionFactory cspUrlConnectionFactory;
   protected static Duration DEFAULT_THREAD_DELAY = Duration.ofSeconds(60);
-  private final String type = "CSP AUTHENTICATION CREDENTIALS";
 
   public CSPTokenService(CSPURLConnectionFactory cspUrlConnection) {
     this.cspUrlConnectionFactory = cspUrlConnection;
@@ -55,7 +54,7 @@ public class CSPTokenService implements TokenService, Runnable {
 
   @Override
   public String getType() {
-    return this.type;
+    return cspUrlConnectionFactory.getType();
   }
 
   public synchronized void run() {

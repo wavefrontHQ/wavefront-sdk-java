@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 
 public class CSPUserTokenURLConnectionFactory implements CSPURLConnectionFactory {
   private final static String OAUTH_PATH = "/csp/gateway/am/api/auth/api-tokens/authorize";
+  private final static String TYPE = "CSP API TOKEN";
 
   private final String cspBaseURL;
   private final byte[] postData;
@@ -43,4 +44,7 @@ public class CSPUserTokenURLConnectionFactory implements CSPURLConnectionFactory
   public byte[] getPostData() {
     return postData;
   }
+
+  @Override
+  public String getType() { return TYPE; }
 }

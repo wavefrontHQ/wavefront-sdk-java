@@ -465,6 +465,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.wfclient").
         tag(Constants.PROCESS_TAG_KEY, processId).
         tag(Constants.INSTANCE_TAG_KEY, instanceId).
+        tag(Constants.AUTH_TYPE_KEY, tokenService.getType()).
         tags(builder.tags).
         sendSdkMetrics(builder.includeSdkMetrics).
         build();
@@ -837,7 +838,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         switch (featureDisabledReason) {
           case 401:
             logger.log(permissionsMessageType.toString(), Level.SEVERE,
-                "Please verify that your " + tokenService.getType() + " is correct! All " + entityType + " will be " +
+                "Please verify that your " + tokenService.getType() + " credential(s) are correct! All " + entityType + " will be " +
                     "discarded until the service is restarted.");
             break;
           case 403:

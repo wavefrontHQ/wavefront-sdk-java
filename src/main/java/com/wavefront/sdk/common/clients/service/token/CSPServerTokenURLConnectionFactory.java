@@ -8,6 +8,7 @@ import java.util.Base64;
 
 public class CSPServerTokenURLConnectionFactory implements CSPURLConnectionFactory {
   private final static String OAUTH_PATH = "/csp/gateway/am/api/auth/authorize";
+  private final static String TYPE = "CSP OAUTH";
 
   private final String cspBaseURL;
   private final String cspClientId;
@@ -56,4 +57,7 @@ public class CSPServerTokenURLConnectionFactory implements CSPURLConnectionFacto
     final String encodeMe = cspClientId + ":" + cspClientSecret;
     return Base64.getEncoder().encodeToString(encodeMe.getBytes());
   }
+
+  @Override
+  public String getType() { return TYPE; }
 }
