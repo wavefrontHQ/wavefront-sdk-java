@@ -154,6 +154,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private final String cspClientSecret;
 
     private String cspBaseUrl;
+    private String cspOrgId;
     private String cspUserToken;
 
     // Optional parameters
@@ -234,6 +235,11 @@ public class WavefrontClient implements WavefrontSender, Runnable {
 
     public Builder cspBaseUrl(final String cspBaseUrl) {
       this.cspBaseUrl = cspBaseUrl;
+      return this;
+    }
+
+    public Builder cspOrgId(final String cspOrgId) {
+      this.cspOrgId = cspOrgId;
       return this;
     }
 
@@ -424,7 +430,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     if (!Utils.isNullOrEmpty(builder.token) && Utils.isNullOrEmpty(builder.cspUserToken)) {
       tokenService = new WavefrontTokenService(builder.token);
     } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
-      tokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(builder.cspBaseUrl,builder.cspClientId, builder.cspClientSecret));
+      tokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(builder.cspBaseUrl,builder.cspClientId, builder.cspClientSecret, builder.cspOrgId));
     } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspUserToken)) {
       tokenService = new CSPTokenService(new CSPUserTokenURLConnectionFactory(builder.cspBaseUrl, builder.cspUserToken));
     } else {

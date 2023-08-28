@@ -6,6 +6,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import com.wavefront.sdk.common.Utils;
+
 public class CSPServerTokenURLConnectionFactory implements CSPURLConnectionFactory {
   private final static String OAUTH_PATH = "/csp/gateway/am/api/auth/authorize";
   private final static String TYPE = "CSP OAUTH";
@@ -13,19 +15,25 @@ public class CSPServerTokenURLConnectionFactory implements CSPURLConnectionFacto
   private final String cspBaseURL;
   private final String cspClientId;
   private final String cspClientSecret;
+  private final String cspOrgId;
   private final byte[] postData;
   private int connectTimeoutMillis = 30_000;
   private int readTimeoutMillis = 10_000;
 
-  public CSPServerTokenURLConnectionFactory(String cspBaseURL, String cspClientId, String cspClientSecret) {
+  public CSPServerTokenURLConnectionFactory(String cspBaseURL, String cspClientId, String cspClientSecret, String cspOrgId) {
     this.cspBaseURL = cspBaseURL;
     this.cspClientId = cspClientId;
     this.cspClientSecret = cspClientSecret;
-    this.postData = "grant_type=client_credentials".getBytes(StandardCharsets.UTF_8);
+    this.cspOrgId = cspOrgId;
+    String postData = "grant_type=client_credentials";
+    if (!Utils.isNullOrEmpty(cspOrgId)) {
+      postData += "&orgId="+cspOrgId;
+    }
+    this.postData = postData.getBytes(StandardCharsets.UTF_8);
   }
 
-  public CSPServerTokenURLConnectionFactory(String cspBaseURL, String cspClientId, String cspClientSecret, int connectTimeoutMillis, int readTimeoutMillis) {
-    this(cspBaseURL, cspClientId, cspClientSecret);
+  public CSPServerTokenURLConnectionFactory(String cspBaseURL, String cspClientId, String cspClientSecret, String cspOrgId, int connectTimeoutMillis, int readTimeoutMillis) {
+    this(cspBaseURL, cspClientId, cspClientSecret, cspOrgId);
     this.connectTimeoutMillis = connectTimeoutMillis;
     this.readTimeoutMillis = readTimeoutMillis;
   }
