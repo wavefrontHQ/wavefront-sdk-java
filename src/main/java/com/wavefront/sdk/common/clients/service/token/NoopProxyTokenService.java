@@ -1,9 +1,9 @@
 package com.wavefront.sdk.common.clients.service.token;
 
 // Primarily for proxy usage
-public class NoopTokenService implements TokenService {
+public class NoopProxyTokenService implements TokenService {
 
-  public NoopTokenService() {
+  public NoopProxyTokenService() {
   }
 
   @Override
@@ -13,6 +13,6 @@ public class NoopTokenService implements TokenService {
 
   @Override
   public String getType() {
-    return "NOOP Token";
+    return "PROXY";
   }
 }

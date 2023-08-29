@@ -7,4 +7,6 @@ public interface CSPURLConnectionFactory {
   HttpURLConnection build() throws IOException;
 
   byte[] getPostData();
+
+  String getType();
 }

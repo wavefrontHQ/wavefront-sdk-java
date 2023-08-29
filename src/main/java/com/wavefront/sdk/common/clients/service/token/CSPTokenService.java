@@ -27,7 +27,6 @@ public class CSPTokenService implements TokenService, Runnable {
   private String cspAccessToken;
   private CSPURLConnectionFactory cspUrlConnectionFactory;
   protected static Duration DEFAULT_THREAD_DELAY = Duration.ofSeconds(60);
-  private final String type = "CSP AUTHENTICATION CREDENTIALS";
 
   public CSPTokenService(CSPURLConnectionFactory cspUrlConnection) {
     this.cspUrlConnectionFactory = cspUrlConnection;
@@ -55,7 +54,7 @@ public class CSPTokenService implements TokenService, Runnable {
 
   @Override
   public String getType() {
-    return this.type;
+    return cspUrlConnectionFactory.getType();
   }
 
   public synchronized void run() {
@@ -79,7 +78,7 @@ public class CSPTokenService implements TokenService, Runnable {
 
           // Schedule token refresh in the future
           Duration threadDelay = getThreadDelay(parsedResponse.expiresIn);
-          log.info("A CSP token has been received. Will schedule the CSP token to be refreshed in: " + threadDelay.getSeconds() + " seconds.");
+          log.info("A CSP token was received. The token will be refreshed in " + threadDelay.getSeconds() + " seconds.");
           executor.schedule(this, threadDelay.getSeconds(), TimeUnit.SECONDS);
 
           if (!hasDirectIngestScope(parsedResponse.scope)) {
@@ -94,7 +93,7 @@ public class CSPTokenService implements TokenService, Runnable {
           return INVALID_TOKEN;
         }
       } else {
-        log.severe("The request to CSP for a token failed with HTTP code: " + statusCode + ".");
+        log.severe("The request to CSP for a token failed with HTTP code " + statusCode + ".");
 
         if (statusCode >= 500 && statusCode < 600) {
           log.info("The Wavefront SDK will try to reauthenticate with CSP on the next request.");

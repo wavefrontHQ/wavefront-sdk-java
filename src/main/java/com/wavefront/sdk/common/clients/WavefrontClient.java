@@ -15,7 +15,7 @@ import com.wavefront.sdk.common.clients.service.ReportingService;
 import com.wavefront.sdk.common.clients.service.token.CSPServerTokenURLConnectionFactory;
 import com.wavefront.sdk.common.clients.service.token.CSPTokenService;
 import com.wavefront.sdk.common.clients.service.token.CSPUserTokenURLConnectionFactory;
-import com.wavefront.sdk.common.clients.service.token.NoopTokenService;
+import com.wavefront.sdk.common.clients.service.token.NoopProxyTokenService;
 import com.wavefront.sdk.common.clients.service.token.TokenService;
 import com.wavefront.sdk.common.clients.service.token.WavefrontTokenService;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
@@ -154,6 +154,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private final String cspClientSecret;
 
     private String cspBaseUrl;
+    private String cspOrgId;
     private String cspUserToken;
 
     // Optional parameters
@@ -234,6 +235,11 @@ public class WavefrontClient implements WavefrontSender, Runnable {
 
     public Builder cspBaseUrl(final String cspBaseUrl) {
       this.cspBaseUrl = cspBaseUrl;
+      return this;
+    }
+
+    public Builder cspOrgId(final String cspOrgId) {
+      this.cspOrgId = cspOrgId;
       return this;
     }
 
@@ -424,11 +430,11 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     if (!Utils.isNullOrEmpty(builder.token) && Utils.isNullOrEmpty(builder.cspUserToken)) {
       tokenService = new WavefrontTokenService(builder.token);
     } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
-      tokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(builder.cspBaseUrl,builder.cspClientId, builder.cspClientSecret));
+      tokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(builder.cspBaseUrl,builder.cspClientId, builder.cspClientSecret, builder.cspOrgId));
     } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspUserToken)) {
       tokenService = new CSPTokenService(new CSPUserTokenURLConnectionFactory(builder.cspBaseUrl, builder.cspUserToken));
     } else {
-      tokenService = new NoopTokenService();
+      tokenService = new NoopProxyTokenService();
     }
 
     switch (tokenService.getClass().getSimpleName()) {
@@ -441,7 +447,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       case "WavefrontTokenService":
         logger.log(Level.INFO, "The Wavefront SDK will use an API TOKEN when communicating with the Wavefront Backend for Direct Ingestion.");
         break;
-      case "NoopTokenService":
+      case "NoopProxyTokenService":
         logger.log(Level.INFO, "The Wavefront SDK will communicate with a Wavefront Proxy.");
       break;
     }
@@ -465,6 +471,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.wfclient").
         tag(Constants.PROCESS_TAG_KEY, processId).
         tag(Constants.INSTANCE_TAG_KEY, instanceId).
+        tag(Constants.AUTH_TYPE_KEY, tokenService.getType().toLowerCase().replace(" ", "_")).
         tags(builder.tags).
         sendSdkMetrics(builder.includeSdkMetrics).
         build();
@@ -837,7 +844,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         switch (featureDisabledReason) {
           case 401:
             logger.log(permissionsMessageType.toString(), Level.SEVERE,
-                "Please verify that your " + tokenService.getType() + " is correct! All " + entityType + " will be " +
+                "Please verify that your " + tokenService.getType() + " credential(s) are correct! All " + entityType + " will be " +
                     "discarded until the service is restarted.");
             break;
           case 403:

@@ -142,6 +142,11 @@ public final class Constants {
   public static final String DEBUG_TAG_KEY = "debug";
 
   /**
+   * Tag key for defining the authentication type used for communicating with Wavefront.
+   */
+  public static final String AUTH_TYPE_KEY = "authType";
+
+  /**
    * Name prefix for internal diagnostic metrics for Wavefront SDKs.
    */
   public static final String SDK_METRIC_PREFIX = "~sdk.java";
@@ -162,5 +167,4 @@ public final class Constants {
    * The root folder of the resources for a artifactId.
    */
   public static final String RESOURCES_ROOT = "META-INF/";
-
 }
