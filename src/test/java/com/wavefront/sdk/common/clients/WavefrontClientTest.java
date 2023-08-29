@@ -4,7 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.wavefront.sdk.common.Pair;
 import com.wavefront.sdk.common.clients.service.token.CSPTokenService;
-import com.wavefront.sdk.common.clients.service.token.NoopTokenService;
+import com.wavefront.sdk.common.clients.service.token.NoopProxyTokenService;
 import com.wavefront.sdk.common.clients.service.token.WavefrontTokenService;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
 import com.wavefront.sdk.entities.histograms.HistogramGranularity;
@@ -243,7 +243,7 @@ public class WavefrontClientTest {
               .build();
       assertNotNull(wfClient);
       assertNotNull(wfClient.getTokenService());
-      assertEquals(NoopTokenService.class.getSimpleName(), wfClient.getTokenService().getClass().getSimpleName());
+      assertEquals(NoopProxyTokenService.class.getSimpleName(), wfClient.getTokenService().getClass().getSimpleName());
 
       wfClient = new WavefrontClient.Builder("", "cspClientId", "cspClientSecret")
               .build();

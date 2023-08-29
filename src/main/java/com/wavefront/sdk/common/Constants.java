@@ -144,7 +144,7 @@ public final class Constants {
   /**
    * Tag key for defining the authentication type used for communicating with Wavefront.
    */
-  public static final String AUTH_TYPE_KEY = "_authType";
+  public static final String AUTH_TYPE_KEY = "authType";
 
   /**
    * Name prefix for internal diagnostic metrics for Wavefront SDKs.

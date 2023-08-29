@@ -15,7 +15,7 @@ import com.wavefront.sdk.common.clients.service.ReportingService;
 import com.wavefront.sdk.common.clients.service.token.CSPServerTokenURLConnectionFactory;
 import com.wavefront.sdk.common.clients.service.token.CSPTokenService;
 import com.wavefront.sdk.common.clients.service.token.CSPUserTokenURLConnectionFactory;
-import com.wavefront.sdk.common.clients.service.token.NoopTokenService;
+import com.wavefront.sdk.common.clients.service.token.NoopProxyTokenService;
 import com.wavefront.sdk.common.clients.service.token.TokenService;
 import com.wavefront.sdk.common.clients.service.token.WavefrontTokenService;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
@@ -434,7 +434,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspUserToken)) {
       tokenService = new CSPTokenService(new CSPUserTokenURLConnectionFactory(builder.cspBaseUrl, builder.cspUserToken));
     } else {
-      tokenService = new NoopTokenService();
+      tokenService = new NoopProxyTokenService();
     }
 
     switch (tokenService.getClass().getSimpleName()) {
@@ -447,7 +447,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       case "WavefrontTokenService":
         logger.log(Level.INFO, "The Wavefront SDK will use an API TOKEN when communicating with the Wavefront Backend for Direct Ingestion.");
         break;
-      case "NoopTokenService":
+      case "NoopProxyTokenService":
         logger.log(Level.INFO, "The Wavefront SDK will communicate with a Wavefront Proxy.");
       break;
     }
