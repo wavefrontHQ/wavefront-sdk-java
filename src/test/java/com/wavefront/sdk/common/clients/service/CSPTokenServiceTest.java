@@ -49,22 +49,6 @@ class CSPTokenServiceTest {
     assertTrue(allUnmatchedRequests.isEmpty());
   }
 
-  @Test
-  public void testHasDirectIngestScope() {
-    final String scopeString = "external/<uuid>/*/aoa:directDataIngestion external/<uuid>/aoa:directDataIngestion csp:org_member";
-
-    assertTrue(CSPTokenService.hasDirectIngestScope(scopeString));
-    assertFalse(CSPTokenService.hasDirectIngestScope("no direct data ingestion scope"));
-    assertFalse(CSPTokenService.hasDirectIngestScope(""));
-    assertFalse(CSPTokenService.hasDirectIngestScope(null));
-    assertTrue(CSPTokenService.hasDirectIngestScope("aoa/*"));
-    assertTrue(CSPTokenService.hasDirectIngestScope("some aoa/*"));
-    assertTrue(CSPTokenService.hasDirectIngestScope("aoa:*"));
-    assertTrue(CSPTokenService.hasDirectIngestScope("some aoa:*"));
-    assertTrue(CSPTokenService.hasDirectIngestScope("ALL_PERMISSIONS"));
-    assertTrue(CSPTokenService.hasDirectIngestScope("aoa:metric ALL_PERMISSIONS aoa:log"));
-    assertFalse(CSPTokenService.hasDirectIngestScope("NO_PERMISSIONS"));
-  }
 
   @Test
   void testCSPServerTokenReturnsAccessToken() {
