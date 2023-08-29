@@ -471,7 +471,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.wfclient").
         tag(Constants.PROCESS_TAG_KEY, processId).
         tag(Constants.INSTANCE_TAG_KEY, instanceId).
-        tag(Constants.AUTH_TYPE_KEY, tokenService.getType()).
+        tag(Constants.AUTH_TYPE_KEY, tokenService.getType().toLowerCase().replace(" ", "_")).
         tags(builder.tags).
         sendSdkMetrics(builder.includeSdkMetrics).
         build();
