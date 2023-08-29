@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -25,7 +26,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -67,13 +67,48 @@ class CSPTokenServiceTest {
   }
 
   @Test
-  void testCSPReturnsAccessToken() {
+  void testCSPServerTokenReturnsAccessToken() {
     mockBackend.stubFor(WireMock.post(urlPathMatching(SERVER_AUTH_PATH)).willReturn(WireMock.ok(MOCK_RESPONSE)));
     mockBackend.start();
 
-    CSPTokenService cspTokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(mockBackend.baseUrl(), "N/A", "N/A", "N/A"));
-    assertNotNull(cspTokenService);
+    CSPTokenService cspTokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(mockBackend.baseUrl(), "N/A", "N/A", null));
+
     assertEquals("accessToken", cspTokenService.getToken());
+
+    mockBackend.verify(
+        postRequestedFor(urlEqualTo(SERVER_AUTH_PATH))
+            .withRequestBody(equalTo("grant_type=client_credentials"))
+    );
+  }
+
+  @Test
+  void testCSPUserTokenReturnsAccessToken() {
+    mockBackend.stubFor(WireMock.post(urlPathMatching(USER_AUTH_PATH)).willReturn(WireMock.ok(MOCK_RESPONSE)));
+    mockBackend.start();
+
+    CSPTokenService cspTokenService = new CSPTokenService(new CSPUserTokenURLConnectionFactory(mockBackend.baseUrl(), "aUserToken"));
+
+    assertEquals("accessToken", cspTokenService.getToken());
+
+    mockBackend.verify(
+        postRequestedFor(urlEqualTo(USER_AUTH_PATH))
+            .withRequestBody(equalTo("grant_type=api_token&refresh_token=aUserToken"))
+    );
+  }
+
+  @Test
+  void testCSPHandlesOrgId() {
+    mockBackend.stubFor(WireMock.post(urlPathMatching(SERVER_AUTH_PATH)).willReturn(WireMock.ok(MOCK_RESPONSE)));
+    mockBackend.start();
+
+    CSPTokenService cspTokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(mockBackend.baseUrl(), "N/A", "N/A", "anOrg"));
+
+    assertEquals("accessToken", cspTokenService.getToken());
+
+    mockBackend.verify(
+        postRequestedFor(urlEqualTo(SERVER_AUTH_PATH))
+            .withRequestBody(equalTo("grant_type=client_credentials&orgId=anOrg"))
+    );
   }
 
   @Test
@@ -82,13 +117,12 @@ class CSPTokenServiceTest {
     createWireMockStubWithFinalState(SERVER_AUTH_PATH, "second", MOCK_RESPONSE2);
     mockBackend.start();
 
-    CSPTokenService cspTokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(mockBackend.baseUrl(), "N/A", "N/A", "N/A"));
+    CSPTokenService cspTokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(mockBackend.baseUrl(), "N/A", "N/A", null));
 
     Field defaultThreadDelay = CSPTokenService.class.getDeclaredField("DEFAULT_THREAD_DELAY");
     defaultThreadDelay.setAccessible(true);
     defaultThreadDelay.set(cspTokenService, Duration.ofSeconds(1));
 
-    assertNotNull(cspTokenService);
     assertEquals("accessToken", cspTokenService.getToken());
     Thread.sleep(2_000);
     assertEquals("accessToken2", cspTokenService.getToken());
@@ -101,7 +135,7 @@ class CSPTokenServiceTest {
     mockBackend.stubFor(WireMock.post(urlPathMatching(SERVER_AUTH_PATH)).willReturn(WireMock.unauthorized()));
     mockBackend.start();
 
-    CSPTokenService cspTokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(mockBackend.baseUrl(), "N/A", "N/A", "N/A"));
+    CSPTokenService cspTokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(mockBackend.baseUrl(), "N/A", "N/A", null));
     assertEquals("INVALID_TOKEN", cspTokenService.getToken());
     mockBackend.verify(1, postRequestedFor(urlEqualTo(SERVER_AUTH_PATH)));
     LoggedResponse response = mockBackend.getAllServeEvents().get(0).getResponse();
@@ -121,7 +155,7 @@ class CSPTokenServiceTest {
     mockBackend.stubFor(WireMock.post(urlPathMatching(SERVER_AUTH_PATH)).willReturn(WireMock.serverError()));
     mockBackend.start();
 
-    CSPTokenService cspTokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(mockBackend.baseUrl(), "N/A", "N/A", "N/A"));
+    CSPTokenService cspTokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(mockBackend.baseUrl(), "N/A", "N/A", null));
     assertNull(cspTokenService.getToken());
   }
 
@@ -130,7 +164,7 @@ class CSPTokenServiceTest {
     mockBackend.stubFor(WireMock.post(urlPathMatching(SERVER_AUTH_PATH)).willReturn(WireMock.serverError().withFixedDelay(5_000)));
     mockBackend.start();
 
-    CSPTokenService cspTokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(mockBackend.baseUrl(), "N/A", "N/A", "N/A", 100, 100));
+    CSPTokenService cspTokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(mockBackend.baseUrl(), "N/A", "N/A", null, 100, 100));
     assertNull(cspTokenService.getToken());
   }
 

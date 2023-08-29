@@ -1,12 +1,12 @@
 package com.wavefront.sdk.common.clients.service.token;
 
+import com.wavefront.sdk.common.Utils;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-
-import com.wavefront.sdk.common.Utils;
 
 public class CSPServerTokenURLConnectionFactory implements CSPURLConnectionFactory {
   private final static String OAUTH_PATH = "/csp/gateway/am/api/auth/authorize";
@@ -27,7 +27,7 @@ public class CSPServerTokenURLConnectionFactory implements CSPURLConnectionFacto
     this.cspOrgId = cspOrgId;
     String postData = "grant_type=client_credentials";
     if (!Utils.isNullOrEmpty(cspOrgId)) {
-      postData += "&orgId="+cspOrgId;
+      postData += "&orgId=" + cspOrgId;
     }
     this.postData = postData.getBytes(StandardCharsets.UTF_8);
   }
@@ -67,5 +67,7 @@ public class CSPServerTokenURLConnectionFactory implements CSPURLConnectionFacto
   }
 
   @Override
-  public String getType() { return TYPE; }
+  public String getType() {
+    return TYPE;
+  }
 }
