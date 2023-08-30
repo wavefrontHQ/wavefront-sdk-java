@@ -1,9 +1,24 @@
-open_source_license.txt
+open_source_licenses.txt
 
-Wavefront by VMware SDK for Java 3.4.0 GA
+Wavefront by VMware SDK for Java 3.3.0 GA
+
+
 ======================================================================
 
-==================== TABLE OF CONTENTS ====================
+The following copyright statements and licenses apply to various open
+source software packages (or portions thereof) that are included in
+this VMware service.
+
+The VMware service may also include other VMware components, which may
+contain additional open source software packages. One or more such
+open_source_licenses.txt files may therefore accompany this VMware
+service.
+
+The VMware service that includes this file does not necessarily use all the open 
+source software packages referred to below and may also only use portions of a 
+given package.
+
+=============== TABLE OF CONTENTS =============================
 
 The following is a listing of the open source components detailed in
 this document. This list is provided for your convenience; please read
@@ -13,4545 +28,727 @@ of the license associated with each component.
 
 SECTION 1: Apache License, V2.0
 
-   >>> com.tdunning:t-digest-3.2
-   >>> com.google.guava:listenablefuture-9999.0-empty-to-avoid-conflict-with-guava
+   >>> com.fasterxml.jackson.core:jackson-annotations-2.9.10
+   >>> com.fasterxml.jackson.core:jackson-core-2.9.10
+   >>> com.fasterxml.jackson.core:jackson-databind-2.9.10.3
+   >>> com.google.errorprone:error_prone_annotations-2.3.4
    >>> com.google.guava:failureaccess-1.0.1
-   >>> com.fasterxml.jackson.core:jackson-core-2.14.2
-   >>> com.google.errorprone:error_prone_annotations-2.18.0
-   >>> com.google.j2objc:j2objc-annotations-2.8
-   >>> com.fasterxml.jackson.core:jackson-core-2.15.2
-   >>> com.fasterxml.jackson.core:jackson-annotations-2.15.2
-   >>> com.fasterxml.jackson.datatype:jackson-datatype-jsr310-2.15.2
-   >>> com.fasterxml.jackson.core:jackson-databind-2.15.2
-   >>> com.google.guava:guava-32.1.2-jre
+   >>> com.google.guava:guava-28.2-jre
+   >>> com.google.guava:listenablefuture-9999.0-empty-to-avoid-conflict-with-guava
+   >>> com.google.j2objc:j2objc-annotations-1.3
+   >>> com.tdunning:t-digest-3.2
+
 
 SECTION 2: BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES
 
-   >>> org.checkerframework:checker-qual-3.33.0
+   >>> org.checkerframework:checker-qual-2.10.0
 
-SECTION 3: Creative Commons Attribution 2.5 
+
+SECTION 3: Creative Commons Attribution 2.5
 
    >>> com.google.code.findbugs:jsr305-3.0.2
 
 
 APPENDIX. Standard License Files
 
-   >>> Creative Commons Attribution 2.5 
    >>> Apache License, V2.0
 
+   >>> Creative Commons Attribution 2.5 
 
--------------------- SECTION 1: Apache License, V2.0 --------------------
 
-   >>> com.tdunning:t-digest-3.2
 
-       Licensed to Ted Dunning under one or more
-       contributor license agreements.  See the NOTICE file distributed with
-       this work for additional information regarding copyright ownership.
-       The ASF licenses this file to You under the Apache License, Version 2.0
-       (the "License"); you may not use this file except in compliance with
-       the License.  You may obtain a copy of the License at
+--------------- SECTION 1: Apache License, V2.0 ----------
 
-       http://www.apache.org/licenses/LICENSE-2.0
+Apache License, V2.0 is applicable to the following component(s).
 
-       Unless required by applicable law or agreed to in writing, software
-       distributed under the License is distributed on an "AS IS" BASIS,
-       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-       See the License for the specific language governing permissions and
-       limitations under the License.
 
+>>> com.fasterxml.jackson.core:jackson-annotations-2.9.10
 
-   >>> com.google.guava:listenablefuture-9999.0-empty-to-avoid-conflict-with-guava
+This copy of Jackson JSON processor annotations is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
 
-       License : Apache 2.0
+You may obtain a copy of the License at:
 
+http://www.apache.org/licenses/LICENSE-2.0
 
-   >>> com.google.guava:failureaccess-1.0.1
+>>> com.fasterxml.jackson.core:jackson-core-2.9.10
 
-       Copyright (C) 2018 The Guava Authors
+# Jackson JSON processor
 
-       Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-       in compliance with the License. You may obtain a copy of the License at
+Jackson is a high-performance, Free/Open Source JSON processing library.
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers, as well as supported
+commercially by FasterXML.com.
 
-       http://www.apache.org/licenses/LICENSE-2.0
+## Licensing
 
-       Unless required by applicable law or agreed to in writing, software distributed under the License
-       is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-       or implied. See the License for the specific language governing permissions and limitations under
-       the License.
+Jackson core and extension components may licensed under different licenses.
+To find the details that apply to this artifact see the accompanying LICENSE file.
+For more information, including possible other licensing options, contact
+FasterXML.com (http://fasterxml.com).
 
+## Credits
 
-   >>> com.fasterxml.jackson.core:jackson-core-2.14.2
+A list of contributors may be found from CREDITS file, which is included
+in some artifacts (usually source distributions); but is always available
+from the source code management (SCM) system project uses.
 
-       Found in: com/fasterxml/jackson/core/io/doubleparser/FastFloatParser.java
+This copy of Jackson JSON processor streaming parser/generator is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
 
-       Copyright (c) Werner Randelshofer. Apache
+You may obtain a copy of the License at:
 
-        *     <dd>Copyright (c) Werner Randelshofer. Apache 2.0 License.
+http://www.apache.org/licenses/LICENSE-2.0
 
-       ADDITIONAL LICENSE INFORMATION
+>>> com.fasterxml.jackson.core:jackson-databind-2.9.10.3
 
-       > Apache2.0
+# Jackson JSON processor
 
-       com/fasterxml/jackson/core/io/doubleparser/AbstractFloatingPointBitsFromCharArray.java
+Jackson is a high-performance, Free/Open Source JSON processing library.
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers, as well as supported
+commercially by FasterXML.com.
 
-       Copyright (c) Werner Randelshofer. Apache
+## Licensing
 
-       See SECTION 8 in 'LICENSE TEXT REFERENCE TABLE'
+Jackson core and extension components may be licensed under different licenses.
+To find the details that apply to this artifact see the accompanying LICENSE file.
+For more information, including possible other licensing options, contact
+FasterXML.com (http://fasterxml.com).
 
-       com/fasterxml/jackson/core/io/doubleparser/AbstractFloatingPointBitsFromCharSequence.java
+## Credits
 
-       Copyright (c) Werner Randelshofer. Apache
+A list of contributors may be found from CREDITS file, which is included
+in some artifacts (usually source distributions); but is always available
+from the source code management (SCM) system project uses.
 
-       See SECTION 8 in 'LICENSE TEXT REFERENCE TABLE'
+This copy of Jackson JSON processor databind module is licensed under the
+Apache (Software) License, version 2.0 ("the License").
+See the License for details about distribution rights, and the
+specific rights regarding derivate works.
 
-       com/fasterxml/jackson/core/io/doubleparser/AbstractFloatValueParser.java
+You may obtain a copy of the License at:
 
-       Copyright (c) Werner Randelshofer. Apache
+http://www.apache.org/licenses/LICENSE-2.0
 
-       See SECTION 8 in 'LICENSE TEXT REFERENCE TABLE'
+>>> com.google.errorprone:error_prone_annotations-2.3.4
 
-       com/fasterxml/jackson/core/io/doubleparser/DoubleBitsFromCharArray.java
-
-       Copyright (c) Werner Randelshofer. Apache
-
-       See SECTION 8 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/core/io/doubleparser/DoubleBitsFromCharSequence.java
-
-       Copyright (c) Werner Randelshofer. Apache
-
-       See SECTION 8 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/core/io/doubleparser/FastDoubleMath.java
-
-       Copyright (c) Werner Randelshofer. Apache
-
-       See SECTION 8 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/core/io/doubleparser/FastDoubleParser.java
-
-       Copyright (c) Werner Randelshofer. Apache
-
-       See SECTION 8 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/core/io/doubleparser/FastDoubleSwar.java
-
-       Copyright (c) Werner Randelshofer. Apache
-
-       See SECTION 8 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/core/io/doubleparser/FastFloatMath.java
-
-       Copyright (c) Werner Randelshofer. Apache
-
-       See SECTION 8 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/core/io/doubleparser/FloatBitsFromCharArray.java
-
-       Copyright (c) Werner Randelshofer. Apache
-
-       See SECTION 8 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/core/io/doubleparser/FloatBitsFromCharSequence.java
-
-       Copyright (c) Werner Randelshofer. Apache
-
-       See SECTION 8 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/core/io/doubleparser/package-info.java
-
-       Copyright (c) Werner Randelshofer. Apache
-
-       See SECTION 8 in 'LICENSE TEXT REFERENCE TABLE'
-
-
-   >>> com.google.errorprone:error_prone_annotations-2.18.0
-
-        * Copyright 2016 The Error Prone Authors.
-        *
-        * Licensed under the Apache License, Version 2.0 (the "License");
-        * you may not use this file except in compliance with the License.
-        * You may obtain a copy of the License at
-        *
-        *     http://www.apache.org/licenses/LICENSE-2.0
-        *
-        * Unless required by applicable law or agreed to in writing, software
-        * distributed under the License is distributed on an "AS IS" BASIS,
-        * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        * See the License for the specific language governing permissions and
-        * limitations under the License.
-
-
-   >>> com.google.j2objc:j2objc-annotations-2.8
-
-       * Copyright 2012 Google Inc. All Rights Reserved.
-        *
-        * Licensed under the Apache License, Version 2.0 (the "License");
-        * you may not use this file except in compliance with the License.
-        * You may obtain a copy of the License at
-        *
-        * http://www.apache.org/licenses/LICENSE-2.0
-        *
-        * Unless required by applicable law or agreed to in writing, software
-        * distributed under the License is distributed on an "AS IS" BASIS,
-        * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        * See the License for the specific language governing permissions and
-        * limitations under the License.
-
-       ADDITIONAL LICENSE INFORMATION
-
-       > Apache2.0
-
-       com/google/j2objc/annotations/AutoreleasePool.java
-
-       Copyright 2012 Google Inc.
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-
-   >>> com.fasterxml.jackson.core:jackson-core-2.15.2
-
-       ## Copyright
-
-       Copyright 2007-, Tatu Saloranta (tatu.saloranta@iki.fi)
-
-       ## Licensing
-
-       Jackson 2.x core and extension components are licensed under Apache License 2.0
-       To find the details that apply to this artifact see the accompanying LICENSE file.
-
-
-   >>> com.fasterxml.jackson.core:jackson-annotations-2.15.2
-
-       # Jackson JSON processor
-
-       Jackson is a high-performance, Free/Open Source JSON processing library.
-       It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
-       been in development since 2007.
-       It is currently developed by a community of developers.
-
-       ## Copyright
-
-       Copyright 2007-, Tatu Saloranta (tatu.saloranta@iki.fi)
-
-       ## Licensing
-
-       Jackson 2.x core and extension components are licensed under Apache License 2.0
-       To find the details that apply to this artifact see the accompanying LICENSE file.
-
-       ## Credits
-
-       A list of contributors may be found from CREDITS(-2.x) file, which is included
-       in some artifacts (usually source distributions); but is always available
-       from the source code management (SCM) system project uses.
-
-
-
-   >>> com.fasterxml.jackson.datatype:jackson-datatype-jsr310-2.15.2
-
-       # Jackson JSON processor
-
-       Jackson is a high-performance, Free/Open Source JSON processing library.
-       It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
-       been in development since 2007.
-       It is currently developed by a community of developers.
-
-       ## Licensing
-
-       Jackson components are licensed under Apache (Software) License, version 2.0,
-       as per accompanying LICENSE file.
-
-       ## Credits
-
-       A list of contributors may be found from CREDITS file, which is included
-       in some artifacts (usually source distributions); but is always available
-       from the source code management (SCM) system project uses.
-
-
-       ADDITIONAL LICENSE INFORMATION
-
-       > Apache2.0
-
-       com/fasterxml/jackson/datatype/jsr310/DecimalUtils.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/deser/DurationDeserializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/deser/InstantDeserializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/deser/JSR310DeserializerBase.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/deser/JSR310StringParsableDeserializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/deser/LocalDateDeserializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/deser/LocalDateTimeDeserializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/deser/LocalTimeDeserializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/deser/OffsetTimeDeserializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/deser/YearMonthDeserializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/JavaTimeModule.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/JSR310Module.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/PackageVersion.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/PackageVersion.java.in
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/ser/DurationSerializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/ser/InstantSerializerBase.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/ser/InstantSerializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/ser/JSR310FormattedSerializerBase.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/ser/LocalDateSerializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/ser/LocalDateTimeSerializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/ser/LocalTimeSerializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/ser/MonthDaySerializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/ser/OffsetTimeSerializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/ser/YearMonthSerializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/fasterxml/jackson/datatype/jsr310/ser/YearSerializer.java
-
-       Copyright 2013 FasterXML.com
-
-       See SECTION 3 in 'LICENSE TEXT REFERENCE TABLE'
-
-
-   >>> com.fasterxml.jackson.core:jackson-databind-2.15.2
-
-       # Jackson JSON processor
-
-       Jackson is a high-performance, Free/Open Source JSON processing library.
-       It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
-       been in development since 2007.
-       It is currently developed by a community of developers.
-
-       ## Copyright
-
-       Copyright 2007-, Tatu Saloranta (tatu.saloranta@iki.fi)
-
-       ## Licensing
-
-       Jackson 2.x core and extension components are licensed under Apache License 2.0
-       To find the details that apply to this artifact see the accompanying LICENSE file.
-
-       ## Credits
-
-       A list of contributors may be found from CREDITS(-2.x) file, which is included
-       in some artifacts (usually source distributions); but is always available
-       from the source code management (SCM) system project uses.
-
-
-
-   >>> com.google.guava:guava-32.1.2-jre
-
-        Copyright (C) 2008 The Guava Authors
-        *
-        * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-        * in compliance with the License. You may obtain a copy of the License at
-        *
-        * http://www.apache.org/licenses/LICENSE-2.0
-        *
-        * Unless required by applicable law or agreed to in writing, software distributed under the License
-        * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-        * or implied. See the License for the specific language governing permissions and limitations under
-        * the License.
-
-       ADDITIONAL LICENSE INFORMATION
-
-       > Apache2.0
-
-       com/google/common/annotations/Beta.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/annotations/GwtCompatible.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/annotations/GwtIncompatible.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/annotations/J2ktIncompatible.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/annotations/package-info.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/annotations/VisibleForTesting.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Absent.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/AbstractIterator.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Ascii.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/CaseFormat.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/CharMatcher.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Charsets.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/CommonMatcher.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/CommonPattern.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Converter.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Defaults.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Enums.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Equivalence.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/ExtraObjectsMethodsForWeb.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/FinalizablePhantomReference.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/FinalizableReference.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/FinalizableReferenceQueue.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/FinalizableSoftReference.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/FinalizableWeakReference.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/FunctionalEquivalence.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Function.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Functions.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/internal/Finalizer.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Java8Compatibility.java
-
-       Copyright (c) 2020 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/JdkPattern.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Joiner.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/MoreObjects.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/NullnessCasts.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Objects.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Optional.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/package-info.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/PairwiseEquivalence.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/PatternCompiler.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Platform.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Preconditions.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Predicate.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Predicates.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Present.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/SmallCharMatcher.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Splitter.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/StandardSystemProperty.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Stopwatch.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Strings.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Supplier.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Suppliers.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Throwables.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Ticker.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Utf8.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/VerifyException.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/base/Verify.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/AbstractCache.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/AbstractLoadingCache.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/CacheBuilder.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/CacheBuilderSpec.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/Cache.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/CacheLoader.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/CacheStats.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/ForwardingCache.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/ForwardingLoadingCache.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/LoadingCache.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/LocalCache.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/LongAddable.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/LongAddables.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/package-info.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/ReferenceEntry.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/RemovalCause.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/RemovalListener.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/RemovalListeners.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/RemovalNotification.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/cache/Weigher.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractBiMap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractIndexedListIterator.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractIterator.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractListMultimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractMapBasedMultimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractMapBasedMultiset.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractMapEntry.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractMultimap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractMultiset.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractNavigableMap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractRangeSet.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 6 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractSequentialIterator.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractSetMultimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractSortedKeySortedSetMultimap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractSortedMultiset.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractSortedSetMultimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AbstractTable.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/AllEqualOrdering.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ArrayListMultimapGwtSerializationDependencies.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ArrayListMultimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ArrayTable.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/BaseImmutableMultimap.java
-
-       Copyright (c) 2018 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/BiMap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/BoundType.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ByFunctionOrdering.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/CartesianList.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ClassToInstanceMap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/CollectCollectors.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Collections2.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/CollectPreconditions.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/CollectSpliterators.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/CompactHashing.java
-
-       Copyright (c) 2019 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/CompactHashMap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/CompactHashSet.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/CompactLinkedHashMap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/CompactLinkedHashSet.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ComparatorOrdering.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Comparators.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ComparisonChain.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/CompoundOrdering.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ComputationException.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ConcurrentHashMultiset.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ConsumingQueueIterator.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ContiguousSet.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Count.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 6 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Cut.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/DenseImmutableTable.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/DescendingImmutableSortedMultiset.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/DescendingImmutableSortedSet.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/DescendingMultiset.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/DiscreteDomain.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/EmptyContiguousSet.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/EmptyImmutableListMultimap.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/EmptyImmutableSetMultimap.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/EnumBiMap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/EnumHashBiMap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/EnumMultiset.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/EvictingQueue.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ExplicitOrdering.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/FilteredEntryMultimap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/FilteredEntrySetMultimap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/FilteredKeyListMultimap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/FilteredKeyMultimap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/FilteredKeySetMultimap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/FilteredMultimap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/FilteredMultimapValues.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/FilteredSetMultimap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/FluentIterable.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingBlockingDeque.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingCollection.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingConcurrentMap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingDeque.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingImmutableCollection.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingImmutableList.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingImmutableMap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingImmutableSet.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingIterator.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingListIterator.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingList.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingListMultimap.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingMapEntry.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingMap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingMultimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingMultiset.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingNavigableMap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingNavigableSet.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingObject.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingQueue.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingSet.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingSetMultimap.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingSortedMap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingSortedMultiset.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 6 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingSortedSet.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingSortedSetMultimap.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ForwardingTable.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/GeneralRange.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 6 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/GwtTransient.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/HashBasedTable.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/HashBiMap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Hashing.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/HashMultimapGwtSerializationDependencies.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/HashMultimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/HashMultiset.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/IgnoreJRERequirement.java
-
-       Copyright 2019 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableAsList.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableBiMapFauxverideShim.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableBiMap.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableClassToInstanceMap.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableCollection.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableEntry.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableEnumMap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableEnumSet.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableList.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableListMultimap.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableMapEntry.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableMapEntrySet.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableMap.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableMapKeySet.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableMapValues.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableMultimap.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableMultisetGwtSerializationDependencies.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableMultiset.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableRangeMap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableRangeSet.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableSet.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableSetMultimap.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableSortedAsList.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 6 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableSortedMapFauxverideShim.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableSortedMap.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableSortedMultisetFauxverideShim.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 6 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableSortedMultiset.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 6 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableSortedSetFauxverideShim.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableSortedSet.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ImmutableTable.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/IndexedImmutableSet.java
-
-       Copyright (c) 2018 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Interner.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Interners.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Iterables.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Iterators.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/JdkBackedImmutableBiMap.java
-
-       Copyright (c) 2018 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/JdkBackedImmutableMap.java
-
-       Copyright (c) 2018 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/JdkBackedImmutableMultiset.java
-
-       Copyright (c) 2018 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/JdkBackedImmutableSet.java
-
-       Copyright (c) 2018 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/LexicographicalOrdering.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/LinkedHashMultimapGwtSerializationDependencies.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/LinkedHashMultimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/LinkedHashMultiset.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/LinkedListMultimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ListMultimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Lists.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/MapDifference.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/MapMakerInternalMap.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/MapMaker.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Maps.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/MinMaxPriorityQueue.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/MoreCollectors.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/MultimapBuilder.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Multimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Multimaps.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Multiset.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Multisets.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/MutableClassToInstanceMap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/NaturalOrdering.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/NullnessCasts.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/NullsFirstOrdering.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/NullsLastOrdering.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ObjectArrays.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Ordering.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/package-info.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/PeekingIterator.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Platform.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Queues.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RangeGwtSerializationDependencies.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Range.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RangeMap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RangeSet.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 6 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RegularContiguousSet.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RegularImmutableAsList.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RegularImmutableBiMap.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RegularImmutableList.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RegularImmutableMap.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RegularImmutableMultiset.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RegularImmutableSet.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RegularImmutableSortedMultiset.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 6 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RegularImmutableSortedSet.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RegularImmutableTable.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ReverseNaturalOrdering.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/ReverseOrdering.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/RowSortedTable.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Serialization.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SetMultimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Sets.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SingletonImmutableBiMap.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SingletonImmutableList.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SingletonImmutableSet.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SingletonImmutableTable.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SortedIterable.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 6 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SortedIterables.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 6 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SortedLists.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SortedMapDifference.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SortedMultisetBridge.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SortedMultiset.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 5 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SortedMultisets.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 5 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SortedSetMultimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/SparseImmutableTable.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/StandardRowSortedTable.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/StandardTable.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Streams.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 7 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Synchronized.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/TableCollectors.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Table.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/Tables.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/TopKSelector.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/TransformedIterator.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/TransformedListIterator.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/TreeBasedTable.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/TreeMultimap.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/TreeMultiset.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/TreeRangeMap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/TreeRangeSet.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/TreeTraverser.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/UnmodifiableIterator.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/UnmodifiableListIterator.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/UnmodifiableSortedMultiset.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/collect/UsingToStringOrdering.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/escape/ArrayBasedCharEscaper.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/escape/ArrayBasedEscaperMap.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/escape/ArrayBasedUnicodeEscaper.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/escape/CharEscaperBuilder.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/escape/CharEscaper.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/escape/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/escape/Escaper.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/escape/Escapers.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/escape/package-info.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/escape/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/escape/Platform.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/escape/UnicodeEscaper.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/eventbus/AllowConcurrentEvents.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/eventbus/AsyncEventBus.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/eventbus/DeadEvent.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/eventbus/Dispatcher.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/eventbus/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/eventbus/EventBus.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/eventbus/package-info.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/eventbus/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/eventbus/Subscribe.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/eventbus/SubscriberExceptionContext.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/eventbus/SubscriberExceptionHandler.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/eventbus/Subscriber.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/eventbus/SubscriberRegistry.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/AbstractBaseGraph.java
-
-       Copyright (c) 2017 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/AbstractDirectedNetworkConnections.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/AbstractGraphBuilder.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/AbstractGraph.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/AbstractNetwork.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/AbstractUndirectedNetworkConnections.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/AbstractValueGraph.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/BaseGraph.java
-
-       Copyright (c) 2017 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/DirectedGraphConnections.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/DirectedMultiNetworkConnections.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/DirectedNetworkConnections.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/EdgesConnecting.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/ElementOrder.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/EndpointPairIterator.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/EndpointPair.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/ForwardingGraph.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/ForwardingNetwork.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/ForwardingValueGraph.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/GraphBuilder.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/GraphConnections.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/GraphConstants.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/Graph.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/Graphs.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/ImmutableGraph.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/ImmutableNetwork.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/ImmutableValueGraph.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/IncidentEdgeSet.java
-
-       Copyright (c) 2019 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/MapIteratorCache.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/MapRetrievalCache.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/MultiEdgesConnecting.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/MutableGraph.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/MutableNetwork.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/MutableValueGraph.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/NetworkBuilder.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/NetworkConnections.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/Network.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/package-info.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/PredecessorsFunction.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/StandardMutableGraph.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/StandardMutableNetwork.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/StandardMutableValueGraph.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/StandardNetwork.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/StandardValueGraph.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/SuccessorsFunction.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/Traverser.java
-
-       Copyright (c) 2017 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/UndirectedGraphConnections.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/UndirectedMultiNetworkConnections.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/UndirectedNetworkConnections.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/ValueGraphBuilder.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/graph/ValueGraph.java
-
-       Copyright (c) 2016 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/AbstractByteHasher.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/AbstractCompositeHashFunction.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/AbstractHasher.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/AbstractHashFunction.java
-
-       Copyright (c) 2017 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/AbstractNonStreamingHashFunction.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/AbstractStreamingHasher.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/BloomFilter.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/BloomFilterStrategies.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/ChecksumHashFunction.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/Crc32cHashFunction.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/FarmHashFingerprint64.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/Funnel.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/Funnels.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/HashCode.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/Hasher.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/HashFunction.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/HashingInputStream.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/Hashing.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/HashingOutputStream.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/IgnoreJRERequirement.java
-
-       Copyright 2019 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/ImmutableSupplier.java
-
-       Copyright (c) 2018 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/Java8Compatibility.java
-
-       Copyright (c) 2020 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/LittleEndianByteArray.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/LongAddable.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/LongAddables.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/MacHashFunction.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/MessageDigestHashFunction.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/Murmur3_128HashFunction.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/Murmur3_32HashFunction.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/package-info.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/PrimitiveSink.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/hash/SipHashFunction.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/html/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/html/HtmlEscapers.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/html/package-info.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/html/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/AppendableWriter.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/BaseEncoding.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/ByteArrayDataInput.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/ByteArrayDataOutput.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/ByteProcessor.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/ByteSink.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/ByteSource.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/ByteStreams.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/CharSequenceReader.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/CharSink.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/CharSource.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/CharStreams.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/Closeables.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/Closer.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/CountingInputStream.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/CountingOutputStream.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/FileBackedOutputStream.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/Files.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/FileWriteMode.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/Flushables.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/IgnoreJRERequirement.java
-
-       Copyright 2019 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/InsecureRecursiveDeleteException.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/Java8Compatibility.java
-
-       Copyright (c) 2020 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/LineBuffer.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/LineProcessor.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/LineReader.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/LittleEndianDataInputStream.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/LittleEndianDataOutputStream.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/MoreFiles.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/MultiInputStream.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/MultiReader.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/package-info.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/PatternFilenameFilter.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/ReaderInputStream.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/RecursiveDeleteOption.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/Resources.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/io/TempFileCreator.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/BigDecimalMath.java
-
-       Copyright (c) 2020 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/BigIntegerMath.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/DoubleMath.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/DoubleUtils.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/IntMath.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/LinearTransformation.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/LongMath.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/MathPreconditions.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/package-info.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/PairedStatsAccumulator.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/PairedStats.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/Quantiles.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/StatsAccumulator.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/Stats.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/math/ToDoubleRounder.java
-
-       Copyright (c) 2020 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/net/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/net/HostAndPort.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/net/HostSpecifier.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/net/HttpHeaders.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/net/InetAddresses.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/net/InternetDomainName.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/net/MediaType.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/net/package-info.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/net/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/net/PercentEscaper.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/net/UrlEscapers.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/Booleans.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/Bytes.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/Chars.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/Doubles.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/DoublesMethodsForWeb.java
-
-       Copyright (c) 2020 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/Floats.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/FloatsMethodsForWeb.java
-
-       Copyright (c) 2020 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/ImmutableDoubleArray.java
-
-       Copyright (c) 2017 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/ImmutableIntArray.java
-
-       Copyright (c) 2017 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/ImmutableLongArray.java
-
-       Copyright (c) 2017 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/Ints.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/IntsMethodsForWeb.java
-
-       Copyright (c) 2020 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/Longs.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/package-info.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/ParseRequest.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/Primitives.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/Shorts.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/ShortsMethodsForWeb.java
-
-       Copyright (c) 2020 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/SignedBytes.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/UnsignedBytes.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/UnsignedInteger.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/UnsignedInts.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/UnsignedLong.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/primitives/UnsignedLongs.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/AbstractInvocationHandler.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/ClassPath.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/IgnoreJRERequirement.java
-
-       Copyright 2019 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/ImmutableTypeToInstanceMap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/Invokable.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/MutableTypeToInstanceMap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/package-info.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/Parameter.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/Reflection.java
-
-       Copyright (c) 2005 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/TypeCapture.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/TypeParameter.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/TypeResolver.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/Types.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/TypeToInstanceMap.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/TypeToken.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/reflect/TypeVisitor.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/AbstractCatchingFuture.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/AbstractExecutionThreadService.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/AbstractFuture.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/AbstractIdleService.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/AbstractListeningExecutorService.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/AbstractScheduledService.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/AbstractService.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/AbstractTransformFuture.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/AggregateFuture.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/AggregateFutureState.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/AsyncCallable.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/AsyncFunction.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/AtomicLongMap.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/Atomics.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/Callables.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ClosingFuture.java
-
-       Copyright (c) 2017 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/CollectionFuture.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/CombinedFuture.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/CycleDetectingLockFactory.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/DirectExecutor.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ExecutionError.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ExecutionList.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ExecutionSequencer.java
-
-       Copyright (c) 2018 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/FakeTimeLimiter.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/FluentFuture.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ForwardingBlockingDeque.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ForwardingBlockingQueue.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ForwardingCondition.java
-
-       Copyright (c) 2017 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ForwardingExecutorService.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ForwardingFluentFuture.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ForwardingFuture.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ForwardingListenableFuture.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ForwardingListeningExecutorService.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ForwardingLock.java
-
-       Copyright (c) 2017 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/FutureCallback.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/FuturesGetChecked.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/Futures.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/GwtFluentFutureCatchingSpecialization.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/GwtFuturesCatchingSpecialization.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ImmediateFuture.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/Internal.java
-
-       Copyright (c) 2019 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/InterruptibleTask.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/JdkFutureAdapters.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ListenableFuture.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ListenableFutureTask.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ListenableScheduledFuture.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ListenerCallQueue.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ListeningExecutorService.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ListeningScheduledExecutorService.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/Monitor.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/MoreExecutors.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/NullnessCasts.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/OverflowAvoidingLockSupport.java
-
-       Copyright (c) 2020 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/package-info.java
-
-       Copyright (c) 2007 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/Partially.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/Platform.java
-
-       Copyright (c) 2015 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/RateLimiter.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/Runnables.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/SequentialExecutor.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/Service.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ServiceManagerBridge.java
-
-       Copyright (c) 2020 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ServiceManager.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/SettableFuture.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/SimpleTimeLimiter.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/SmoothRateLimiter.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/Striped.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/ThreadFactoryBuilder.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/TimeLimiter.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/TimeoutFuture.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/TrustedListenableFutureTask.java
-
-       Copyright (c) 2014 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/UncaughtExceptionHandlers.java
-
-       Copyright (c) 2010 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/UncheckedExecutionException.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/UncheckedTimeoutException.java
-
-       Copyright (c) 2006 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/Uninterruptibles.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/WrappingExecutorService.java
-
-       Copyright (c) 2011 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/util/concurrent/WrappingScheduledExecutorService.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/xml/ElementTypesAreNonnullByDefault.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/xml/package-info.java
-
-       Copyright (c) 2012 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/xml/ParametricNullness.java
-
-       Copyright (c) 2021 The Guava Authors
-
-       See SECTION 2 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/common/xml/XmlEscapers.java
-
-       Copyright (c) 2009 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/thirdparty/publicsuffix/PublicSuffixPatterns.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 1 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/thirdparty/publicsuffix/PublicSuffixType.java
-
-       Copyright (c) 2013 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-       com/google/thirdparty/publicsuffix/TrieParser.java
-
-       Copyright (c) 2008 The Guava Authors
-
-       See SECTION 4 in 'LICENSE TEXT REFERENCE TABLE'
-
-
--------------------- SECTION 2: BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES --------------------
-
-   >>> org.checkerframework:checker-qual-3.33.0
-
-       Checker Framework qualifiers
-       Copyright 2004-present by the Checker Framework developers
-
-       MIT License:
-
-       Permission is hereby granted, free of charge, to any person obtaining a copy
-       of this software and associated documentation files (the "Software"), to deal
-       in the Software without restriction, including without limitation the rights
-       to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-       copies of the Software, and to permit persons to whom the Software is
-       furnished to do so, subject to the following conditions:
-
-       The above copyright notice and this permission notice shall be included in
-       all copies or substantial portions of the Software.
-
-       THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-       IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-       FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-       AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-       LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-       OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-       THE SOFTWARE.
-
-
--------------------- SECTION 3: Creative Commons Attribution 2.5  --------------------
-
-   >>> com.google.code.findbugs:jsr305-3.0.2
-
-       Copyright (c) 2005 Brian Goetz
-       Released under the Creative Commons Attribution License
-       (http://creativecommons.org/licenses/by/2.5)
-       Official home: http://www.jcip.net
-
-
-==================== APPENDIX. Standard License Files ====================
-
--------------------- SECTION 1: Creative Commons Attribution 2.5  --------------------
-
-CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE LEGAL SERVICES. DISTRIBUTION OF THIS LICENSE DOES NOT CREATE AN ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES REGARDING THE INFORMATION PROVIDED, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM ITS USE.
-
-License
-
-THE WORK (AS DEFINED BELOW) IS PROVIDED UNDER THE TERMS OF THIS CREATIVE COMMONS PUBLIC LICENSE ("CCPL" OR "LICENSE"). THE WORK IS PROTECTED BY COPYRIGHT AND/OR OTHER APPLICABLE LAW. ANY USE OF THE WORK OTHER THAN AS AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
-
-BY EXERCISING ANY RIGHTS TO THE WORK PROVIDED HERE, YOU ACCEPT AND AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE. THE LICENSOR GRANTS YOU THE RIGHTS CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND CONDITIONS.
-
-1. Definitions
-
-"Collective Work" means a work, such as a periodical issue, anthology or encyclopedia, in which the Work in its entirety in unmodified form, along with a number of other contributions, constituting separate and independent works in themselves, are assembled into a collective whole. A work that constitutes a Collective Work will not be considered a Derivative Work (as defined below) for the purposes of this License.
-
-"Derivative Work" means a work based upon the Work or upon the Work and other pre-existing works, such as a translation, musical arrangement, dramatization, fictionalization, motion picture version, sound recording, art reproduction, abridgment, condensation, or any other form in which the Work may be recast, transformed, or adapted, except that a work that constitutes a Collective Work will not be considered a Derivative Work for the purpose of this License. For the avoidance of doubt, where the Work is a musical composition or sound recording, the synchronization of the Work in timed-relation with a moving image ("synching") will be considered a Derivative Work for the purpose of this License.
-
-"Licensor" means the individual or entity that offers the Work under the terms of this License.
-
-"Original Author" means the individual or entity who created the Work.
-
-"Work" means the copyrightable work of authorship offered under the terms of this License.
-
-"You" means an individual or entity exercising rights under this License who has not previously violated the terms of this License with respect to the Work, or who has received express permission from the Licensor to exercise rights under this License despite a previous violation.
-
-2. Fair Use Rights. Nothing in this license is intended to reduce, limit, or restrict any rights arising from fair use, first sale or other limitations on the exclusive rights of the copyright owner under copyright law or other applicable laws.
-
-3. License Grant. Subject to the terms and conditions of this License, Licensor hereby grants You a worldwide, royalty-free, non-exclusive, perpetual (for the duration of the applicable copyright) license to exercise the rights in the Work as stated below:
-
-    to reproduce the Work, to incorporate the Work into one or more Collective Works, and to   reproduce the Work as incorporated in the Collective Works;
-    to create and reproduce Derivative Works;
-    to distribute copies or phonorecords of, display publicly, perform publicly, and perform publicly by means of a digital audio transmission the Work including as incorporated in Collective Works;
-    to distribute copies or phonorecords of, display publicly, perform publicly, and perform publicly by means of a digital audio transmission Derivative Works.
-
-For the avoidance of doubt, where the work is a musical composition:
-     Performance Royalties Under Blanket Licenses. Licensor waives the exclusive right to collect, whether individually or via a performance rights society (e.g. ASCAP, BMI, SESAC), royalties for the public performance or public digital performance (e.g. webcast) of the Work.
-     Mechanical Rights and Statutory Royalties. Licensor waives the exclusive right to collect, whether individually or via a music rights agency or designated agent (e.g. Harry Fox Agency), royalties for any phonorecord You create from the Work ("cover version") and distribute, subject to the compulsory license created by 17 USC Section 115 of the US Copyright Act (or the equivalent in other jurisdictions).
-    Webcasting Rights and Statutory Royalties. For the avoidance of doubt, where the Work is a sound recording, Licensor waives the exclusive right to collect, whether individually or via a performance-rights society (e.g. SoundExchange), royalties for the public digital performance (e.g. webcast) of the Work, subject to the compulsory license created by 17 USC Section 114 of the US Copyright Act (or the equivalent in other jurisdictions).
-
-The above rights may be exercised in all media and formats whether now known or hereafter devised. The above rights include the right to make such modifications as are technically necessary to exercise the rights in other media and formats. All rights not expressly granted by Licensor are hereby reserved.
-
-4. Restrictions.The license granted in Section 3 above is expressly made subject to and limited by the following restrictions:
-
-    You may distribute, publicly display, publicly perform, or publicly digitally perform the Work only under the terms of this License, and You must include a copy of, or the Uniform Resource Identifier for, this License with every copy or phonorecord of the Work You distribute, publicly display, publicly perform, or publicly digitally perform. You may not offer or impose any terms on the Work that alter or restrict the terms of this License or the recipients' exercise of the rights granted hereunder. You may not sublicense the Work. You must keep intact all notices that refer to this License and to the disclaimer of warranties. You may not distribute, publicly display, publicly perform, or publicly digitally perform the Work with any technological measures that control access or use of the Work in a manner inconsistent with the terms of this License Agreement. The above applies to the Work as incorporated in a Collective Work, but this does not require the Collective Work apart from the Work itself to be made subject to the terms of this License. If You create a Collective Work, upon notice from any Licensor You must, to the extent practicable, remove from the Collective Work any credit as required by clause 4(b), as requested. If You create a Derivative Work, upon notice from any Licensor You must, to the extent practicable, remove from the Derivative Work any credit as required by clause 4(b), as requested.
-    If you distribute, publicly display, publicly perform, or publicly digitally perform the Work or any Derivative Works or Collective Works, You must keep intact all copyright notices for the Work and provide, reasonable to the medium or means You are utilizing: (i) the name of the Original Author (or pseudonym, if applicable) if supplied, and/or (ii) if the Original Author and/or Licensor designate another party or parties (e.g. a sponsor institute, publishing entity, journal) for attribution in Licensor's copyright notice, terms of service or by other reasonable means, the name of such party or parties; the title of the Work if supplied; to the extent reasonably practicable, the Uniform Resource Identifier, if any, that Licensor specifies to be associated with the Work, unless such URI does not refer to the copyright notice or licensing information for the Work; and in the case of a Derivative Work, a credit identifying the use of the Work in the Derivative Work (e.g., "French translation of the Work by Original Author," or "Screenplay based on original Work by Original Author"). Such credit may be implemented in any reasonable manner; provided, however, that in the case of a Derivative Work or Collective Work, at a minimum such credit will appear where any other comparable authorship credit appears and in a manner at least as prominent as such other comparable authorship credit.
-
-5. Representations, Warranties and Disclaimer
-
-UNLESS OTHERWISE MUTUALLY AGREED TO BY THE PARTIES IN WRITING, LICENSOR OFFERS THE WORK AS-IS AND MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY KIND CONCERNING THE WORK, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE, INCLUDING, WITHOUT LIMITATION, WARRANTIES OF TITLE, MERCHANTIBILITY, FITNESS FOR A PARTICULAR PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, ACCURACY, OR THE PRESENCE OF ABSENCE OF ERRORS, WHETHER OR NOT DISCOVERABLE. SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF IMPLIED WARRANTIES, SO SUCH EXCLUSION MAY NOT APPLY TO YOU.
-
-6. Limitation on Liability. EXCEPT TO THE EXTENT REQUIRED BY APPLICABLE LAW, IN NO EVENT WILL LICENSOR BE LIABLE TO YOU ON ANY LEGAL THEORY FOR ANY SPECIAL, INCIDENTAL, CONSEQUENTIAL, PUNITIVE OR EXEMPLARY DAMAGES ARISING OUT OF THIS LICENSE OR THE USE OF THE WORK, EVEN IF LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-
-7. Termination
-
-    This License and the rights granted hereunder will terminate automatically upon any breach by You of the terms of this License. Individuals or entities who have received Derivative Works or Collective Works from You under this License, however, will not have their licenses terminated provided such individuals or entities remain in full compliance with those licenses. Sections 1, 2, 5, 6, 7, and 8 will survive any termination of this License.
-    Subject to the above terms and conditions, the license granted here is perpetual (for the duration of the applicable copyright in the Work). Notwithstanding the above, Licensor reserves the right to release the Work under different license terms or to stop distributing the Work at any time; provided, however that any such election will not serve to withdraw this License (or any other license that has been, or is required to be, granted under the terms of this License), and this License will continue in full force and effect unless terminated as stated above.
-
-8. Miscellaneous
-
-    Each time You distribute or publicly digitally perform the Work or a Collective Work, the Licensor offers to the recipient a license to the Work on the same terms and conditions as the license granted to You under this License.
-    Each time You distribute or publicly digitally perform a Derivative Work, Licensor offers to the recipient a license to the original Work on the same terms and conditions as the license granted to You under this License.
-    If any provision of this License is invalid or unenforceable under applicable law, it shall not affect the validity or enforceability of the remainder of the terms of this License, and without further action by the parties to this agreement, such provision shall be reformed to the minimum extent necessary to make such provision valid and enforceable.
-    No term or provision of this License shall be deemed waived and no breach consented to unless such waiver or consent shall be in writing and signed by the party to be charged with such waiver or consent.
-    This License constitutes the entire agreement between the parties with respect to the Work licensed here. There are no understandings, agreements or representations with respect to the Work not specified here. Licensor shall not be bound by any additional provisions that may appear in any communication from You. This License may not be modified without the mutual written agreement of the Licensor and You.
-
-
--------------------- SECTION 2: Apache License, V2.0 --------------------
-
-Apache License 
-
-Version 2.0, January 2004 
-http://www.apache.org/licenses/ 
-
-TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION 
-
-1. Definitions.
-
-"License" shall mean the terms and conditions for use, reproduction,
-and distribution as defined by Sections 1 through 9 of this document.
-
-"Licensor" shall mean the copyright owner or entity authorized by the
-copyright owner that is granting the License.  
-
-"Legal Entity" shall mean the union of the acting entity and all other
-entities that control, are controlled by, or are under common control
-with that entity. For the purposes of this definition, "control" means
-(i) the power, direct or indirect, to cause the direction or management
-of such entity, whether by contract or otherwise, or (ii) ownership
-of fifty percent (50%) or more of the outstanding shares, or (iii)
-beneficial ownership of such entity.
-
-"You" (or "Your") shall mean an individual or Legal Entity exercising
-permissions granted by this License.  
-
-"Source" form shall mean the preferred form for making modifications,
-including but not limited to software source code, documentation source,
-and configuration files.
-
-"Object" form shall mean any form resulting from mechanical transformation
-or translation of a Source form, including but not limited to compiled
-object code, generated documentation, and conversions to other media
-types.  
-
-"Work" shall mean the work of authorship, whether in Source or
-Object form, made available under the License, as indicated by a copyright
-notice that is included in or attached to the work (an example is provided
-in the Appendix below).  
-
-"Derivative Works" shall mean any work, whether in Source or Object form,
-that is based on (or derived from) the Work and for which the editorial
-revisions, annotations, elaborations, or other modifications represent,
-as a whole, an original work of authorship. For the purposes of this
-License, Derivative Works shall not include works that remain separable
-from, or merely link (or bind by name) to the interfaces of, the Work
-and Derivative Works thereof.
-
-"Contribution" shall mean any work of authorship, including the
-original version of the Work and any modifications or additions to
-that Work or Derivative Works thereof, that is intentionally submitted
-to Licensor for inclusion in the Work by the copyright owner or by an
-individual or Legal Entity authorized to submit on behalf of the copyright
-owner. For the purposes of this definition, "submitted" means any form of
-electronic, verbal, or written communication sent to the Licensor or its
-representatives, including but not limited to communication on electronic
-mailing lists, source code control systems, and issue tracking systems
-that are managed by, or on behalf of, the Licensor for the purpose of
-discussing and improving the Work, but excluding communication that is
-conspicuously marked or otherwise designated in writing by the copyright
-owner as "Not a Contribution."
-
-"Contributor" shall mean Licensor and any individual or Legal Entity
-on behalf of whom a Contribution has been received by Licensor and
-subsequently incorporated within the Work.
-
-2. Grant of Copyright License.
-Subject to the terms and conditions of this License, each Contributor
-hereby grants to You a perpetual, worldwide, non-exclusive, no-charge,
-royalty-free, irrevocable copyright license to reproduce, prepare
-Derivative Works of, publicly display, publicly perform, sublicense, and
-distribute the Work and such Derivative Works in Source or Object form.
-
-3. Grant of Patent License.
-Subject to the terms and conditions of this License, each Contributor
-hereby grants to You a perpetual, worldwide, non-exclusive, no-charge,
-royalty- free, irrevocable (except as stated in this section) patent
-license to make, have made, use, offer to sell, sell, import, and
-otherwise transfer the Work, where such license applies only to those
-patent claims licensable by such Contributor that are necessarily
-infringed by their Contribution(s) alone or by combination of
-their Contribution(s) with the Work to which such Contribution(s)
-was submitted. If You institute patent litigation against any entity
-(including a cross-claim or counterclaim in a lawsuit) alleging that the
-Work or a Contribution incorporated within the Work constitutes direct
-or contributory patent infringement, then any patent licenses granted
-to You under this License for that Work shall terminate as of the date
-such litigation is filed.
-
-4. Redistribution.
-You may reproduce and distribute copies of the Work or Derivative Works
-thereof in any medium, with or without modifications, and in Source or
-Object form, provided that You meet the following conditions:
-
-  a. You must give any other recipients of the Work or Derivative Works
-     a copy of this License; and
-
-  b. You must cause any modified files to carry prominent notices stating
-     that You changed the files; and
-
-  c. You must retain, in the Source form of any Derivative Works that
-     You distribute, all copyright, patent, trademark, and attribution
-     notices from the Source form of the Work, excluding those notices
-     that do not pertain to any part of the Derivative Works; and
-
-  d. If the Work includes a "NOTICE" text file as part of its
-     distribution, then any Derivative Works that You distribute must
-     include a readable copy of the attribution notices contained
-     within such NOTICE file, excluding those notices that do not
-     pertain to any part of the Derivative Works, in at least one of
-     the following places: within a NOTICE text file distributed as part
-     of the Derivative Works; within the Source form or documentation,
-     if provided along with the Derivative Works; or, within a display
-     generated by the Derivative Works, if and wherever such third-party
-     notices normally appear. The contents of the NOTICE file are for
-     informational purposes only and do not modify the License. You
-     may add Your own attribution notices within Derivative Works that
-     You distribute, alongside or as an addendum to the NOTICE text
-     from the Work, provided that such additional attribution notices
-     cannot be construed as modifying the License.  You may add Your own
-     copyright statement to Your modifications and may provide additional
-     or different license terms and conditions for use, reproduction, or
-     distribution of Your modifications, or for any such Derivative Works
-     as a whole, provided Your use, reproduction, and distribution of the
-     Work otherwise complies with the conditions stated in this License.
-
-5. Submission of Contributions.
-Unless You explicitly state otherwise, any Contribution intentionally
-submitted for inclusion in the Work by You to the Licensor shall be
-under the terms and conditions of this License, without any additional
-terms or conditions.  Notwithstanding the above, nothing herein shall
-supersede or modify the terms of any separate license agreement you may
-have executed with Licensor regarding such Contributions.
-
-6. Trademarks.
-This License does not grant permission to use the trade names, trademarks,
-service marks, or product names of the Licensor, except as required for
-reasonable and customary use in describing the origin of the Work and
-reproducing the content of the NOTICE file.
-
-7. Disclaimer of Warranty.
-Unless required by applicable law or agreed to in writing, Licensor
-provides the Work (and each Contributor provides its Contributions) on
-an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-express or implied, including, without limitation, any warranties or
-conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR
-A PARTICULAR PURPOSE. You are solely responsible for determining the
-appropriateness of using or redistributing the Work and assume any risks
-associated with Your exercise of permissions under this License.
-
-8. Limitation of Liability.
-In no event and under no legal theory, whether in tort (including
-negligence), contract, or otherwise, unless required by applicable law
-(such as deliberate and grossly negligent acts) or agreed to in writing,
-shall any Contributor be liable to You for damages, including any direct,
-indirect, special, incidental, or consequential damages of any character
-arising as a result of this License or out of the use or inability to
-use the Work (including but not limited to damages for loss of goodwill,
-work stoppage, computer failure or malfunction, or any and all other
-commercial damages or losses), even if such Contributor has been advised
-of the possibility of such damages.
-
-9. Accepting Warranty or Additional Liability.
-While redistributing the Work or Derivative Works thereof, You may
-choose to offer, and charge a fee for, acceptance of support, warranty,
-indemnity, or other liability obligations and/or rights consistent with
-this License. However, in accepting such obligations, You may act only
-on Your own behalf and on Your sole responsibility, not on behalf of
-any other Contributor, and only if You agree to indemnify, defend, and
-hold each Contributor harmless for any liability incurred by, or claims
-asserted against, such Contributor by reason of your accepting any such
-warranty or additional liability.
-
-END OF TERMS AND CONDITIONS 
-
-APPENDIX: How to apply the Apache License to your work.
-
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
-
-Copyright [yyyy] [name of copyright owner]
+Copyright 2016 The Error Prone Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-==================== LICENSE TEXT REFERENCE TABLE ====================
 
--------------------- SECTION 1 --------------------
+>>> com.google.guava:failureaccess-1.0.1
+
+Copyright (C) 2018 The Guava Authors
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+in compliance with the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License
+is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+or implied. See the License for the specific language governing permissions and limitations under
+the License.
+
+>>> com.google.guava:guava-28.2-jre
+
+Copyright (C) 2009 The Guava Authors
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+in compliance with the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License
+is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+or implied. See the License for the specific language governing permissions and limitations under
+the License.
+
+ADDITIONAL LICENSE INFORMATION:
+
+> PublicDomain
+
+guava-28.2-jre-sources.jar\com\google\common\cache\Striped64.java
+
+Written by Doug Lea with assistance from members of JCP JSR-166
+Expert Group and released to the public domain, as explained at
+http://creativecommons.org/publicdomain/zero/1.0/
+
+>>> com.google.guava:listenablefuture-9999.0-empty-to-avoid-conflict-with-guava
+
+License : Apache 2.0
+
+>>> com.google.j2objc:j2objc-annotations-1.3
+
+Copyright 2012 Google Inc. All Rights Reserved.
+
 Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
--------------------- SECTION 2 --------------------
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
--------------------- SECTION 3 --------------------
- * Licensed under the Apache License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License. You may obtain
- * a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the license for the specific language governing permissions and
- * limitations under the license.
--------------------- SECTION 4 --------------------
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
--------------------- SECTION 5 --------------------
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
--------------------- SECTION 6 --------------------
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing permissions and
- * limitations under the License.
--------------------- SECTION 7 --------------------
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License.  You may
- * obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied.  See the License for the specific language governing
- * permissions and limitations under the License.
--------------------- SECTION 8 --------------------
- *     <dd>Copyright (c) Werner Randelshofer. Apache 2.0 License.
-[WAVEFRONTSDKJAVA340GAAT082923]
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+>>> com.tdunning:t-digest-3.2
+
+Licensed to Ted Dunning under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+--------------- SECTION 2: BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES ----------
+
+BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES are applicable to the following component(s).
+
+
+>>> org.checkerframework:checker-qual-2.10.0
+
+License: MIT
+
+--------------- SECTION 3: Creative Commons Attribution 2.5  ----------
+
+Creative Commons Attribution 2.5 is applicable to the following component(s).
+
+
+>>> com.google.code.findbugs:jsr305-3.0.2
+
+Copyright (c) 2005 Brian Goetz
+Released under the Creative Commons Attribution License
+(http://creativecommons.org/licenses/by/2.5)
+Official home: http://www.jcip.net
+
+=============== APPENDIX. Standard License Files ============== 
+
+
+
+--------------- SECTION 1: Apache License, V2.0 -----------
+
+Apache License 
+
+
+
+Version 2.0, January 2004 
+
+http://www.apache.org/licenses/ 
+
+
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION 
+
+
+
+1. Definitions.
+
+
+
+"License" shall mean the terms and conditions for use, reproduction,
+
+and distribution as defined by Sections 1 through 9 of this document.
+
+
+
+"Licensor" shall mean the copyright owner or entity authorized by the
+
+copyright owner that is granting the License.  
+
+
+
+"Legal Entity" shall mean the union of the acting entity and all other
+
+entities that control, are controlled by, or are under common control
+
+with that entity. For the purposes of this definition, "control" means
+
+(i) the power, direct or indirect, to cause the direction or management
+
+of such entity, whether by contract or otherwise, or (ii) ownership
+
+of fifty percent (50%) or more of the outstanding shares, or (iii)
+
+beneficial ownership of such entity.
+
+
+
+"You" (or "Your") shall mean an individual or Legal Entity exercising
+
+permissions granted by this License.  
+
+
+
+"Source" form shall mean the preferred form for making modifications,
+
+including but not limited to software source code, documentation source,
+
+and configuration files.
+
+
+
+"Object" form shall mean any form resulting from mechanical transformation
+
+or translation of a Source form, including but not limited to compiled
+
+object code, generated documentation, and conversions to other media
+
+types.  
+
+
+
+"Work" shall mean the work of authorship, whether in Source or
+
+Object form, made available under the License, as indicated by a copyright
+
+notice that is included in or attached to the work (an example is provided
+
+in the Appendix below).  
+
+
+
+"Derivative Works" shall mean any work, whether in Source or Object form,
+
+that is based on (or derived from) the Work and for which the editorial
+
+revisions, annotations, elaborations, or other modifications represent,
+
+as a whole, an original work of authorship. For the purposes of this
+
+License, Derivative Works shall not include works that remain separable
+
+from, or merely link (or bind by name) to the interfaces of, the Work
+
+and Derivative Works thereof.
+
+
+
+"Contribution" shall mean any work of authorship, including the
+
+original version of the Work and any modifications or additions to
+
+that Work or Derivative Works thereof, that is intentionally submitted
+
+to Licensor for inclusion in the Work by the copyright owner or by an
+
+individual or Legal Entity authorized to submit on behalf of the copyright
+
+owner. For the purposes of this definition, "submitted" means any form of
+
+electronic, verbal, or written communication sent to the Licensor or its
+
+representatives, including but not limited to communication on electronic
+
+mailing lists, source code control systems, and issue tracking systems
+
+that are managed by, or on behalf of, the Licensor for the purpose of
+
+discussing and improving the Work, but excluding communication that is
+
+conspicuously marked or otherwise designated in writing by the copyright
+
+owner as "Not a Contribution."
+
+
+
+"Contributor" shall mean Licensor and any individual or Legal Entity
+
+on behalf of whom a Contribution has been received by Licensor and
+
+subsequently incorporated within the Work.
+
+
+
+2. Grant of Copyright License.
+
+Subject to the terms and conditions of this License, each Contributor
+
+hereby grants to You a perpetual, worldwide, non-exclusive, no-charge,
+
+royalty-free, irrevocable copyright license to reproduce, prepare
+
+Derivative Works of, publicly display, publicly perform, sublicense, and
+
+distribute the Work and such Derivative Works in Source or Object form.
+
+
+
+3. Grant of Patent License.
+
+Subject to the terms and conditions of this License, each Contributor
+
+hereby grants to You a perpetual, worldwide, non-exclusive, no-charge,
+
+royalty- free, irrevocable (except as stated in this section) patent
+
+license to make, have made, use, offer to sell, sell, import, and
+
+otherwise transfer the Work, where such license applies only to those
+
+patent claims licensable by such Contributor that are necessarily
+
+infringed by their Contribution(s) alone or by combination of
+
+their Contribution(s) with the Work to which such Contribution(s)
+
+was submitted. If You institute patent litigation against any entity
+
+(including a cross-claim or counterclaim in a lawsuit) alleging that the
+
+Work or a Contribution incorporated within the Work constitutes direct
+
+or contributory patent infringement, then any patent licenses granted
+
+to You under this License for that Work shall terminate as of the date
+
+such litigation is filed.
+
+
+
+4. Redistribution.
+
+You may reproduce and distribute copies of the Work or Derivative Works
+
+thereof in any medium, with or without modifications, and in Source or
+
+Object form, provided that You meet the following conditions:
+
+
+
+  a. You must give any other recipients of the Work or Derivative Works
+
+     a copy of this License; and
+
+
+
+  b. You must cause any modified files to carry prominent notices stating
+
+     that You changed the files; and
+
+
+
+  c. You must retain, in the Source form of any Derivative Works that
+
+     You distribute, all copyright, patent, trademark, and attribution
+
+     notices from the Source form of the Work, excluding those notices
+
+     that do not pertain to any part of the Derivative Works; and
+
+
+
+  d. If the Work includes a "NOTICE" text file as part of its
+
+     distribution, then any Derivative Works that You distribute must
+
+     include a readable copy of the attribution notices contained
+
+     within such NOTICE file, excluding those notices that do not
+
+     pertain to any part of the Derivative Works, in at least one of
+
+     the following places: within a NOTICE text file distributed as part
+
+     of the Derivative Works; within the Source form or documentation,
+
+     if provided along with the Derivative Works; or, within a display
+
+     generated by the Derivative Works, if and wherever such third-party
+
+     notices normally appear. The contents of the NOTICE file are for
+
+     informational purposes only and do not modify the License. You
+
+     may add Your own attribution notices within Derivative Works that
+
+     You distribute, alongside or as an addendum to the NOTICE text
+
+     from the Work, provided that such additional attribution notices
+
+     cannot be construed as modifying the License.  You may add Your own
+
+     copyright statement to Your modifications and may provide additional
+
+     or different license terms and conditions for use, reproduction, or
+
+     distribution of Your modifications, or for any such Derivative Works
+
+     as a whole, provided Your use, reproduction, and distribution of the
+
+     Work otherwise complies with the conditions stated in this License.
+
+
+
+5. Submission of Contributions.
+
+Unless You explicitly state otherwise, any Contribution intentionally
+
+submitted for inclusion in the Work by You to the Licensor shall be
+
+under the terms and conditions of this License, without any additional
+
+terms or conditions.  Notwithstanding the above, nothing herein shall
+
+supersede or modify the terms of any separate license agreement you may
+
+have executed with Licensor regarding such Contributions.
+
+
+
+6. Trademarks.
+
+This License does not grant permission to use the trade names, trademarks,
+
+service marks, or product names of the Licensor, except as required for
+
+reasonable and customary use in describing the origin of the Work and
+
+reproducing the content of the NOTICE file.
+
+
+
+7. Disclaimer of Warranty.
+
+Unless required by applicable law or agreed to in writing, Licensor
+
+provides the Work (and each Contributor provides its Contributions) on
+
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+
+express or implied, including, without limitation, any warranties or
+
+conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR
+
+A PARTICULAR PURPOSE. You are solely responsible for determining the
+
+appropriateness of using or redistributing the Work and assume any risks
+
+associated with Your exercise of permissions under this License.
+
+
+
+8. Limitation of Liability.
+
+In no event and under no legal theory, whether in tort (including
+
+negligence), contract, or otherwise, unless required by applicable law
+
+(such as deliberate and grossly negligent acts) or agreed to in writing,
+
+shall any Contributor be liable to You for damages, including any direct,
+
+indirect, special, incidental, or consequential damages of any character
+
+arising as a result of this License or out of the use or inability to
+
+use the Work (including but not limited to damages for loss of goodwill,
+
+work stoppage, computer failure or malfunction, or any and all other
+
+commercial damages or losses), even if such Contributor has been advised
+
+of the possibility of such damages.
+
+
+
+9. Accepting Warranty or Additional Liability.
+
+While redistributing the Work or Derivative Works thereof, You may
+
+choose to offer, and charge a fee for, acceptance of support, warranty,
+
+indemnity, or other liability obligations and/or rights consistent with
+
+this License. However, in accepting such obligations, You may act only
+
+on Your own behalf and on Your sole responsibility, not on behalf of
+
+any other Contributor, and only if You agree to indemnify, defend, and
+
+hold each Contributor harmless for any liability incurred by, or claims
+
+asserted against, such Contributor by reason of your accepting any such
+
+warranty or additional liability.
+
+
+
+END OF TERMS AND CONDITIONS 
+
+
+
+
+
+--------------- SECTION 2: Creative Commons Attribution 2.5  -----------
+
+CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE LEGAL SERVICES. DISTRIBUTION OF THIS LICENSE DOES NOT CREATE AN ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES REGARDING THE INFORMATION PROVIDED, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM ITS USE.
+
+
+
+License
+
+
+
+THE WORK (AS DEFINED BELOW) IS PROVIDED UNDER THE TERMS OF THIS CREATIVE COMMONS PUBLIC LICENSE ("CCPL" OR "LICENSE"). THE WORK IS PROTECTED BY COPYRIGHT AND/OR OTHER APPLICABLE LAW. ANY USE OF THE WORK OTHER THAN AS AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
+
+
+
+BY EXERCISING ANY RIGHTS TO THE WORK PROVIDED HERE, YOU ACCEPT AND AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE. THE LICENSOR GRANTS YOU THE RIGHTS CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND CONDITIONS.
+
+
+
+1. Definitions
+
+
+
+"Collective Work" means a work, such as a periodical issue, anthology or encyclopedia, in which the Work in its entirety in unmodified form, along with a number of other contributions, constituting separate and independent works in themselves, are assembled into a collective whole. A work that constitutes a Collective Work will not be considered a Derivative Work (as defined below) for the purposes of this License.
+
+
+
+"Derivative Work" means a work based upon the Work or upon the Work and other pre-existing works, such as a translation, musical arrangement, dramatization, fictionalization, motion picture version, sound recording, art reproduction, abridgment, condensation, or any other form in which the Work may be recast, transformed, or adapted, except that a work that constitutes a Collective Work will not be considered a Derivative Work for the purpose of this License. For the avoidance of doubt, where the Work is a musical composition or sound recording, the synchronization of the Work in timed-relation with a moving image ("synching") will be considered a Derivative Work for the purpose of this License.
+
+
+
+"Licensor" means the individual or entity that offers the Work under the terms of this License.
+
+
+
+"Original Author" means the individual or entity who created the Work.
+
+
+
+"Work" means the copyrightable work of authorship offered under the terms of this License.
+
+
+
+"You" means an individual or entity exercising rights under this License who has not previously violated the terms of this License with respect to the Work, or who has received express permission from the Licensor to exercise rights under this License despite a previous violation.
+
+
+
+2. Fair Use Rights. Nothing in this license is intended to reduce, limit, or restrict any rights arising from fair use, first sale or other limitations on the exclusive rights of the copyright owner under copyright law or other applicable laws.
+
+
+
+3. License Grant. Subject to the terms and conditions of this License, Licensor hereby grants You a worldwide, royalty-free, non-exclusive, perpetual (for the duration of the applicable copyright) license to exercise the rights in the Work as stated below:
+
+
+
+    to reproduce the Work, to incorporate the Work into one or more Collective Works, and to   reproduce the Work as incorporated in the Collective Works;
+
+    to create and reproduce Derivative Works;
+
+    to distribute copies or phonorecords of, display publicly, perform publicly, and perform publicly by means of a digital audio transmission the Work including as incorporated in Collective Works;
+
+    to distribute copies or phonorecords of, display publicly, perform publicly, and perform publicly by means of a digital audio transmission Derivative Works.
+
+
+
+For the avoidance of doubt, where the work is a musical composition:
+
+     Performance Royalties Under Blanket Licenses. Licensor waives the exclusive right to collect, whether individually or via a performance rights society (e.g. ASCAP, BMI, SESAC), royalties for the public performance or public digital performance (e.g. webcast) of the Work.
+
+     Mechanical Rights and Statutory Royalties. Licensor waives the exclusive right to collect, whether individually or via a music rights agency or designated agent (e.g. Harry Fox Agency), royalties for any phonorecord You create from the Work ("cover version") and distribute, subject to the compulsory license created by 17 USC Section 115 of the US Copyright Act (or the equivalent in other jurisdictions).
+
+    Webcasting Rights and Statutory Royalties. For the avoidance of doubt, where the Work is a sound recording, Licensor waives the exclusive right to collect, whether individually or via a performance-rights society (e.g. SoundExchange), royalties for the public digital performance (e.g. webcast) of the Work, subject to the compulsory license created by 17 USC Section 114 of the US Copyright Act (or the equivalent in other jurisdictions).
+
+
+
+The above rights may be exercised in all media and formats whether now known or hereafter devised. The above rights include the right to make such modifications as are technically necessary to exercise the rights in other media and formats. All rights not expressly granted by Licensor are hereby reserved.
+
+
+
+4. Restrictions.The license granted in Section 3 above is expressly made subject to and limited by the following restrictions:
+
+
+
+    You may distribute, publicly display, publicly perform, or publicly digitally perform the Work only under the terms of this License, and You must include a copy of, or the Uniform Resource Identifier for, this License with every copy or phonorecord of the Work You distribute, publicly display, publicly perform, or publicly digitally perform. You may not offer or impose any terms on the Work that alter or restrict the terms of this License or the recipients' exercise of the rights granted hereunder. You may not sublicense the Work. You must keep intact all notices that refer to this License and to the disclaimer of warranties. You may not distribute, publicly display, publicly perform, or publicly digitally perform the Work with any technological measures that control access or use of the Work in a manner inconsistent with the terms of this License Agreement. The above applies to the Work as incorporated in a Collective Work, but this does not require the Collective Work apart from the Work itself to be made subject to the terms of this License. If You create a Collective Work, upon notice from any Licensor You must, to the extent practicable, remove from the Collective Work any credit as required by clause 4(b), as requested. If You create a Derivative Work, upon notice from any Licensor You must, to the extent practicable, remove from the Derivative Work any credit as required by clause 4(b), as requested.
+
+    If you distribute, publicly display, publicly perform, or publicly digitally perform the Work or any Derivative Works or Collective Works, You must keep intact all copyright notices for the Work and provide, reasonable to the medium or means You are utilizing: (i) the name of the Original Author (or pseudonym, if applicable) if supplied, and/or (ii) if the Original Author and/or Licensor designate another party or parties (e.g. a sponsor institute, publishing entity, journal) for attribution in Licensor's copyright notice, terms of service or by other reasonable means, the name of such party or parties; the title of the Work if supplied; to the extent reasonably practicable, the Uniform Resource Identifier, if any, that Licensor specifies to be associated with the Work, unless such URI does not refer to the copyright notice or licensing information for the Work; and in the case of a Derivative Work, a credit identifying the use of the Work in the Derivative Work (e.g., "French translation of the Work by Original Author," or "Screenplay based on original Work by Original Author"). Such credit may be implemented in any reasonable manner; provided, however, that in the case of a Derivative Work or Collective Work, at a minimum such credit will appear where any other comparable authorship credit appears and in a manner at least as prominent as such other comparable authorship credit.
+
+
+
+5. Representations, Warranties and Disclaimer
+
+
+
+UNLESS OTHERWISE MUTUALLY AGREED TO BY THE PARTIES IN WRITING, LICENSOR OFFERS THE WORK AS-IS AND MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY KIND CONCERNING THE WORK, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE, INCLUDING, WITHOUT LIMITATION, WARRANTIES OF TITLE, MERCHANTIBILITY, FITNESS FOR A PARTICULAR PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, ACCURACY, OR THE PRESENCE OF ABSENCE OF ERRORS, WHETHER OR NOT DISCOVERABLE. SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF IMPLIED WARRANTIES, SO SUCH EXCLUSION MAY NOT APPLY TO YOU.
+
+
+
+6. Limitation on Liability. EXCEPT TO THE EXTENT REQUIRED BY APPLICABLE LAW, IN NO EVENT WILL LICENSOR BE LIABLE TO YOU ON ANY LEGAL THEORY FOR ANY SPECIAL, INCIDENTAL, CONSEQUENTIAL, PUNITIVE OR EXEMPLARY DAMAGES ARISING OUT OF THIS LICENSE OR THE USE OF THE WORK, EVEN IF LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+
+
+7. Termination
+
+
+
+    This License and the rights granted hereunder will terminate automatically upon any breach by You of the terms of this License. Individuals or entities who have received Derivative Works or Collective Works from You under this License, however, will not have their licenses terminated provided such individuals or entities remain in full compliance with those licenses. Sections 1, 2, 5, 6, 7, and 8 will survive any termination of this License.
+
+    Subject to the above terms and conditions, the license granted here is perpetual (for the duration of the applicable copyright in the Work). Notwithstanding the above, Licensor reserves the right to release the Work under different license terms or to stop distributing the Work at any time; provided, however that any such election will not serve to withdraw this License (or any other license that has been, or is required to be, granted under the terms of this License), and this License will continue in full force and effect unless terminated as stated above.
+
+
+
+8. Miscellaneous
+
+
+
+    Each time You distribute or publicly digitally perform the Work or a Collective Work, the Licensor offers to the recipient a license to the Work on the same terms and conditions as the license granted to You under this License.
+
+    Each time You distribute or publicly digitally perform a Derivative Work, Licensor offers to the recipient a license to the original Work on the same terms and conditions as the license granted to You under this License.
+
+    If any provision of this License is invalid or unenforceable under applicable law, it shall not affect the validity or enforceability of the remainder of the terms of this License, and without further action by the parties to this agreement, such provision shall be reformed to the minimum extent necessary to make such provision valid and enforceable.
+
+    No term or provision of this License shall be deemed waived and no breach consented to unless such waiver or consent shall be in writing and signed by the party to be charged with such waiver or consent.
+
+    This License constitutes the entire agreement between the parties with respect to the Work licensed here. There are no understandings, agreements or representations with respect to the Work not specified here. Licensor shall not be bound by any additional provisions that may appear in any communication from You. This License may not be modified without the mutual written agreement of the Licensor and You.
+
+
+	
+======================================================================
+
+To the extent any open source components are licensed under the GPL
+and/or LGPL, or other similar licenses that require the source code
+and/or modifications to source code to be made available (as would be
+noted above), you may obtain a copy of the source code corresponding to
+the binaries for such open source components and modifications thereto,
+if any, (the "Source Files"), by downloading the Source Files from
+VMware's website at http://www.vmware.com/download/open_source.html, or
+by sending a request, with your name and address to: VMware, Inc., 3401
+Hillview Avenue, Palo Alto, CA 94304, United States of America. All such
+requests should clearly specify: OPEN SOURCE FILES REQUEST, Attention
+General Counsel. VMware shall mail a copy of the Source Files to you on
+a CD or equivalent physical medium. This offer to obtain a copy of the
+Source Files is valid for three years from the date you acquired or last used this
+Software product. Alternatively, the Source Files may accompany the
+VMware service.
+
+[WAVEFRONTSDKJAVA330GAPS052720]
