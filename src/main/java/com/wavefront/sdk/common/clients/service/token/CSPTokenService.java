@@ -32,15 +32,6 @@ public class CSPTokenService implements TokenService, Runnable {
     this.cspUrlConnectionFactory = cspUrlConnection;
   }
 
-  public static boolean hasDirectIngestScope(final String scopeList) {
-    if (!Utils.isNullOrEmpty(scopeList)) {
-      return CSPTokenService.parseScopes(scopeList).stream()
-          .anyMatch(s -> s.contains("aoa:directDataIngestion") || s.contains("aoa/*") || s.contains("aoa:*") || s.contains("ALL_PERMISSIONS"));
-    }
-
-    return false;
-  }
-
   @Override
   public synchronized String getToken() {
     // First access gets the token and is blocking, which schedules the next token fetch.
@@ -80,11 +71,6 @@ public class CSPTokenService implements TokenService, Runnable {
           Duration threadDelay = getThreadDelay(parsedResponse.expiresIn);
           log.info("A CSP token was received. The token will be refreshed in " + threadDelay.getSeconds() + " seconds.");
           executor.schedule(this, threadDelay.getSeconds(), TimeUnit.SECONDS);
-
-          if (!hasDirectIngestScope(parsedResponse.scope)) {
-            log.warning("The CSP response does not contain a required scope to send data to Wavefront. " +
-                    "Must be one of 'aoa:directDataIngestion', 'aoa:*', 'aoa/*', or 'ALL_PERMISSIONS'. Received: '" + parsedResponse.scope + "'.");
-          }
 
           return parsedResponse.accessToken;
         } catch (JsonProcessingException e) {
