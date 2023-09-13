@@ -116,7 +116,7 @@
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
             <scope>test</scope>
-            <version>5.1.0</version>
+            <version>5.2.0</version>
         </dependency>
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
