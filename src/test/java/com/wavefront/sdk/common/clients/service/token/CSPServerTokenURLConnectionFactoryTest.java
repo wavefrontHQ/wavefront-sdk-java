@@ -11,37 +11,42 @@ class CSPServerTokenURLConnectionFactoryTest {
 
   @Test
   void parseClientCredentials() {
-    Map<String, String> creds;
+    Map<CSPServerTokenURLConnectionFactory.CredentialPart, String> subject;
 
-    creds = CSPServerTokenURLConnectionFactory.parseClientCredentials("clientId=cid,clientSecret=csc");
-    assertEquals("cid", creds.get("clientId"));
-    assertEquals("csc", creds.get("clientSecret"));
+    subject = CSPServerTokenURLConnectionFactory.parseClientCredentials("clientId=cid,clientSecret=csc");
+    assertEquals("cid", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_ID));
+    assertEquals("csc", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_SECRET));
 
-    creds = CSPServerTokenURLConnectionFactory.parseClientCredentials("clientId=cid,clientSecret=csc,orgId=oid");
-    assertEquals("cid", creds.get("clientId"));
-    assertEquals("csc", creds.get("clientSecret"));
-    assertEquals("oid", creds.get("orgId"));
+    subject = CSPServerTokenURLConnectionFactory.parseClientCredentials("clientId=cid,clientSecret=csc,orgId=oid");
+    assertEquals("cid", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_ID));
+    assertEquals("csc", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_SECRET));
+    assertEquals("oid", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.ORG_ID));
   }
 
   @Test
   void parseClientCredentialsWithOddInput() {
-    Map<String, String> creds;
+    Map<CSPServerTokenURLConnectionFactory.CredentialPart, String> subject;
+
+    // quotes
+    subject = CSPServerTokenURLConnectionFactory.parseClientCredentials("clientId=\"cid\",clientSecret='csc'");
+    assertEquals("cid", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_ID));
+    assertEquals("csc", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_SECRET));
 
     // whitespace
-    creds = CSPServerTokenURLConnectionFactory.parseClientCredentials("clientId=cid, clientSecret=csc");
-    assertEquals("cid", creds.get("clientId"));
-    assertEquals("csc", creds.get("clientSecret"));
+    subject = CSPServerTokenURLConnectionFactory.parseClientCredentials("clientId=cid, clientSecret=csc");
+    assertEquals("cid", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_ID));
+    assertEquals("csc", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_SECRET));
 
     // out of order
-    creds = CSPServerTokenURLConnectionFactory.parseClientCredentials("orgId=oid,clientSecret=csc,clientId=cid");
-    assertEquals("cid", creds.get("clientId"));
-    assertEquals("csc", creds.get("clientSecret"));
-    assertEquals("oid", creds.get("orgId"));
+    subject = CSPServerTokenURLConnectionFactory.parseClientCredentials("orgId=oid,clientSecret=csc,clientId=cid");
+    assertEquals("cid", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_ID));
+    assertEquals("csc", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_SECRET));
+    assertEquals("oid", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.ORG_ID));
 
     // case-insensitive
-    creds = CSPServerTokenURLConnectionFactory.parseClientCredentials("clientid=cid,clientSecret=csc");
-    assertEquals("cid", creds.get("clientId"));
-    assertEquals("csc", creds.get("clientSecret"));
+    subject = CSPServerTokenURLConnectionFactory.parseClientCredentials("clientid=cid,clientSecret=csc");
+    assertEquals("cid", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_ID));
+    assertEquals("csc", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_SECRET));
   }
 
   @Test

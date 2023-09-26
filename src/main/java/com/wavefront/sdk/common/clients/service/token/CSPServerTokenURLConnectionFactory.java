@@ -1,5 +1,7 @@
 package com.wavefront.sdk.common.clients.service.token;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import com.wavefront.sdk.common.Utils;
 
 import java.io.IOException;
@@ -14,34 +16,43 @@ import java.util.regex.Pattern;
 
 public class CSPServerTokenURLConnectionFactory implements CSPURLConnectionFactory {
   private final static String OAUTH_PATH = "/csp/gateway/am/api/auth/authorize";
-  private final static String TYPE = "CSP OAUTH";
+  private final static String TYPE = "CSP Client Credentials";
 
   private final String cspBaseURL;
   private final String cspClientId;
   private final String cspClientSecret;
-  private final String cspOrgId;
   private final byte[] postData;
   private int connectTimeoutMillis = 30_000;
   private int readTimeoutMillis = 10_000;
 
-  public static Map<String, String> parseClientCredentials(String credentials) {
+  @VisibleForTesting
+  public static Map<CredentialPart, String> parseClientCredentials(String compoundCredentials) {
     // Do NOT include original input in exception or logs, as it contains sensitive credentials.
     IllegalArgumentException ex = new IllegalArgumentException("CSP Client Credentials must be a comma-delimited string of clientId, clientSecret, and an optional orgId.");
-    Map<String, String> parsedCreds = new HashMap<>();
+    Map<CredentialPart, String> parsedCreds = new HashMap<>();
 
-    String[] parts = credentials.split(",");
+    String[] parts = compoundCredentials.split(",");
     if (parts.length < 2 || parts.length > 3) {
       throw ex;
     }
 
-    Pattern p = Pattern.compile("(clientId|clientSecret|orgId)=(.+)", Pattern.CASE_INSENSITIVE);
+    Pattern p = Pattern.compile("(clientId|clientSecret|orgId)=(\\\"|'?)(.+)(\\2)", Pattern.CASE_INSENSITIVE);
     for (String part : parts) {
       Matcher m = p.matcher(part.trim());
-      if (!m.matches() || m.groupCount() != 2) {
+      if (!m.matches() || m.groupCount() != 4) {
         throw ex;
       }
-      parsedCreds.put(m.group(1), m.group(2));
-//      System.out.println("m = " + m);
+      switch (m.group(1).toLowerCase()) {
+        case "clientid":
+          parsedCreds.put(CredentialPart.CLIENT_ID, m.group(3));
+          break;
+        case "clientsecret":
+          parsedCreds.put(CredentialPart.CLIENT_SECRET, m.group(3));
+          break;
+        case "orgid":
+          parsedCreds.put(CredentialPart.ORG_ID, m.group(3));
+          break;
+      }
     }
 
     return parsedCreds;
@@ -51,7 +62,6 @@ public class CSPServerTokenURLConnectionFactory implements CSPURLConnectionFacto
     this.cspBaseURL = cspBaseURL;
     this.cspClientId = cspClientId;
     this.cspClientSecret = cspClientSecret;
-    this.cspOrgId = cspOrgId;
     String postData = "grant_type=client_credentials";
     if (!Utils.isNullOrEmpty(cspOrgId)) {
       postData += "&orgId=" + cspOrgId;
@@ -96,5 +106,11 @@ public class CSPServerTokenURLConnectionFactory implements CSPURLConnectionFacto
   @Override
   public String getType() {
     return TYPE;
+  }
+
+  public enum CredentialPart {
+    CLIENT_ID,
+    CLIENT_SECRET,
+    ORG_ID
   }
 }
