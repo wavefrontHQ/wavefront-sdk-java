@@ -3,7 +3,6 @@ package com.wavefront.sdk.common.clients.service.token;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wavefront.sdk.common.NamedThreadFactory;
-import com.wavefront.sdk.common.Utils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

@@ -17,6 +17,7 @@ import com.wavefront.sdk.common.clients.service.token.CSPTokenService;
 import com.wavefront.sdk.common.clients.service.token.CSPUserTokenURLConnectionFactory;
 import com.wavefront.sdk.common.clients.service.token.NoopProxyTokenService;
 import com.wavefront.sdk.common.clients.service.token.TokenService;
+import com.wavefront.sdk.common.clients.service.token.TokenType;
 import com.wavefront.sdk.common.clients.service.token.WavefrontTokenService;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
@@ -153,15 +154,15 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     private final String cspClientId;
     private final String cspClientSecret;
 
-    private String cspBaseUrl;
+    private String cspBaseUrl = CSP_DEFAULT_BASE_URL;
     private String cspOrgId;
     private String cspUserToken;
 
     // Optional parameters
     private int metricsPort = -1;
     private int tracesPort = -1;
-    private int maxQueueSize = 500000;
-    private int batchSize = 10000;
+    private int maxQueueSize = 500_000;
+    private int batchSize = 10_000;
     private long reportingServiceLogSuppressTimeSeconds = 300;
     private long flushInterval = 1;
     private TimeUnit flushIntervalTimeUnit = TimeUnit.SECONDS;
@@ -220,6 +221,39 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      */
     public Builder(String proxyServer) {
       this(proxyServer, null, null, null, null);
+    }
+
+    public Builder(String server, TokenType type, String token) {
+      this.server = server;
+
+      switch (type) {
+        case CSP_API_TOKEN:
+          this.token = null;
+          this.cspUserToken = token;
+          this.cspClientId = null;
+          this.cspClientSecret = null;
+          break;
+        case CSP_CLIENT_CREDENTIALS:
+          this.token = null;
+          this.cspClientId = null;
+          this.cspClientSecret = null;
+          break;
+        case WAVEFRONT_API_TOKEN:
+          this.token = token;
+          this.cspClientId = null;
+          this.cspClientSecret = null;
+          break;
+        case NO_TOKEN:
+          this.token = null;
+          this.cspClientId = null;
+          this.cspClientSecret = null;
+          break;
+        default:
+          this.token = null;
+          this.cspClientId = null;
+          this.cspClientSecret = null;
+          logger.warning("Unhandled token type '" + type + "' when creating WavefrontClient.");
+      }
     }
 
     /**
@@ -437,20 +471,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
       tokenService = new NoopProxyTokenService();
     }
 
-    switch (tokenService.getClass().getSimpleName()) {
-      case "CSPServerToServerTokenService":
-        logger.log(Level.INFO, "The Wavefront SDK will use CSP authentication when communicating with the Wavefront Backend for Direct Ingestion.");
-        break;
-      case "CSPUserTokenService":
-        logger.log(Level.INFO, "The Wavefront SDK will use CSP User Token authentication when communicating with the Wavefront Backend for Direct Ingestion.");
-        break;
-      case "WavefrontTokenService":
-        logger.log(Level.INFO, "The Wavefront SDK will use an API TOKEN when communicating with the Wavefront Backend for Direct Ingestion.");
-        break;
-      case "NoopProxyTokenService":
-        logger.log(Level.INFO, "The Wavefront SDK will communicate with a Wavefront Proxy.");
-      break;
-    }
+    logger.log(Level.INFO, "Using " + tokenService.getType() + " authentication when communicating with Wavefront.");
 
     batchSize = builder.batchSize;
     messageSizeBytes = builder.messageSizeBytes;

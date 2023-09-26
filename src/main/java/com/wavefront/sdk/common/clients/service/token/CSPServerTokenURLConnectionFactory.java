@@ -7,6 +7,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CSPServerTokenURLConnectionFactory implements CSPURLConnectionFactory {
   private final static String OAUTH_PATH = "/csp/gateway/am/api/auth/authorize";
@@ -19,6 +23,29 @@ public class CSPServerTokenURLConnectionFactory implements CSPURLConnectionFacto
   private final byte[] postData;
   private int connectTimeoutMillis = 30_000;
   private int readTimeoutMillis = 10_000;
+
+  public static Map<String, String> parseClientCredentials(String credentials) {
+    // Do NOT include original input in exception or logs, as it contains sensitive credentials.
+    IllegalArgumentException ex = new IllegalArgumentException("CSP Client Credentials must be a comma-delimited string of clientId, clientSecret, and an optional orgId.");
+    Map<String, String> parsedCreds = new HashMap<>();
+
+    String[] parts = credentials.split(",");
+    if (parts.length < 2 || parts.length > 3) {
+      throw ex;
+    }
+
+    Pattern p = Pattern.compile("(clientId|clientSecret|orgId)=(.+)", Pattern.CASE_INSENSITIVE);
+    for (String part : parts) {
+      Matcher m = p.matcher(part.trim());
+      if (!m.matches() || m.groupCount() != 2) {
+        throw ex;
+      }
+      parsedCreds.put(m.group(1), m.group(2));
+//      System.out.println("m = " + m);
+    }
+
+    return parsedCreds;
+  }
 
   public CSPServerTokenURLConnectionFactory(String cspBaseURL, String cspClientId, String cspClientSecret, String cspOrgId) {
     this.cspBaseURL = cspBaseURL;
