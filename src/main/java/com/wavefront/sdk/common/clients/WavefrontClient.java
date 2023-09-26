@@ -150,13 +150,15 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     // Required parameters
     private final String server;
     private final String token;
+
+    private String cspBaseUrl;
     private String cspClientId;
     private String cspClientSecret;
-    private TokenService.Type tokenType;
-
-    private String cspBaseUrl = null;
     private String cspOrgId;
     private String cspUserToken;
+
+    private TokenService.Type tokenType;
+    private String multiPartToken;
 
     // Optional parameters
     private int metricsPort = -1;
@@ -231,15 +233,16 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      *   <li>tokenType=CSP_CLIENT_CREDENTIALS, token="clientId=&lt;client_id&gt,clientSecret=&lt;secret&gt;,orgId=&lt;optional&gt,baseUrl=&lt;optional&gt"</li>
      * </ul>
      *
-     * @param server    A server URL of the form "https://clusterName.wavefront.com" or
-     *                  "http://internal.proxy.com:port"
-     * @param tokenType One of the values in enum TokenService.Type
-     * @param token     A valid token for the given tokenType
+     * @param server         A server URL of the form "https://clusterName.wavefront.com" or
+     *                        "http://internal.proxy.com:port"
+     * @param tokenType      One of the values in enum TokenService.Type
+     * @param multiPartToken A valid token (possibly multi-part) for the given tokenType
      */
-    public Builder(String server, TokenService.Type tokenType, String token) {
+    public Builder(String server, TokenService.Type tokenType, String multiPartToken) {
       this.server = server;
       this.tokenType = tokenType;
-      this.token = token;
+      this.multiPartToken = multiPartToken;
+      this.token = null;
     }
 
     /**
@@ -444,8 +447,11 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
     defaultSource = tempSource;
 
-    if (builder.tokenType != null) {
-      tokenService = TokenServiceFactory.create(builder.tokenType, builder.token, builder.cspBaseUrl);
+    // TODO:
+    // - Convert the `else` to TokenServiceFactory?
+    //   - How to handle cspBaseUrl & csoOrgId overrides for CSP API Token & Client Creds?
+    if (builder.tokenType != null && !Utils.isNullOrEmpty(builder.multiPartToken)) {
+      tokenService = TokenServiceFactory.create(builder.tokenType, builder.multiPartToken, builder.cspBaseUrl);
     } else {
       if (!Utils.isNullOrEmpty(builder.token) && Utils.isNullOrEmpty(builder.cspUserToken)) {
         tokenService = new WavefrontTokenService(builder.token);
