@@ -21,6 +21,17 @@ class CSPServerTokenURLConnectionFactoryTest {
     assertEquals("cid", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_ID));
     assertEquals("csc", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_SECRET));
     assertEquals("oid", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.ORG_ID));
+
+    subject = CSPServerTokenURLConnectionFactory.parseClientCredentials("clientId=cid,clientSecret=csc,baseUrl=https://csp-dev.vmware.com");
+    assertEquals("cid", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_ID));
+    assertEquals("csc", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_SECRET));
+    assertEquals("https://csp-dev.vmware.com", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.BASE_URL));
+
+    subject = CSPServerTokenURLConnectionFactory.parseClientCredentials("clientId=cid,clientSecret=csc,orgId=oid,baseUrl=https://csp-dev.vmware.com");
+    assertEquals("cid", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_ID));
+    assertEquals("csc", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.CLIENT_SECRET));
+    assertEquals("oid", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.ORG_ID));
+    assertEquals("https://csp-dev.vmware.com", subject.get(CSPServerTokenURLConnectionFactory.CredentialPart.BASE_URL));
   }
 
   @Test

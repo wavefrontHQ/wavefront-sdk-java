@@ -17,7 +17,7 @@ import com.wavefront.sdk.common.clients.service.token.CSPTokenService;
 import com.wavefront.sdk.common.clients.service.token.CSPUserTokenURLConnectionFactory;
 import com.wavefront.sdk.common.clients.service.token.NoopProxyTokenService;
 import com.wavefront.sdk.common.clients.service.token.TokenService;
-import com.wavefront.sdk.common.clients.service.token.TokenType;
+import com.wavefront.sdk.common.clients.service.token.TokenServiceFactory;
 import com.wavefront.sdk.common.clients.service.token.WavefrontTokenService;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
@@ -147,14 +147,14 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   private final TokenService tokenService;
 
   public static class Builder {
-    private static final String CSP_DEFAULT_BASE_URL = "https://console.cloud.vmware.com/";
     // Required parameters
     private final String server;
     private final String token;
-    private final String cspClientId;
-    private final String cspClientSecret;
+    private String cspClientId;
+    private String cspClientSecret;
+    private TokenService.Type tokenType;
 
-    private String cspBaseUrl = CSP_DEFAULT_BASE_URL;
+    private String cspBaseUrl = null;
     private String cspOrgId;
     private String cspUserToken;
 
@@ -181,7 +181,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param token  A valid API token with direct ingestion permissions
      */
     public Builder(String server, @Nullable String token) {
-      this(server, token, null, null, null);
+      this(server, token, null, null);
     }
 
     /**
@@ -190,14 +190,12 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param server          A server URL of the form "https://clusterName.wavefront.com" or
      *                        "http://internal.proxy.com:port"
      * @param token           A valid API token with direct ingestion permissions
-     * @param cspBaseUrl      A server URL that points to the CSP service
      * @param cspClientId     Client ID for CSP
      * @param cspClientSecret Client Secret for CSP
      */
-    private Builder(String server, @Nullable String token, @Nullable String cspBaseUrl, @Nullable String cspClientId, @Nullable String cspClientSecret) {
+    private Builder(String server, @Nullable String token, @Nullable String cspClientId, @Nullable String cspClientSecret) {
       this.server = server;
       this.token = token;
-      this.cspBaseUrl = cspBaseUrl;
       this.cspClientId = cspClientId;
       this.cspClientSecret = cspClientSecret;
     }
@@ -211,7 +209,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param cspClientSecret Client Secret for CSP
      */
     public Builder(String server, @Nullable String cspClientId, @Nullable String cspClientSecret) {
-      this(server, null, CSP_DEFAULT_BASE_URL, cspClientId, cspClientSecret);
+      this(server, null, cspClientId, cspClientSecret);
     }
 
     /**
@@ -220,40 +218,28 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param proxyServer A server URL of the form "http://internal.proxy.com:port"
      */
     public Builder(String proxyServer) {
-      this(proxyServer, null, null, null, null);
+      this(proxyServer, null, null, null);
     }
 
-    public Builder(String server, TokenType type, String token) {
+    /**
+     * Create a new WavefrontClient.Builder with token information encoded as a single String.
+     * Examples:
+     * <ul>
+     *   <li>tokenType=NO_TOKEN, token=""</li>
+     *   <li>tokenType=WAVEFRONT_API_TOKEN, token="&lt;a-wf-api-token&gt;"</li>
+     *   <li>tokenType=CSP_API_TOKEN, token="&lt;a-csp-user-api-token&gt;"</li>
+     *   <li>tokenType=CSP_CLIENT_CREDENTIALS, token="clientId=&lt;client_id&gt,clientSecret=&lt;secret&gt;,orgId=&lt;optional&gt,baseUrl=&lt;optional&gt"</li>
+     * </ul>
+     *
+     * @param server    A server URL of the form "https://clusterName.wavefront.com" or
+     *                  "http://internal.proxy.com:port"
+     * @param tokenType One of the values in enum TokenService.Type
+     * @param token     A valid token for the given tokenType
+     */
+    public Builder(String server, TokenService.Type tokenType, String token) {
       this.server = server;
-
-      switch (type) {
-        case CSP_API_TOKEN:
-          this.token = null;
-          this.cspUserToken = token;
-          this.cspClientId = null;
-          this.cspClientSecret = null;
-          break;
-        case CSP_CLIENT_CREDENTIALS:
-          this.token = null;
-          this.cspClientId = null;
-          this.cspClientSecret = null;
-          break;
-        case WAVEFRONT_API_TOKEN:
-          this.token = token;
-          this.cspClientId = null;
-          this.cspClientSecret = null;
-          break;
-        case NO_TOKEN:
-          this.token = null;
-          this.cspClientId = null;
-          this.cspClientSecret = null;
-          break;
-        default:
-          this.token = null;
-          this.cspClientId = null;
-          this.cspClientSecret = null;
-          logger.warning("Unhandled token type '" + type + "' when creating WavefrontClient.");
-      }
+      this.tokenType = tokenType;
+      this.token = token;
     }
 
     /**
@@ -389,9 +375,6 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @return {@code this}
      */
     public Builder useTokenForCSP() {
-      if (Utils.isNullOrEmpty(this.cspBaseUrl)) {
-        this.cspBaseUrl = CSP_DEFAULT_BASE_URL;
-      }
       this.cspUserToken = this.token;
       return this;
     }
@@ -461,17 +444,22 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
     defaultSource = tempSource;
 
-    if (!Utils.isNullOrEmpty(builder.token) && Utils.isNullOrEmpty(builder.cspUserToken)) {
-      tokenService = new WavefrontTokenService(builder.token);
-    } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
-      tokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(builder.cspBaseUrl,builder.cspClientId, builder.cspClientSecret, builder.cspOrgId));
-    } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspUserToken)) {
-      tokenService = new CSPTokenService(new CSPUserTokenURLConnectionFactory(builder.cspBaseUrl, builder.cspUserToken));
+    if (builder.tokenType != null) {
+      tokenService = TokenServiceFactory.create(builder.tokenType, builder.token, builder.cspBaseUrl);
     } else {
-      tokenService = new NoopProxyTokenService();
+      if (!Utils.isNullOrEmpty(builder.token) && Utils.isNullOrEmpty(builder.cspUserToken)) {
+        tokenService = new WavefrontTokenService(builder.token);
+      } else if (!Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
+        tokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(builder.cspBaseUrl, builder.cspClientId, builder.cspClientSecret, builder.cspOrgId));
+      } else if (!Utils.isNullOrEmpty(builder.cspUserToken)) {
+        tokenService = new CSPTokenService(new CSPUserTokenURLConnectionFactory(builder.cspBaseUrl, builder.cspUserToken));
+      } else {
+        tokenService = new NoopProxyTokenService();
+      }
     }
 
-    logger.log(Level.INFO, "Using " + tokenService.getType() + " authentication when communicating with Wavefront.");
+
+    logger.log(Level.INFO, "Using " + tokenService.getType() + " authentication to communicate with Wavefront.");
 
     batchSize = builder.batchSize;
     messageSizeBytes = builder.messageSizeBytes;
@@ -492,7 +480,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.wfclient").
         tag(Constants.PROCESS_TAG_KEY, processId).
         tag(Constants.INSTANCE_TAG_KEY, instanceId).
-        tag(Constants.AUTH_TYPE_KEY, tokenService.getType().toLowerCase().replace(" ", "_")).
+        tag(Constants.AUTH_TYPE_KEY, tokenService.getType().name().toLowerCase().replace(" ", "_")).
         tags(builder.tags).
         sendSdkMetrics(builder.includeSdkMetrics).
         build();

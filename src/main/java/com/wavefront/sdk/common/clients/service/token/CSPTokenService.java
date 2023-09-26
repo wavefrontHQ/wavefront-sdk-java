@@ -43,8 +43,8 @@ public class CSPTokenService implements TokenService, Runnable {
   }
 
   @Override
-  public String getType() {
-    return cspUrlConnectionFactory.getType();
+  public Type getType() {
+    return cspUrlConnectionFactory.getTokenType();
   }
 
   public synchronized void run() {
