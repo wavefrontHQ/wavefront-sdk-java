@@ -163,7 +163,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     // Optional parameters
     private int metricsPort = -1;
     private int tracesPort = -1;
-    private int maxQueueSize = 500_000;
+    private int maxQueueSize = 50_000;
     private int batchSize = 10_000;
     private long reportingServiceLogSuppressTimeSeconds = 300;
     private long flushInterval = 1;
@@ -859,7 +859,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         switch (featureDisabledReason) {
           case 401:
             logger.log(permissionsMessageType.toString(), Level.SEVERE,
-                "Please verify that your " + tokenService.getType() + " credential(s) are correct! All " + entityType + " will be " +
+                "Please verify that your credentials are correct! All " + entityType + " will be " +
                     "discarded until the service is restarted.");
             break;
           case 403:
@@ -888,8 +888,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
           switch (statusCode) {
             case 401:
               logger.log(permissionsMessageType.toString(), Level.SEVERE,
-                  "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
-                      "Please verify that your " + tokenService.getType() + " is correct! All " + entityType + " will " +
+                  "Error sending " + entityType + " to Wavefront (HTTP 401 Unauthorized). " +
+                      "Please verify that your credentials are correct! All " + entityType + " will " +
                       "be discarded until the service is restarted.");
               featureDisabledStatusCode.set(statusCode);
               dropped.inc(items.size());
@@ -897,7 +897,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
             case 403:
               if (format.equals(Constants.WAVEFRONT_METRIC_FORMAT)) {
                 logger.log(permissionsMessageType.toString(), Level.SEVERE,
-                    "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
+                    "Error sending " + entityType + " to Wavefront (HTTP 403 Forbidden). " +
                         "Please verify that Direct Data Ingestion is enabled for your account! " +
                         "All " + entityType + " will be discarded until the service is restarted.");
               } else {
