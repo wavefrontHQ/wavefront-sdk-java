@@ -230,7 +230,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      *   <li>tokenType=NO_TOKEN, token=""</li>
      *   <li>tokenType=WAVEFRONT_API_TOKEN, token="&lt;a-wf-api-token&gt;"</li>
      *   <li>tokenType=CSP_API_TOKEN, token="&lt;a-csp-user-api-token&gt;"</li>
-     *   <li>tokenType=CSP_CLIENT_CREDENTIALS, token="clientId=&lt;client_id&gt,clientSecret=&lt;secret&gt;,orgId=&lt;optional&gt,baseUrl=&lt;optional&gt"</li>
+     *   <li>tokenType=CSP_CLIENT_CREDENTIALS, token="clientId=&lt;client_id&gt;,clientSecret=&lt;secret&gt;,orgId=&lt;optional&gt;,baseUrl=&lt;optional&gt;"</li>
      * </ul>
      *
      * @param server         A server URL of the form "https://clusterName.wavefront.com" or
