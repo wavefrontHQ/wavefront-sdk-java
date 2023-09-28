@@ -17,6 +17,7 @@ import com.wavefront.sdk.common.clients.service.token.CSPTokenService;
 import com.wavefront.sdk.common.clients.service.token.CSPUserTokenURLConnectionFactory;
 import com.wavefront.sdk.common.clients.service.token.NoopProxyTokenService;
 import com.wavefront.sdk.common.clients.service.token.TokenService;
+import com.wavefront.sdk.common.clients.service.token.TokenServiceFactory;
 import com.wavefront.sdk.common.clients.service.token.WavefrontTokenService;
 import com.wavefront.sdk.common.logging.MessageDedupingLogger;
 import com.wavefront.sdk.common.metrics.WavefrontSdkDeltaCounter;
@@ -146,22 +147,24 @@ public class WavefrontClient implements WavefrontSender, Runnable {
   private final TokenService tokenService;
 
   public static class Builder {
-    private static final String CSP_DEFAULT_BASE_URL = "https://console.cloud.vmware.com/";
     // Required parameters
     private final String server;
     private final String token;
-    private final String cspClientId;
-    private final String cspClientSecret;
 
     private String cspBaseUrl;
+    private String cspClientId;
+    private String cspClientSecret;
     private String cspOrgId;
     private String cspUserToken;
+
+    private TokenService.Type tokenType;
+    private String multiPartToken;
 
     // Optional parameters
     private int metricsPort = -1;
     private int tracesPort = -1;
-    private int maxQueueSize = 500000;
-    private int batchSize = 10000;
+    private int maxQueueSize = 50_000;
+    private int batchSize = 10_000;
     private long reportingServiceLogSuppressTimeSeconds = 300;
     private long flushInterval = 1;
     private TimeUnit flushIntervalTimeUnit = TimeUnit.SECONDS;
@@ -180,7 +183,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param token  A valid API token with direct ingestion permissions
      */
     public Builder(String server, @Nullable String token) {
-      this(server, token, null, null, null);
+      this(server, token, null, null);
     }
 
     /**
@@ -189,14 +192,12 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param server          A server URL of the form "https://clusterName.wavefront.com" or
      *                        "http://internal.proxy.com:port"
      * @param token           A valid API token with direct ingestion permissions
-     * @param cspBaseUrl      A server URL that points to the CSP service
      * @param cspClientId     Client ID for CSP
      * @param cspClientSecret Client Secret for CSP
      */
-    private Builder(String server, @Nullable String token, @Nullable String cspBaseUrl, @Nullable String cspClientId, @Nullable String cspClientSecret) {
+    private Builder(String server, @Nullable String token, @Nullable String cspClientId, @Nullable String cspClientSecret) {
       this.server = server;
       this.token = token;
-      this.cspBaseUrl = cspBaseUrl;
       this.cspClientId = cspClientId;
       this.cspClientSecret = cspClientSecret;
     }
@@ -210,7 +211,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param cspClientSecret Client Secret for CSP
      */
     public Builder(String server, @Nullable String cspClientId, @Nullable String cspClientSecret) {
-      this(server, null, CSP_DEFAULT_BASE_URL, cspClientId, cspClientSecret);
+      this(server, null, cspClientId, cspClientSecret);
     }
 
     /**
@@ -219,7 +220,29 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @param proxyServer A server URL of the form "http://internal.proxy.com:port"
      */
     public Builder(String proxyServer) {
-      this(proxyServer, null, null, null, null);
+      this(proxyServer, null, null, null);
+    }
+
+    /**
+     * Create a new WavefrontClient.Builder with token information encoded as a single String.
+     * Examples:
+     * <ul>
+     *   <li>tokenType=NO_TOKEN, token=""</li>
+     *   <li>tokenType=WAVEFRONT_API_TOKEN, token="&lt;a-wf-api-token&gt;"</li>
+     *   <li>tokenType=CSP_API_TOKEN, token="&lt;a-csp-user-api-token&gt;"</li>
+     *   <li>tokenType=CSP_CLIENT_CREDENTIALS, token="clientId=&lt;client_id&gt;,clientSecret=&lt;secret&gt;,orgId=&lt;optional&gt;,baseUrl=&lt;optional&gt;"</li>
+     * </ul>
+     *
+     * @param server         A server URL of the form "https://clusterName.wavefront.com" or
+     *                        "http://internal.proxy.com:port"
+     * @param tokenType      One of the values in enum TokenService.Type
+     * @param multiPartToken A valid token (possibly multi-part) for the given tokenType
+     */
+    public Builder(String server, TokenService.Type tokenType, String multiPartToken) {
+      this.server = server;
+      this.tokenType = tokenType;
+      this.multiPartToken = multiPartToken;
+      this.token = null;
     }
 
     /**
@@ -355,9 +378,6 @@ public class WavefrontClient implements WavefrontSender, Runnable {
      * @return {@code this}
      */
     public Builder useTokenForCSP() {
-      if (Utils.isNullOrEmpty(this.cspBaseUrl)) {
-        this.cspBaseUrl = CSP_DEFAULT_BASE_URL;
-      }
       this.cspUserToken = this.token;
       return this;
     }
@@ -427,30 +447,25 @@ public class WavefrontClient implements WavefrontSender, Runnable {
     }
     defaultSource = tempSource;
 
-    if (!Utils.isNullOrEmpty(builder.token) && Utils.isNullOrEmpty(builder.cspUserToken)) {
-      tokenService = new WavefrontTokenService(builder.token);
-    } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
-      tokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(builder.cspBaseUrl,builder.cspClientId, builder.cspClientSecret, builder.cspOrgId));
-    } else if (!Utils.isNullOrEmpty(builder.cspBaseUrl) && !Utils.isNullOrEmpty(builder.cspUserToken)) {
-      tokenService = new CSPTokenService(new CSPUserTokenURLConnectionFactory(builder.cspBaseUrl, builder.cspUserToken));
+    // TODO:
+    // - Convert the `else` to TokenServiceFactory?
+    //   - How to handle cspBaseUrl & csoOrgId overrides for CSP API Token & Client Creds?
+    if (builder.tokenType != null && !Utils.isNullOrEmpty(builder.multiPartToken)) {
+      tokenService = TokenServiceFactory.create(builder.tokenType, builder.multiPartToken, builder.cspBaseUrl);
     } else {
-      tokenService = new NoopProxyTokenService();
+      if (!Utils.isNullOrEmpty(builder.token) && Utils.isNullOrEmpty(builder.cspUserToken)) {
+        tokenService = new WavefrontTokenService(builder.token);
+      } else if (!Utils.isNullOrEmpty(builder.cspClientId) && !Utils.isNullOrEmpty(builder.cspClientSecret)) {
+        tokenService = new CSPTokenService(new CSPServerTokenURLConnectionFactory(builder.cspBaseUrl, builder.cspClientId, builder.cspClientSecret, builder.cspOrgId));
+      } else if (!Utils.isNullOrEmpty(builder.cspUserToken)) {
+        tokenService = new CSPTokenService(new CSPUserTokenURLConnectionFactory(builder.cspBaseUrl, builder.cspUserToken));
+      } else {
+        tokenService = new NoopProxyTokenService();
+      }
     }
 
-    switch (tokenService.getClass().getSimpleName()) {
-      case "CSPServerToServerTokenService":
-        logger.log(Level.INFO, "The Wavefront SDK will use CSP authentication when communicating with the Wavefront Backend for Direct Ingestion.");
-        break;
-      case "CSPUserTokenService":
-        logger.log(Level.INFO, "The Wavefront SDK will use CSP User Token authentication when communicating with the Wavefront Backend for Direct Ingestion.");
-        break;
-      case "WavefrontTokenService":
-        logger.log(Level.INFO, "The Wavefront SDK will use an API TOKEN when communicating with the Wavefront Backend for Direct Ingestion.");
-        break;
-      case "NoopProxyTokenService":
-        logger.log(Level.INFO, "The Wavefront SDK will communicate with a Wavefront Proxy.");
-      break;
-    }
+
+    logger.log(Level.INFO, "Using " + tokenService.getType() + " authentication to communicate with Wavefront.");
 
     batchSize = builder.batchSize;
     messageSizeBytes = builder.messageSizeBytes;
@@ -471,7 +486,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         prefix(Constants.SDK_METRIC_PREFIX + ".core.sender.wfclient").
         tag(Constants.PROCESS_TAG_KEY, processId).
         tag(Constants.INSTANCE_TAG_KEY, instanceId).
-        tag(Constants.AUTH_TYPE_KEY, tokenService.getType().toLowerCase().replace(" ", "_")).
+        tag(Constants.AUTH_TYPE_KEY, tokenService.getType().name().toLowerCase().replace(" ", "_")).
         tags(builder.tags).
         sendSdkMetrics(builder.includeSdkMetrics).
         build();
@@ -844,7 +859,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
         switch (featureDisabledReason) {
           case 401:
             logger.log(permissionsMessageType.toString(), Level.SEVERE,
-                "Please verify that your " + tokenService.getType() + " credential(s) are correct! All " + entityType + " will be " +
+                "Please verify that your credentials are correct! All " + entityType + " will be " +
                     "discarded until the service is restarted.");
             break;
           case 403:
@@ -873,8 +888,8 @@ public class WavefrontClient implements WavefrontSender, Runnable {
           switch (statusCode) {
             case 401:
               logger.log(permissionsMessageType.toString(), Level.SEVERE,
-                  "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
-                      "Please verify that your " + tokenService.getType() + " is correct! All " + entityType + " will " +
+                  "Error sending " + entityType + " to Wavefront (HTTP 401 Unauthorized). " +
+                      "Please verify that your credentials are correct! All " + entityType + " will " +
                       "be discarded until the service is restarted.");
               featureDisabledStatusCode.set(statusCode);
               dropped.inc(items.size());
@@ -882,7 +897,7 @@ public class WavefrontClient implements WavefrontSender, Runnable {
             case 403:
               if (format.equals(Constants.WAVEFRONT_METRIC_FORMAT)) {
                 logger.log(permissionsMessageType.toString(), Level.SEVERE,
-                    "Error sending " + entityType + " to Wavefront (HTTP " + statusCode + "). " +
+                    "Error sending " + entityType + " to Wavefront (HTTP 403 Forbidden). " +
                         "Please verify that Direct Data Ingestion is enabled for your account! " +
                         "All " + entityType + " will be discarded until the service is restarted.");
               } else {

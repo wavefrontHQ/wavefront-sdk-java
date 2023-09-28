@@ -1,25 +1,22 @@
 package com.wavefront.sdk.common.clients.service.token;
 
+import com.wavefront.sdk.common.annotation.Nullable;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-public class CSPUserTokenURLConnectionFactory implements CSPURLConnectionFactory {
+public class CSPUserTokenURLConnectionFactory extends CSPURLConnectionFactory {
   private final static String OAUTH_PATH = "/csp/gateway/am/api/auth/api-tokens/authorize";
-  private final static String TYPE = "CSP API TOKEN";
-
-  private final String cspBaseURL;
   private final byte[] postData;
-  private int connectTimeoutMillis = 30_000;
-  private int readTimeoutMillis = 10_000;
 
-  public CSPUserTokenURLConnectionFactory(String cspBaseURL, String apiToken) {
-    this.cspBaseURL = cspBaseURL;
+  public CSPUserTokenURLConnectionFactory(@Nullable String cspBaseURL, String apiToken) {
+    super(cspBaseURL);
     this.postData = ("grant_type=api_token&refresh_token=" + apiToken).getBytes(StandardCharsets.UTF_8);
   }
 
-  public CSPUserTokenURLConnectionFactory(String cspBaseURL, String apiToken, int connectTimeoutMillis, int readTimeoutMillis) {
+  public CSPUserTokenURLConnectionFactory(@Nullable String cspBaseURL, String apiToken, int connectTimeoutMillis, int readTimeoutMillis) {
     this(cspBaseURL, apiToken);
     this.connectTimeoutMillis = connectTimeoutMillis;
     this.readTimeoutMillis = readTimeoutMillis;
@@ -46,5 +43,7 @@ public class CSPUserTokenURLConnectionFactory implements CSPURLConnectionFactory
   }
 
   @Override
-  public String getType() { return TYPE; }
+  public TokenService.Type getTokenType() {
+    return TokenService.Type.CSP_API_TOKEN;
+  }
 }

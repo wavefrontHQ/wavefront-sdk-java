@@ -12,7 +12,7 @@ public class NoopProxyTokenService implements TokenService {
   }
 
   @Override
-  public String getType() {
-    return "PROXY";
+  public Type getType() {
+    return Type.NO_TOKEN;
   }
 }

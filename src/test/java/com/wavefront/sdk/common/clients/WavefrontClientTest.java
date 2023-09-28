@@ -33,6 +33,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static com.wavefront.sdk.common.clients.service.token.TokenService.Type.CSP_API_TOKEN;
+import static com.wavefront.sdk.common.clients.service.token.TokenService.Type.CSP_CLIENT_CREDENTIALS;
+import static com.wavefront.sdk.common.clients.service.token.TokenService.Type.NO_TOKEN;
+import static com.wavefront.sdk.common.clients.service.token.TokenService.Type.WAVEFRONT_API_TOKEN;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
@@ -232,30 +236,35 @@ public class WavefrontClientTest {
   class Builder {
 
     @Test
-    public void tokenServiceClassTest() {
-      WavefrontClient wfClient = new WavefrontClient.Builder("", "TOKEN")
-              .build();
-      assertNotNull(wfClient);
-      assertNotNull(wfClient.getTokenService());
-      assertEquals(WavefrontTokenService.class.getSimpleName(), wfClient.getTokenService().getClass().getSimpleName());
+    public void choosesTokenServiceBasedOnCreds() {
+      WavefrontClient wfClient = new WavefrontClient.Builder("", "TOKEN").build();
+      assertEquals(WavefrontTokenService.class, wfClient.getTokenService().getClass());
 
-      wfClient = new WavefrontClient.Builder("")
-              .build();
-      assertNotNull(wfClient);
-      assertNotNull(wfClient.getTokenService());
-      assertEquals(NoopProxyTokenService.class.getSimpleName(), wfClient.getTokenService().getClass().getSimpleName());
+      wfClient = new WavefrontClient.Builder("").build();
+      assertEquals(NoopProxyTokenService.class, wfClient.getTokenService().getClass());
 
-      wfClient = new WavefrontClient.Builder("", "cspClientId", "cspClientSecret")
-              .build();
-      assertNotNull(wfClient);
-      assertNotNull(wfClient.getTokenService());
-      assertEquals(CSPTokenService.class.getSimpleName(), wfClient.getTokenService().getClass().getSimpleName());
+      wfClient = new WavefrontClient.Builder("", "cspClientId", "cspClientSecret").build();
+      assertEquals(CSPTokenService.class, wfClient.getTokenService().getClass());
 
-      wfClient = new WavefrontClient.Builder("", "TOKEN")
-              .useTokenForCSP().build();
-      assertNotNull(wfClient);
-      assertNotNull(wfClient.getTokenService());
-      assertEquals(CSPTokenService.class.getSimpleName(), wfClient.getTokenService().getClass().getSimpleName());
+      wfClient = new WavefrontClient.Builder("", "TOKEN").useTokenForCSP().build();
+      assertEquals(CSPTokenService.class, wfClient.getTokenService().getClass());
+    }
+
+    @Test
+    public void canSpecifyTokenServiceByEnum() {
+      WavefrontClient wfClient = new WavefrontClient.Builder("", WAVEFRONT_API_TOKEN, "a-token").build();
+      assertEquals(WavefrontTokenService.class, wfClient.getTokenService().getClass());
+
+      wfClient = new WavefrontClient.Builder("", NO_TOKEN, null).build();
+      assertEquals(NoopProxyTokenService.class, wfClient.getTokenService().getClass());
+
+      wfClient = new WavefrontClient.Builder("", CSP_API_TOKEN, "a-token").build();
+      assertEquals(CSPTokenService.class, wfClient.getTokenService().getClass());
+      assertEquals(CSP_API_TOKEN, wfClient.getTokenService().getType());
+
+      wfClient = new WavefrontClient.Builder("", CSP_CLIENT_CREDENTIALS, "clientId=foo,clientSecret=Bar").build();
+      assertEquals(CSPTokenService.class, wfClient.getTokenService().getClass());
+      assertEquals(CSP_CLIENT_CREDENTIALS, wfClient.getTokenService().getType());
     }
 
     @Nested

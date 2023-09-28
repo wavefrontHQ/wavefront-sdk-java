@@ -3,20 +3,16 @@ package com.wavefront.sdk.common.clients.service.token;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wavefront.sdk.common.NamedThreadFactory;
-import com.wavefront.sdk.common.Utils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class CSPTokenService implements TokenService, Runnable {
   private static final String INVALID_TOKEN = "INVALID_TOKEN";
@@ -44,8 +40,8 @@ public class CSPTokenService implements TokenService, Runnable {
   }
 
   @Override
-  public String getType() {
-    return cspUrlConnectionFactory.getType();
+  public Type getType() {
+    return cspUrlConnectionFactory.getTokenType();
   }
 
   public synchronized void run() {
@@ -69,7 +65,7 @@ public class CSPTokenService implements TokenService, Runnable {
 
           // Schedule token refresh in the future
           Duration threadDelay = getThreadDelay(parsedResponse.expiresIn);
-          log.info("A CSP token was received. The token will be refreshed in " + threadDelay.getSeconds() + " seconds.");
+          log.info("Received CSP token and will refresh in " + threadDelay.getSeconds() + " seconds.");
           executor.schedule(this, threadDelay.getSeconds(), TimeUnit.SECONDS);
 
           return parsedResponse.accessToken;
@@ -79,7 +75,7 @@ public class CSPTokenService implements TokenService, Runnable {
           return INVALID_TOKEN;
         }
       } else {
-        log.severe("The request to CSP for a token failed with HTTP code " + statusCode + ".");
+        log.severe("The request to CSP for a token failed with HTTP " + statusCode + ".");
 
         if (statusCode >= 500 && statusCode < 600) {
           log.info("The Wavefront SDK will try to reauthenticate with CSP on the next request.");
@@ -117,9 +113,5 @@ public class CSPTokenService implements TokenService, Runnable {
     }
 
     return delay;
-  }
-
-  private static List<String> parseScopes(final String scope) {
-    return Arrays.stream(scope.split("\\s")).collect(Collectors.toList());
   }
 }
