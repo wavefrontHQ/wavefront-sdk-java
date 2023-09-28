@@ -1,6 +1,6 @@
 open_source_license.txt
 
-Wavefront by VMware SDK for Java 3.4.0 GA
+Wavefront by VMware SDK for Java 3.4.1 GA
 ======================================================================
 
 ==================== TABLE OF CONTENTS ====================
@@ -4554,4 +4554,4 @@ Licensed under the Apache License, Version 2.0 (the "License");
  * permissions and limitations under the License.
 -------------------- SECTION 8 --------------------
  *     <dd>Copyright (c) Werner Randelshofer. Apache 2.0 License.
-[WAVEFRONTSDKJAVA340GAAT082923]
+[WAVEFRONTSDKJAVA341GAAT092823]
