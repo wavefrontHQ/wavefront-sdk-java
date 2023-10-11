@@ -39,6 +39,7 @@ public class MessageDedupingLoggerTest {
     expectLastCall().times(5);
     replay(mockLogger);
 
+    log.setLevel(Level.ALL);
     log.severe("msg1");
     log.severe("msg1");
     log.warning("msg1");

@@ -30,6 +30,10 @@ public abstract class DelegatingLogger extends Logger {
   /** {@inheritDoc} */
   @Override
   public void log(LogRecord logRecord) {
+    if (!isLoggable(logRecord.getLevel())) {
+      // `inferCaller()` is a bit expensive, so return early.
+      return;
+    }
     logRecord.setLoggerName(delegate.getName());
     // Infer caller so that the log message contains the right '[source class] [source method]'
     // instead of 'DelegatingLogger log'
