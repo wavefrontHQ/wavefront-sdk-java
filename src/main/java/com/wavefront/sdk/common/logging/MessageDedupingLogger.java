@@ -45,6 +45,10 @@ public class MessageDedupingLogger extends DelegatingLogger {
   /** {@inheritDoc} */
   @Override
   public void log(Level level, String message) {
+    if (!isLoggable(level)) {
+      return;
+    }
+
     try {
       if (Objects.requireNonNull(rateLimiterCache.get(message)).tryAcquire()) {
         log(new LogRecord(level, message));
@@ -63,6 +67,10 @@ public class MessageDedupingLogger extends DelegatingLogger {
    * @param message             String to write to log.
    */
   public void log(String messageDedupingKey, Level level, String message) {
+    if (!isLoggable(level)) {
+      return;
+    }
+
     try {
       if (Objects.requireNonNull(rateLimiterCache.get(messageDedupingKey)).tryAcquire()) {
         log(new LogRecord(level, message));
@@ -82,6 +90,10 @@ public class MessageDedupingLogger extends DelegatingLogger {
    * @param thrown              Throwable associated with log message.
    */
   public void log(String messageDedupingKey, Level level, String message, Throwable thrown) {
+    if (!isLoggable(level)) {
+      return;
+    }
+
     LogRecord logRecord = new LogRecord(level, message);
     logRecord.setThrown(thrown);
     try {

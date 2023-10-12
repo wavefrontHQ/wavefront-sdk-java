@@ -326,67 +326,56 @@ public class Utils {
      *           1533531013 343500"
      */
 
-    if (source == null || source.isEmpty()) {
+    if (isNullOrEmpty(source)) {
       source = defaultSource;
     }
-    if (name == null || name.isEmpty()) {
+    if (isNullOrEmpty(name)) {
       throw new IllegalArgumentException("span name cannot be blank " +
           getContextInfo(name, source, tags));
     }
-    if (source == null || source.isEmpty()) {
+    if (isNullOrEmpty(source)) {
       throw new IllegalArgumentException("span source cannot be blank " +
           getContextInfo(name, source, tags));
     }
-    final StringBuilder sb = new StringBuilder();
-    sb.append(sanitizeValue(name));
-    sb.append(" source=");
-    sb.append(sanitizeValue(source));
-    sb.append(" traceId=");
-    sb.append(traceId);
-    sb.append(" spanId=");
-    sb.append(spanId);
+
+    int initialCapacity = estimateSpanSize(name, source, parents, followsFrom, tags, spanLogs);
+    final StringBuilder sb = new StringBuilder(initialCapacity);
+    sb.append(sanitizeValue(name))
+        .append(" source=").append(sanitizeValue(source))
+        .append(" traceId=").append(traceId)
+        .append(" spanId=").append(spanId);
     if (parents != null) {
       for (UUID parent : parents) {
-        sb.append(" parent=");
-        sb.append(parent.toString());
+        sb.append(" parent=").append(parent);
       }
     }
     if (followsFrom != null) {
       for (UUID item : followsFrom) {
-        sb.append(" followsFrom=");
-        sb.append(item.toString());
+        sb.append(" followsFrom=").append(item);
       }
     }
     if (tags != null) {
       for (final Pair<String, String> tag : tags) {
         String key = tag._1;
         String val = tag._2;
-        if (key == null || key.isEmpty()) {
+        if (isNullOrEmpty(key)) {
           throw new IllegalArgumentException("span tag key cannot be blank " +
               getContextInfo(name, source, tags));
         }
-        if (val == null || val.isEmpty()) {
+        if (isNullOrEmpty(val)) {
           throw new IllegalArgumentException("span tag value cannot be blank for " +
               "tag key: " + key + " " + getContextInfo(name, source, tags));
         }
-        sb.append(' ');
-        sb.append(sanitize(key));
-        sb.append('=');
-        sb.append(sanitizeValue(val));
+        sb.append(' ').append(sanitize(key)).append('=').append(sanitizeValue(val));
       }
     }
     if (spanLogs != null && !spanLogs.isEmpty()) {
-      sb.append(' ');
-      sb.append(sanitize(SPAN_LOG_KEY));
-      sb.append('=');
-      sb.append(sanitize("true"));
+      sb.append(" \"").append(SPAN_LOG_KEY).append("\"=\"true\"");
     }
-    sb.append(' ');
-    sb.append(startMillis);
-    sb.append(' ');
-    sb.append(durationMillis);
+    sb.append(' ').append(startMillis)
+        .append(' ').append(durationMillis)
+        .append('\n');
     // TODO - Support SpanLogs
-    sb.append('\n');
     return sb.toString();
   }
 
@@ -626,22 +615,61 @@ public class Utils {
       Thread.currentThread().interrupt();
     }
   }
-  
+
+  /**
+   * Make an educated guess about the amount of characters needed for a Span.
+   */
+  private static int estimateSpanSize(String name, String source, List<UUID> parents, List<UUID> followsFrom, List<Pair<String, String>> tags, List<SpanLog> spanLogs) {
+    final int SANITIZE_CHARS = 2;
+    final int GUID_CHARS = 36;
+
+    int size = 0;
+    size += name.length() + SANITIZE_CHARS;
+    size += " source=".length() + source.length() + SANITIZE_CHARS;
+    size += " traceId=".length() + GUID_CHARS;
+    size += " spanId=".length() + GUID_CHARS;
+    if (parents != null) {
+      size += parents.size() * (" parent=".length() + GUID_CHARS);
+    }
+    if (followsFrom != null) {
+      size += followsFrom.size() * (" followsFrom=".length() + GUID_CHARS);
+    }
+    if (tags != null) {
+      // A tag of <foo,bar> will result in ' "foo"="bar"'
+      // Random guess that the average tag KV is 16 chars, but add two more for the ' ' and `='.
+      size += tags.size() * (18 + SANITIZE_CHARS * 2);
+    }
+
+    if (spanLogs != null) {
+      // results in ' "_spanLogs"="true"'
+      size += (" \"" + SPAN_LOG_KEY + "\"=\"true\"").length();
+    }
+
+    size +=  1; // space
+    size += 13; // startMillis (from epoch), e.g. 1697039471941 = 13 chars
+    size +=  1; // space
+    size +=  6; // durationMillis shouldn't exceed 6 digits (999999 = 16 minutes)
+    size +=  1; // newline
+    size += 16; // extra buffer just in case
+    return size;
+  }
+
   private static String sanitizeInternal(String s, boolean addQuotes, boolean ignoreSlash) {
     /*
      * Sanitize string of metric name, source and key of tags according to the rule of Wavefront proxy.
      */
 
-    StringBuilder sb = new StringBuilder();
+    int capacity = s.length() + (addQuotes ? 2 : 0);
+    StringBuilder sb = new StringBuilder(capacity);
     if (addQuotes) {
       sb.append('"');
     }
+    boolean isTildaPrefixed = s.charAt(0) == 126;
+    boolean isDeltaPrefixed = (s.charAt(0) == 0x2206) || (s.charAt(0) == 0x0394);
+    boolean isDeltaTildaPrefixed = isDeltaPrefixed && s.charAt(1) == 126;
     for (int i = 0; i < s.length(); i++) {
       char cur = s.charAt(i);
       boolean isLegal = true;
-      boolean isTildaPrefixed = s.charAt(0) == 126;
-      boolean isDeltaPrefixed = (s.charAt(0) == 0x2206) || (s.charAt(0) == 0x0394);
-      boolean isDeltaTildaPrefixed = isDeltaPrefixed && s.charAt(1) == 126;
       if (!(44 <= cur && cur <= 57) && !(65 <= cur && cur <= 90) && !(97 <= cur && cur <= 122) &&
           cur != 95) {
         if (!(i == 0 && (isDeltaPrefixed || isTildaPrefixed) || (i == 1 && isDeltaTildaPrefixed))) {
