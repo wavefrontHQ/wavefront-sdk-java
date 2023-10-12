@@ -39,6 +39,10 @@ public class MessageSuppressingLogger extends DelegatingLogger {
    * @param message    Log message.
    */
   public void log(String messageKey, Level level, String message) {
+    if (!isLoggable(level)) {
+      return;
+    }
+
     cache.asMap().compute(messageKey,
         (key, prevTime) -> logMessageAndComputeTimestamp(message, level, prevTime));
   }
@@ -55,6 +59,10 @@ public class MessageSuppressingLogger extends DelegatingLogger {
   /** {@inheritDoc} */
   @Override
   public void log(Level level, String message) {
+    if (!isLoggable(level)) {
+      return;
+    }
+
     cache.asMap().compute(message,
         (key, prevTime) -> logMessageAndComputeTimestamp(message, level, prevTime));
   }

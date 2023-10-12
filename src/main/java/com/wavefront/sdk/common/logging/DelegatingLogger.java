@@ -31,7 +31,6 @@ public abstract class DelegatingLogger extends Logger {
   @Override
   public void log(LogRecord logRecord) {
     if (!isLoggable(logRecord.getLevel())) {
-      // `inferCaller()` is a bit expensive, so return early.
       return;
     }
     logRecord.setLoggerName(delegate.getName());
