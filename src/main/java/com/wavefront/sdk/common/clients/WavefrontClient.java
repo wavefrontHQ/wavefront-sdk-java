@@ -948,7 +948,9 @@ public class WavefrontClient implements WavefrontSender, Runnable {
 
 
   private InputStream itemsToStream(List<String> items) {
-    StringBuilder sb = new StringBuilder();
+    int capacityNeeded = items.stream().mapToInt(String::length).sum();
+    StringBuilder sb = new StringBuilder(capacityNeeded);
+
     for (String item : items) {
       // every line item ends with \n
       sb.append(item);

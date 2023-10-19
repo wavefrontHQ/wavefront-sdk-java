@@ -123,28 +123,19 @@ public class Utils {
           getContextInfo(name, source, tags));
     }
 
-    final StringBuilder sb = new StringBuilder();
+    int intitialCapacity = estimateMetricSize(name, value, source, tags);
+    final StringBuilder sb = new StringBuilder(intitialCapacity);
     sb.append(sanitize(name));
-    sb.append(' ');
-    sb.append(value);
+    sb.append(' ').append(value);
     if (timestamp != null) {
       sb.append(' ');
       sb.append(timestamp);
     }
-    sb.append(" source=");
-    sb.append(sanitizeValue(source));
+    sb.append(" source=").append(sanitizeValue(source));
     if (tags != null) {
       for (final Map.Entry<String, String> tag : tags.entrySet()) {
         String key = tag.getKey();
         String val = tag.getValue();
-        if (key == null || key.isEmpty()) {
-          throw new IllegalArgumentException("metric point tag key cannot be blank " +
-              getContextInfo(name, source, tags));
-        }
-        if (val == null || val.isEmpty()) {
-          throw new IllegalArgumentException("metric point tag value cannot be blank for " +
-              "tag key: " + key + " " + getContextInfo(name, source, tags));
-        }
         sb.append(' ');
         sb.append(sanitize(key));
         sb.append('=');
@@ -153,6 +144,42 @@ public class Utils {
     }
     sb.append('\n');
     return sb.toString();
+  }
+
+  /**
+   * Make an educated guess about the amount of characters needed for a Metric. This is for use in
+   * StringBuilder(int capacity) to reduce memory allocations later.
+   */
+  private static int estimateMetricSize(String name, double value, String source, Map<String, String> tags) {
+    final int SANITIZE_CHARS_LEN = "\"\"".length();
+
+    int size = 0;
+    size += name.length() + SANITIZE_CHARS_LEN;
+    size += String.valueOf(value).length() + 1;
+    size += 11; // timestamp, including ' ' at beginning
+    size += " source=".length() + source.length() + SANITIZE_CHARS_LEN;
+
+    if (tags != null) {
+      final int EXTRA_TAG_CHARS_LEN = " =\"\"\"\"".length();
+      for (final Map.Entry<String, String> tag : tags.entrySet()) {
+        String key = tag.getKey();
+        String val = tag.getValue();
+        if (isNullOrEmpty(key)) {
+          throw new IllegalArgumentException("metric point tag key cannot be blank " +
+              getContextInfo(name, source, tags));
+        }
+        if (isNullOrEmpty(val)) {
+          throw new IllegalArgumentException("metric point tag value cannot be blank for " +
+              "tag key: " + key + " " + getContextInfo(name, source, tags));
+        }
+        // A tag of <foo,bar> will result in ' "foo"="bar"'
+        size += key.length() + val.length() + EXTRA_TAG_CHARS_LEN;
+      }
+    }
+
+    size +=  1; // newline
+    size += 16; // extra buffer just in case
+    return size;
   }
 
   /**
@@ -358,14 +385,6 @@ public class Utils {
       for (final Pair<String, String> tag : tags) {
         String key = tag._1;
         String val = tag._2;
-        if (isNullOrEmpty(key)) {
-          throw new IllegalArgumentException("span tag key cannot be blank " +
-              getContextInfo(name, source, tags));
-        }
-        if (isNullOrEmpty(val)) {
-          throw new IllegalArgumentException("span tag value cannot be blank for " +
-              "tag key: " + key + " " + getContextInfo(name, source, tags));
-        }
         sb.append(' ').append(sanitize(key)).append('=').append(sanitizeValue(val));
       }
     }
@@ -617,27 +636,41 @@ public class Utils {
   }
 
   /**
-   * Make an educated guess about the amount of characters needed for a Span.
+   * Make an educated guess about the amount of characters needed for a Span. This is for use in
+   * StringBuilder(int capacity) to reduce memory allocations later.
    */
   private static int estimateSpanSize(String name, String source, List<UUID> parents, List<UUID> followsFrom, List<Pair<String, String>> tags, List<SpanLog> spanLogs) {
-    final int SANITIZE_CHARS = 2;
-    final int GUID_CHARS = 36;
+    final int SANITIZE_CHARS_LEN = "\"\"".length();
+    final int GUID_CHARS_LEN = 36;
 
     int size = 0;
-    size += name.length() + SANITIZE_CHARS;
-    size += " source=".length() + source.length() + SANITIZE_CHARS;
-    size += " traceId=".length() + GUID_CHARS;
-    size += " spanId=".length() + GUID_CHARS;
+    size += name.length() + SANITIZE_CHARS_LEN;
+    size += " source=".length() + source.length() + SANITIZE_CHARS_LEN;
+    size += " traceId=".length() + GUID_CHARS_LEN;
+    size += " spanId=".length() + GUID_CHARS_LEN;
     if (parents != null) {
-      size += parents.size() * (" parent=".length() + GUID_CHARS);
+      size += parents.size() * (" parent=".length() + GUID_CHARS_LEN);
     }
     if (followsFrom != null) {
-      size += followsFrom.size() * (" followsFrom=".length() + GUID_CHARS);
+      size += followsFrom.size() * (" followsFrom=".length() + GUID_CHARS_LEN);
     }
     if (tags != null) {
-      // A tag of <foo,bar> will result in ' "foo"="bar"'
-      // Random guess that the average tag KV is 16 chars, but add two more for the ' ' and `='.
-      size += tags.size() * (18 + SANITIZE_CHARS * 2);
+      final int EXTRA_TAG_CHARS_LEN = " =\"\"\"\"".length();
+      for (final Pair<String, String> tag: tags) {
+        String key = tag._1;
+        String val = tag._2;
+        if (isNullOrEmpty(key)) {
+          throw new IllegalArgumentException("span tag key cannot be blank " +
+              getContextInfo(name, source, tags));
+        }
+        if (isNullOrEmpty(val)) {
+          throw new IllegalArgumentException("span tag value cannot be blank for " +
+              "tag key: " + key + " " + getContextInfo(name, source, tags));
+        }
+        // A tag of <foo,bar> will result in ' "foo"="bar"'
+        size += key.length() + val.length() + EXTRA_TAG_CHARS_LEN;
+      }
+
     }
 
     if (spanLogs != null) {
