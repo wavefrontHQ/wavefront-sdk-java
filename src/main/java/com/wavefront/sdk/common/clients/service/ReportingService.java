@@ -2,6 +2,7 @@ package com.wavefront.sdk.common.clients.service;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import com.google.common.io.ByteStreams;
 import com.wavefront.sdk.common.Constants;
 import com.wavefront.sdk.common.Utils;
 import com.wavefront.sdk.common.clients.service.token.TokenService;
@@ -82,10 +83,7 @@ public class ReportingService implements ReportAPI {
       urlConn.setReadTimeout(READ_TIMEOUT_MILLIS);
 
       try (GZIPOutputStream gzipOS = new GZIPOutputStream(urlConn.getOutputStream())) {
-        byte[] buffer = new byte[BUFFER_SIZE];
-        while (stream.available() > 0) {
-          gzipOS.write(buffer, 0, stream.read(buffer));
-        }
+        ByteStreams.copy(stream, gzipOS);
         gzipOS.flush();
       }
       statusCode = urlConn.getResponseCode();
@@ -125,20 +123,14 @@ public class ReportingService implements ReportAPI {
         urlConn.addRequestProperty("Content-Type", "application/octet-stream");
         urlConn.addRequestProperty("Content-Encoding", "gzip");
         try (GZIPOutputStream gzipOS = new GZIPOutputStream(urlConn.getOutputStream())) {
-          byte[] buffer = new byte[BUFFER_SIZE];
-          while (stream.available() > 0) {
-            gzipOS.write(buffer, 0, stream.read(buffer));
-          }
+          ByteStreams.copy(stream, gzipOS);
           gzipOS.flush();
         }
       } else {
         // Event is in uncompressed JSON format for direct ingestion.
         urlConn.addRequestProperty("Content-Type", "application/json");
         try (OutputStream urlOS = urlConn.getOutputStream()) {
-          byte[] buffer = new byte[BUFFER_SIZE];
-          while (stream.available() > 0) {
-            urlOS.write(buffer, 0, stream.read(buffer));
-          }
+          ByteStreams.copy(stream, urlOS);
           urlOS.flush();
         }
       }
