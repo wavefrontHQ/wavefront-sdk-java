@@ -1,5 +1,6 @@
 package com.wavefront.sdk.direct.ingestion;
 
+import com.google.common.io.ByteStreams;
 import com.wavefront.sdk.common.clients.WavefrontClientFactory;
 import com.wavefront.sdk.common.clients.service.ReportingService;
 
@@ -60,10 +61,7 @@ public class DataIngesterService implements DataIngesterAPI {
       urlConn.setReadTimeout(READ_TIMEOUT_MILLIS);
 
       try (GZIPOutputStream gzipOS = new GZIPOutputStream(urlConn.getOutputStream())) {
-        byte[] buffer = new byte[4096];
-        while (stream.available() > 0) {
-          gzipOS.write(buffer, 0, stream.read(buffer));
-        }
+        ByteStreams.copy(stream, gzipOS);
         gzipOS.flush();
       }
       statusCode = urlConn.getResponseCode();
